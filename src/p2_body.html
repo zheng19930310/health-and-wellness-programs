@@ -1,0 +1,183 @@
+<!-- ================= 登录页 ================= -->
+<div class="view on" id="v-login">
+  <div class="bg" id="loginBg"></div>
+  <div class="mask"></div>
+  <div class="wrap">
+    <div class="lg-brand">
+      <div class="logo"><div class="mk">🌿</div><div><b>康养项目综合管理平台</b><span>SMART WELLNESS CAMPUS PLATFORM</span></div></div>
+      <h1>让长者<em>安享康养</em>·让家人<em>安心托付</em><br>让运营<em>高效可控</em></h1>
+      <p>覆盖旅游区 / 康养区 / 文化区三大分区，四端协同 + 数字中心 + 物联网设备体系，<br>构建"健康管理 · 生活照料 · 文化社交 · 亲情连接"的一站式智慧康养服务闭环。</p>
+      <div class="lg-feat"><i>数字孪生驾驶舱</i><i>3D 导航监控</i><i>智能手环监护</i><i>AI 聊天陪伴</i><i>子女远程照护</i><i>康养大健康消费</i><i>老年防诈守护</i><i>人文关怀闭环</i></div>
+    </div>
+    <div class="lg-card">
+      <h2>欢迎登录</h2><div class="sub">请使用平台账号进入对应工作台</div>
+      <div class="lg-tabs"><button class="on" data-lt="pwd">账号密码登录</button><button data-lt="sms">短信验证码</button></div>
+      <div id="lgPwd">
+        <div class="field"><label><i>*</i>账号</label><input class="inp" id="lgUser" placeholder="请输入登录账号" autocomplete="off"><div class="err" id="lgUserE">请输入账号</div></div>
+        <div class="field"><label><i>*</i>密码</label><input class="inp" id="lgPwdIn" type="password" placeholder="请输入登录密码" autocomplete="off"><div class="err" id="lgPwdE">请输入密码</div></div>
+        <div class="field"><label>进入端</label>
+          <select class="sel" id="lgEnd"><option value="admin">Web 管理后台（运营 / 管理）</option><option value="screen">数字中心 · 大数据展示屏</option><option value="app">APP 端原型（长者 / 子女）</option><option value="mp">小程序端原型（长者 / 子女）</option><option value="home">统一门户首页（自选端）</option></select>
+        </div>
+        <div class="lg-row"><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="lgRemember" class="chk" checked>记住账号</label><span class="link" onclick="toast('演示环境：请联系管理员重置密码','warn')">忘记密码？</span></div>
+        <button class="btn p lg blk" id="lgBtn" style="height:44px;letter-spacing:2px">登 录</button>
+      </div>
+      <div id="lgSms" style="display:none">
+        <div class="field"><label><i>*</i>手机号</label><input class="inp" id="lgPhone" placeholder="请输入手机号" maxlength="11"></div>
+        <div class="field"><label><i>*</i>验证码</label><div style="display:flex;gap:10px"><input class="inp" id="lgCode" placeholder="6 位验证码" maxlength="6"><button class="btn" style="flex:0 0 auto" onclick="toast('验证码已发送：888888（演示）','ok')">获取验证码</button></div></div>
+        <button class="btn p lg blk" style="height:44px" onclick="toast('演示环境请使用账号密码登录','warn')">登 录</button>
+      </div>
+      <div class="lg-foot">
+        <button class="lg-acc-btn" id="showAcc">👁 查看演示账号密码</button><br>
+        演示原型 · 前端单页 · 数据均为模拟 · 建议 Chrome / Edge 1440×900 以上
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 门户首页（选择端） ================= -->
+<div class="view" id="v-home">
+  <div class="hm-top">
+    <div class="logo"><div class="mk">🌿</div><div>康养项目综合管理平台<small>SMART WELLNESS PLATFORM</small></div></div>
+    <div class="hm-user">
+      <span class="tiny" style="color:rgba(255,255,255,.6)" id="hmTime"></span>
+      <span id="hmWho" style="display:flex;align-items:center;gap:9px"></span>
+      <button class="sc-btn" onclick="App.logout()">退出登录</button>
+    </div>
+  </div>
+  <div class="hm-hero">
+    <h1 id="hmHi">下午好，欢迎回到<span>智慧康养园区</span></h1>
+    <p>当前登录角色决定了可进入的端与可见的功能模块。选择下方任一入口开始体验：Web 管理后台承载园区运营管理闭环，数字大屏提供全景可视与指挥，APP / 小程序端以高保真原型呈现长者与子女的服务体验。</p>
+  </div>
+  <div class="hm-kpi" id="hmKpi"></div>
+  <div class="hm-ends" id="hmEnds"></div>
+  <div class="hm-grid">
+    <div class="hm-box">
+      <h4>核心业务闭环 <span>状态机驱动 · 全程留痕</span></h4>
+      <div class="flow"><i>长者建档</i><u>→</u><i>套餐签约</i><u>→</u><i>健康监测</i><u>→</u><i>活动 / 课堂</i><u>→</u><i>膳食心理</i><u>→</u><i>关怀告警</i><u>→</u><i>子女代付</i><u>→</u><i>数据沉淀</i></div>
+      <div style="height:14px"></div>
+      <div class="flow"><i>请假申请</i><u>→</u><i>规则审批</i><u>→</u><i>外出中</i><u>→</u><i>销假 / 逾期告警</i></div>
+      <div style="height:14px"></div>
+      <div class="flow"><i>设备异常</i><u>→</u><i>规则引擎</i><u>→</u><i>分级告警</i><u>→</u><i>门禁 / 摄像头联动</i><u>→</u><i>值班处置</i><u>→</u><i>复盘归档</i></div>
+      <div style="height:16px"></div>
+      <h4>角色与权限（RBAC） <span>账号决定可见模块与可进入端</span></h4>
+      <div class="role-grid" id="hmRoles"></div>
+    </div>
+    <div class="hm-box">
+      <h4>今日待办与实时动态 <span>数据每 8 秒模拟刷新</span></h4>
+      <ul class="mini-list" id="hmTodo"></ul>
+      <div style="height:16px"></div>
+      <h4>外部生态对接 <span>先授权 · 后传输 · 最小化 · 可审计</span></h4>
+      <ul class="mini-list" id="hmOpen"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- ================= Web 管理后台 ================= -->
+<div class="view" id="v-admin">
+  <aside class="side" id="side">
+    <div class="s-logo"><div class="mk">🌿</div><div>康养管理后台<small>ADMIN CONSOLE</small></div></div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <button class="icbtn" id="foldBtn" title="收起/展开侧栏">☰</button>
+      <div class="crumb" id="crumb">首页</div>
+      <div class="sp"></div>
+      <input class="inp" id="globalSearch" placeholder="搜索长者姓名 / 房号 / 设备编号…" style="width:230px;height:34px">
+      <div class="sw"><button id="endSw">🖥 切换端 <span style="color:var(--sub-l);font-size:11px">▾</span></button>
+        <div class="dd" id="endDd">
+          <button data-go="home">🏠 门户首页<small>选择端</small></button>
+          <button data-go="admin">🖥 Web 管理后台<small>当前</small></button>
+          <button data-go="screen">📊 数字中心大屏<small>1920×1080</small></button>
+          <button data-go="app">📱 APP 端原型<small>长者/子女</small></button>
+          <button data-go="mp">💬 小程序端原型<small>长者/子女</small></button>
+          <div class="sep"></div>
+          <button onclick="App.resetData()">♻️ 重置演示数据</button>
+          <button onclick="App.logout()">🚪 退出登录</button>
+        </div>
+      </div>
+      <button class="icbtn" id="msgBtn" title="消息中心">🔔<span class="bdg" id="msgBdg">6</span>
+        <div class="dd" id="msgDd" style="width:330px;right:0"></div>
+      </button>
+      <div class="who"><div class="av" id="topAv">管</div><div><b id="topName">管理员</b><small id="topRole">超级管理员</small></div></div>
+    </header>
+    <div class="body" id="page"></div>
+  </div>
+</div>
+
+<!-- ================= 大数据展示屏 ================= -->
+<div class="view" id="v-screen">
+  <div class="sc">
+    <div class="sc-h">
+      <div class="l"><span class="sc-btn g" id="scLive">● 实时数据</span><span id="scDate"></span></div>
+      <div class="t"><h1>智慧康养数字中心</h1><p>DIGITAL TWIN COMMAND CENTER</p></div>
+      <div class="r"><button class="sc-btn" onclick="App.go('home')">返回门户</button><button class="sc-btn" onclick="App.go('admin')">管理后台</button><span id="scClock" style="font-family:ui-monospace,monospace;font-size:16px;color:#fff;width:96px;text-align:right"></span></div>
+    </div>
+    <div class="sc-body">
+      <div class="sc-col">
+        <div class="pnl" style="flex:0 0 208px"><h4>入住与人群结构 <span>园区 / 区域</span></h4><div class="ch" id="c1"></div></div>
+        <div class="pnl"><h4>健康风险分布 <span>依据体征与评估</span></h4><div class="ch" id="c2"></div></div>
+        <div class="pnl"><h4>服务工单 TOP5 <span>今日累计</span></h4><div class="ch" id="c3" style="flex:0 0 132px"></div></div>
+      </div>
+      <div class="sc-center">
+        <div class="sc-kpi" id="scKpi"></div>
+        <div class="pnl sc-map"><h4>园区数字孪生 · 设备与告警实时映射 <span id="scTwinTip">点击设备点查看联动详情</span></h4>
+          <div class="park" id="scPark" style="height:auto;flex:1;min-height:0"></div>
+        </div>
+        <div class="twin2">
+          <div class="pnl"><h4>近 30 日经营与消费趋势 <span>万元 / 人次</span></h4><div class="ch" id="c5"></div></div>
+          <div class="pnl"><h4>告警类型与处置时效 <span>本月</span></h4><div class="ch" id="c6"></div></div>
+        </div>
+      </div>
+      <div class="sc-col">
+        <div class="pnl"><h4>实时告警流 <span id="scAlCnt">0 条待处理</span></h4><ul class="warnlist" id="scAl"></ul></div>
+        <div class="pnl" style="flex:0 0 250px"><h4>设备在线率 <span>IoT</span></h4><div class="ch" id="c4"></div></div>
+        <div class="pnl" style="flex:0 0 236px"><h4>活动与康养圈热度 <span>实时</span></h4><ul class="rank" id="scRank"></ul></div>
+      </div>
+    </div>
+    <div class="marquee" style="margin-top:12px"><div class="lb">园区播报</div><div class="tk"><span id="scTk"></span></div></div>
+  </div>
+</div>
+
+<!-- ================= APP 端原型 ================= -->
+<div class="view" id="v-app">
+  <div class="mb">
+    <div class="mb-side">
+      <h2>📱 APP 端原型</h2>
+      <p>完整移动服务入口，按角色分为长者端与子女端。适老化大字体、高对比、语音优先，覆盖健康、生活服务、安全求助、消费与社交。</p>
+      <div class="seg" id="appRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button></div>
+      <div class="f">
+        <i>✅ 首页 / 健康 / 服务 / 我的 四大 Tab</i>
+        <i>✅ 健康数据可视化 + 运动打卡</i>
+        <i>✅ 活动报名、订餐、AI 陪伴（可交互）</i>
+        <i>✅ SOS 一键呼救 → 后台告警联动</i>
+        <i>✅ 子女端：远程照护、代付充值、探望预约</i>
+      </div>
+      <button class="btn g back" onclick="App.go('home')">← 返回门户选择端</button>
+    </div>
+    <div class="phone"><div class="scr" id="appScr"></div></div>
+  </div>
+</div>
+
+<!-- ================= 小程序端原型 ================= -->
+<div class="view" id="v-mp">
+  <div class="mb">
+    <div class="mb-side">
+      <h2>💬 小程序端原型</h2>
+      <p>轻量服务入口，无需下载。以卡片 + 宫格组织高频服务，与 Web 后台共享账号与权限体系，扫码即可体验活动报名、预约与康养圈。</p>
+      <div class="seg" id="mpRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button></div>
+      <div class="f">
+        <i>✅ 微信胶囊导航 + 底部 Tab 结构</i>
+        <i>✅ 扫码签到 / 人脸核销入口</i>
+        <i>✅ 康养圈动态、点赞、留言</i>
+        <i>✅ 请假与预约表单（可提交）</i>
+        <i>✅ 子女端：授权查看、代付、探望</i>
+      </div>
+      <button class="btn g back" onclick="App.go('home')">← 返回门户选择端</button>
+    </div>
+    <div class="phone"><div class="scr" id="mpScr"></div></div>
+  </div>
+</div>
+
+<!-- ================= 通用弹层 ================= -->
+<div class="mask2" id="mask"><div class="modal" id="modal"><div class="m-h"><h3 id="mTitle">标题</h3><button class="x" onclick="Modal.close()">×</button></div><div class="m-b" id="mBody"></div><div class="m-f" id="mFoot"></div></div></div>

@@ -1,0 +1,391 @@
+
+/* ============================================================
+ *  Layer 5 : APP 端 / 小程序端 高保真原型（可交互，与后台共享同一份数据）
+ * ============================================================ */
+const MB_TABS = {
+  app: {
+    elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['👤','我的','mine']],
+    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['👤','我的','mine']]
+  },
+  mp: {
+    elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['👤','我的','mine']],
+    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['👤','我的','mine']]
+  }
+};
+
+const MB = {
+  elder:'徐世昌', child:'徐乐', cart:[], chat:[], aiLog:null, postIdx:0,
+  A(){ const r = MODULES.archive.rows.find(a=>a.name===MB.elder);
+       return r || { name:MB.elder, room:'A-305', zone:'康养区 A 栋', level:'半自理', pkg:'健康管理套餐', guardian:'徐乐' }; },
+  MEM(){ const r = MODULES.member.rows.find(m=>m.name===MB.elder);
+       return r || { lv:'金卡会员', balance:3680, point:1240, spend:42800, no:'HY20250312001', status:'正常' }; },
+  H(){ const rs = MODULES.health.rows.filter(h=>h.name===MB.elder); return rs[0] || { hr:78, spo2:97, bp:'136/84', sleep:7.2, step:4210, risk:'低', date:today(), doctor:'陈叙白' }; },
+  HIST(){ const rs = MODULES.health.rows.filter(h=>h.name===MB.elder); return rs.length?rs:[MB.H()]; },
+  ACTS(){ const r = MODULES.activity.rows.filter(a=>a.status==='报名中'||a.status==='进行中'); return r.length?r:MODULES.activity.rows.slice(0,3); },
+  POSTS(){ const r = MODULES.circle.rows.filter(c=>c.status==='已发布'); return r.length?r:MODULES.circle.rows.slice(0,3); },
+  REM(){ const r = MODULES.remind.rows.filter(x=>/徐世昌|全员|全部|康养/.test(x.target||'')); return (r.length?r:MODULES.remind.rows).slice(0,4); },
+  ORDERS(){ return MODULES.order.rows.filter(o=>o.name===MB.elder||o.status==='待支付').slice(0,6); },
+  BOOKS(){ return MODULES.booking.rows.filter(b=>/子女代约|APP|小程序/.test((b.kind||'')+(b.from||''))||b.name===MB.elder||b.name===MB.child).slice(0,6); },
+  ALARM(){ return MODULES.devalarm.rows.filter(a=>a.obj===MB.elder||a.status==='待处置').slice(0,4); },
+
+  /* ---------- 骨架 ---------- */
+  status(){ const d=new Date(), p=n=>String(n).padStart(2,'0');
+    return `<div class="st"><span>${p(d.getHours())}:${p(d.getMinutes())}</span><span class="rt">🔔 5G ▮▮▮ 86%</span></div>`; },
+  wxbar(role){ return `<div class="wxbar"><div class="t">‹ 康养服务${role==='child'?'（子女版）':''}</div><div class="caps"><span>⋯</span><span style="border-left:1px solid #e4e9f0;height:16px"></span><span>◉</span></div></div>`; },
+  head(kind, role){
+    const a = MB.A();
+    if(role==='child') return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(S.user?S.user.name:MB.child)}</h3><div class="sm">${kind==='mp'?'小程序 · 微信授权已绑定':'APP · 已绑定长者 '+a.name} · 关注 ${a.name}（${a.room}）</div></div><div class="av">👪</div></div></div>`;
+    return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(a.name)}</h3><div class="sm">${esc(a.zone)} · ${esc(a.room)} · ${esc(a.level)} · ${esc(a.pkg||'健康管理套餐')}</div></div><div class="av">🧓</div></div></div>`;
+  },
+  greet(){ const h=new Date().getHours(); return h<6?'夜深了':h<11?'早上好':h<14?'中午好':h<18?'下午好':'晚上好'; },
+  tabb(kind, role, tabs, idx){
+    return `<div class="tabb">`+tabs.map((t,i)=> t[2]==='sos'
+      ? `<button class="sos" onclick="Mob.sos()"><span class="e">🆘</span>SOS</button>`
+      : `<button class="${i===idx?'on':''}" onclick="Mob.go('${kind}',${i})"><span class="e">${t[0]}</span>${t[1]}</button>`).join('')+`</div>`;
+  },
+  sheet(html, style){ MB.close(); const host = $(S.view==='mp'?'mpScr':'appScr'); if(!host) return;
+    const d=document.createElement('div'); d.className='sheet'; d.id='mbSheet'; d.setAttribute('style',style||''); d.innerHTML=html;
+    d.addEventListener('click',e=>e.stopPropagation()); host.appendChild(d); },
+  close(){ const s=$('mbSheet'); if(s) s.remove(); },
+
+  /* ---------- 渲染入口 ---------- */
+  render(kind){
+    const host = $(kind==='app'?'appScr':'mpScr'); if(!host) return;
+    const role = S.mobileRole[kind] || 'elder';
+    const tabs = MB_TABS[kind][role];
+    let idx = S[kind+'Tab']||0; if(idx>=tabs.length) idx=0;
+    const key = tabs[idx][2]==='sos' ? 'home' : tabs[idx][2];
+    host.innerHTML = (kind==='app'?MB.status():MB.wxbar(role)) + MB.head(kind,role)
+      + `<div class="app-body">${MB.screen(kind,role,key)}</div>` + MB.tabb(kind,role,tabs,idx);
+    const seg = $(kind+'Role');
+    if(seg){ [...seg.children].forEach(b=>b.classList.toggle('on', b.dataset.r===role));
+      seg.onclick = e => { const b=e.target.closest('button'); if(!b) return; Mob.role(kind, b.dataset.r); }; }
+    MB.after(key);
+  },
+  after(key){
+    if(key!=='health') return;
+    const hs = MB.HIST().slice(0,7).reverse();
+    ec('mHr', { grid:{left:6,right:6,top:18,bottom:20,containLabel:true},
+      tooltip:{trigger:'axis'}, legend:{data:['心率','血氧'],top:0,itemWidth:9,itemHeight:9,textStyle:{fontSize:10}},
+      xAxis:Object.assign({type:'category',data:hs.map(h=>String(h.date).slice(5)),axisLabel:{fontSize:9}},axisBase(false)),
+      yAxis:Object.assign({type:'value',min:50,max:110,axisLabel:{fontSize:9}},axisBase(false)),
+      series:[{name:'心率',type:'line',smooth:true,data:hs.map(h=>+h.hr||78),lineStyle:{width:2.4,color:'#1668dc'},itemStyle:{color:'#1668dc'},areaStyle:{color:'rgba(22,104,220,.12)'}},
+        {name:'血氧',type:'line',smooth:true,data:hs.map(h=>+h.spo2||96),lineStyle:{width:2,color:'#00b578'},itemStyle:{color:'#00b578'}}] });
+  },
+
+  /* ---------- 屏幕 ---------- */
+  screen(kind, role, key){
+    if(role==='child') return ({ home:MB.cHome, family:MB.cFamily, book:MB.cBook, pay:MB.cPay, mine:MB.cMine })[key](kind);
+    return ({ home:MB.eHome, health:MB.eHealth, circle:MB.eCircle, svc:MB.eSvc, mine:MB.eMine })[key](kind);
+  },
+
+  /* ===== 长者端 ===== */
+  eHome(kind){
+    const a=MB.A(), h=MB.H(), m=MB.MEM();
+    const rem = MB.REM().map(r=>`<li><div class="ic ${r.level==='紧急'?'r':'g'}">${r.kind==='用药'?'💊':r.kind==='复诊'?'🩺':r.kind==='活动'?'🎪':'⏰'}</div>
+      <div class="tx"><b>${esc(r.title)}</b><p>${esc(r.content||r.time)} · ${esc(r.target)}</p></div>
+      <div class="rt"><span class="link" onclick="Mob.remind(${r._id})">打卡</span></div></li>`).join('');
+    const acts = MB.ACTS().slice(0,3).map(x=>`<li><div class="ic">${x.kind==='节日庆典'?'🎉':x.kind==='出游旅居'?'🚌':'🎓'}</div>
+      <div class="tx"><b>${esc(x.title)}</b><p>${esc(x.date)} · ${esc(x.place)} · 剩 ${Math.max(0,(+x.quota||0)-(+x.signed||0))} 名</p></div>
+      <div class="rt"><button class="btn sm p" onclick="Mob.signup(${x._id})">报名</button></div></li>`).join('');
+    const g = [['🎪','活动报名','Mob.actList()'],['🍚','今日订餐','Mob.meal()'],
+      ['🤖','AI 陪伴','Mob.aiOpen()'],['📅','理疗预约','Mob.bookSheet()'],['📝','外出请假','Mob.leaveSheet()'],
+      ['🚻','服务报修','Mob.repair()'],['🏃','运动打卡','Mob.sport()'],['🆘','一键呼救','Mob.sos()']];
+    return `<div class="mhero"><b>${esc(m.lv)} · 会员卡号 ${esc(m.no||'—')}</b><p>储值余额 ¥${(+m.balance||0).toLocaleString()} · 可用积分 ${esc(m.point||0)} · 本月消费 ${esc(m.spend||0)} 元</p>
+      <div class="row"><div>今日步数<b>${esc(h.step||0)}</b></div><div>睡眠时长<b>${esc(h.sleep||0)}h</b></div><div>风险等级<b>${esc(h.risk||'低')}</b></div></div></div>
+      <div class="hcards"><div class="hc1"><label>心率</label><b>${esc(h.hr)}<i style="font-size:11px"> bpm</i></b><i>${esc(h.date||today())} 手环同步</i></div>
+      <div class="hc2"><label>血压</label><b style="font-size:17px">${esc(h.bp)}</b><i>目标 &lt; 140/90</i></div>
+      <div class="hc3"><label>血氧</label><b>${esc(h.spo2)}<i style="font-size:11px"> %</i></b><i>夜间最低 94%</i></div></div>
+      <div style="height:12px"></div>
+      <div class="mc"><div class="mc-h"><b>快捷服务</b><span>适老化大字 · 语音可用</span></div>
+        <div class="mgrid">${g.map((x,i)=>`<div class="${i===2?'on':''}" onclick="${x[2]}"><div class="e">${x[0]}</div>${x[1]}</div>`).join('')}</div></div>
+      <div class="mc"><div class="mc-h"><b>今日提醒</b><span>${MB.REM().length} 条 · 已同步房间大屏</span></div><ul class="mlist">${rem}</ul></div>
+      <div class="mc"><div class="mc-h"><b>可报名活动</b><span class="link" onclick="Mob.actList()">全部 ›</span></div><ul class="mlist">${acts}</ul></div>
+      <div class="mcard2"><b>📹 亲情视频 · 女儿 徐乐</b><p>今日 19:00 已预约 8 分钟视频通话，可在房间大屏接听</p>
+        <div style="margin-top:9px"><button class="btn sm" onclick="toast('已在房间大屏发起视频（演示）','ok')">立即回拨</button>
+        <button class="btn sm" style="margin-left:8px" onclick="Mob.comment()">留言</button></div></div>`;
+  },
+  eHealth(){
+    const hs = MB.HIST().map(r=>`<li><div class="ic ${r.risk==='高'?'r':r.risk==='中'?'w':'g'}">${r.type==='护理记录'?'🧑‍⚕️':r.type==='体检摘要'?'📋':r.type==='理疗记录'?'💆':'⌚'}</div>
+      <div class="tx"><b>${esc(r.type)} · ${esc(r.date)}</b><p>${esc(r.note||'')}</p></div><div class="rt">${esc(r.risk)}险<br>${esc(r.doctor||'—')}</div></li>`).join('');
+    const sp = (MODULES.sport.rows.filter(s=>s.name===MB.elder)[0])||{plan:'快走 30 分钟',dur:32,step:4210,kcal:186,status:'已达标'};
+    return `<div class="mc"><div class="mc-h"><b>近 7 日体征趋势</b><span>数据来自智能手环</span></div><div id="mHr" style="height:150px"></div></div>
+      <div class="mc"><div class="mc-h"><b>健康档案摘要</b><span>责任医护 ${esc(MB.H().doctor||'陈叙白')}</span></div>
+        <div class="mgrid" style="grid-template-columns:repeat(3,1fr)">${[['🩸','血压','136/84'],['🧪','血糖','5.8'],['❤️','心率','78'],['🫁','血氧','97%'],['💤','睡眠','7.2h'],['🏃','步数','4210']].map(x=>`<div><div class="e">${x[0]}</div>${x[1]}<b style="display:block;font-size:12px;color:var(--txt)">${x[2]}</b></div>`).join('')}</div>
+        <p class="tiny" style="margin-top:8px">既往史：高血压 2 级（药物控制）、骨质疏松；过敏史：青霉素。饮食建议低盐 ≤ 5g/日。</p></div>
+      <div class="mc"><div class="mc-h"><b>今日运动处方</b><span>${esc(sp.status)}</span></div>
+        <ul class="mlist"><li><div class="ic g">🏃</div><div class="tx"><b>${esc(sp.plan)}</b><p>${esc(sp.dur)} 分钟 · ${esc(sp.step)} 步 · ${esc(sp.kcal)} kcal · 平均心率 ${esc(sp.hr||96)}</p></div>
+        <div class="rt"><button class="btn sm g" onclick="Mob.sport()">打卡</button></div></li></ul></div>
+      <div class="mc"><div class="mc-h"><b>体征与护理记录</b><span>${MB.HIST().length} 条</span></div><ul class="mlist">${hs}</ul></div>
+      <div class="mc"><div class="mc-h"><b>在线问诊</b><span>视频 · 语音 · 文字</span></div>
+        <div class="mbtns"><button class="btn p" onclick="toast('已呼叫责任医护，预计 1 分钟接入','ok')">📞 呼叫医护</button>
+        <button class="btn" onclick="Mob.aiOpen()">🤖 AI 健康助手</button></div></div>`;
+  },
+  eSvc(){
+    const lunch = MODULES.menu.rows.filter(m=>m.meal==='午餐'&&m.status==='供应中').slice(0,5);
+    const dishes = lunch.map(d=>`<li><div class="ic">🍲</div><div class="tx"><b>${esc(d.dish)}</b><p>${esc(d.kcal)} kcal · ${esc(d.tag)} · ¥${esc(d.price)}</p></div>
+      <div class="rt"><button class="btn sm p" onclick="Mob.mealAdd('${esc(d.dish)}',${+d.price||0})">＋ 加购</button></div></li>`).join('');
+    const g=[['🍚','在线订餐',"Mob.meal()"],['📅','理疗预约','Mob.bookSheet()'],['🧹','保洁报修','Mob.repair()'],['📝','外出请假','Mob.leaveSheet()'],
+      ['🎪','活动报名','Mob.actList()'],['🤖','AI 陪伴','Mob.aiOpen()'],['🚑','陪同就医','Mob.repair()'],['👨‍👩‍👧','亲属留言','Mob.comment()']];
+    return `<div class="mhero"><b>今日 10-27 午餐订餐</b><p>营养科已按您的低盐方案筛选，加入购物车后由厨房配餐并送餐到房。</p>
+      <div class="row"><div>购物车<b id="cartN">${MB.cart.length} 件</b></div><div>合计<b id="cartA">¥${MB.cart.reduce((s,c)=>s+c.p,0)}</b></div><div>余额<b>¥${(+MB.MEM().balance||0).toLocaleString()}</b></div></div></div>
+      <div class="mc"><div class="mc-h"><b>高频服务</b><span>小程序宫格</span></div>
+        <div class="mgrid">${g.map(x=>`<div onclick="${x[2]}"><div class="e">${x[0]}</div>${x[1]}</div>`).join('')}</div></div>
+      <div class="mc"><div class="mc-h"><b>午餐菜单（低盐适配）</b><span class="link" onclick="Mob.mealSubmit()">提交订单 ›</span></div><ul class="mlist">${dishes}</ul>
+        <div class="mbtns" style="margin-top:10px"><button class="btn g" onclick="Mob.mealSubmit()">🛒 提交订餐（${MB.cart.length}）</button>
+        <button class="btn" onclick="MB.cart=[];renderMobile('mp');toast('购物车已清空')">清空</button></div></div>
+      <div class="mc"><div class="mc-h"><b>扫码 / 人脸核销</b><span>活动与餐厅通用</span></div>
+        <div class="mbtns"><button class="btn p" onclick="Mob.scan()">📷 扫一扫签到</button><button class="btn" onclick="Mob.scan()">🙂 刷脸核销</button></div></div>
+      <div class="mc"><div class="mc-h"><b>我的预约与工单</b><span>${MB.BOOKS().length} 条</span></div>
+        <ul class="mlist">${MB.BOOKS().map(b=>`<li><div class="ic ${b.status==='待确认'?'w':'g'}">📅</div><div class="tx"><b>${esc(b.item)}</b><p>${esc(b.date)} · ${esc(b.place)} · ${esc(b.staff)}</p></div><div class="rt">${tagHTML({tag:MODULES.booking.cols.find(c=>c.k==='status').tag},b.status)}</div></li>`).join('')}</ul></div>`;
+  },
+  eCircle(){
+    const chips = ['全部','康养圈动态','在院时光','活动预告','子女留言'];
+    S.circKw = S.circKw || '全部';
+    let list = MB.POSTS(); if(S.circKw!=='全部') list = list.filter(c=>c.kind===S.circKw);
+    if(!list.length) list = MB.POSTS();
+    const feeds = list.slice(0,7).map(c=>`<div class="feed"><div class="u"><div class="av">${esc(c.author[0])}</div><div><b>${esc(c.author)}</b><small>${esc(c.kind)} · ${esc(c.date)}</small></div>
+      <span class="tag ${c.share==='已同步'?'green':'ink'}" style="margin-left:auto">${esc(c.share)}</span></div>
+      <p>${esc(c.text)}</p>${c.imgs?`<div class="imgs">${String(c.imgs).slice(0,3).split('').map(x=>`<i>${x}</i>`).join('')}</div>`:''}
+      <div class="acts"><span onclick="Mob.like(${c._id})">👍 ${c.likes||0}</span><span onclick="Mob.comment(${c._id})">💬 ${c.cmts||0}</span><span onclick="toast('已转给家人（演示）','ok')">↗ 分享给子女</span></div></div>`).join('');
+    return `<div class="mchips">${chips.map(c=>`<button class="${S.circKw===c?'on':''}" onclick="S.circKw='${c}';renderMobile('${S.view}')">${c}</button>`).join('')}</div>
+      <div class="mc" style="display:flex;align-items:center;gap:10px"><div class="ic" style="width:34px;height:34px;border-radius:10px;background:var(--blue-l);display:flex;align-items:center;justify-content:center">✍️</div>
+      <div style="flex:1;color:var(--sub-l);font-size:13px">分享今天的康养生活…</div><button class="btn sm p" onclick="Mob.post()">发布</button></div>${feeds}`;
+  },
+  eMine(){
+    const a=MB.A(), m=MB.MEM(), f=MODULES.family.rows.find(x=>x.ename===MB.elder)||{cname:'徐乐',rel:'女儿',auth:'健康+位置+消费',notice:'告警+请假+消费+关怀'};
+    return `<div class="mc" style="display:flex;align-items:center;gap:12px"><div class="av" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px">${esc(a.name[0])}</div>
+      <div style="flex:1"><b style="font-size:16px">${esc(a.name)}</b><div class="tiny">${esc(a.zone)} ${esc(a.room)} · ${esc(a.age||78)} 岁 · ${esc(a.level)}</div></div><span class="tag green">${esc(a.status||'在院')}</span></div>
+      <div class="mc"><div class="mc-h"><b>我的会员卡</b><span>${esc(m.lv)}</span></div>
+        <div class="hcards" style="grid-template-columns:repeat(3,1fr)"><div class="hc1"><label>储值</label><b style="font-size:16px">¥${(+m.balance||0).toLocaleString()}</b><i>可子女代付</i></div>
+        <div class="hc2"><label>积分</label><b style="font-size:16px">${esc(m.point)}</b><i>可抵扣</i></div><div class="hc3"><label>成长值</label><b style="font-size:16px">${esc(m.grow||8600)}</b><i>距钻石 1400</i></div></div></div>
+      <div class="mc"><div class="mc-h"><b>我的家人</b><span class="link" onclick="toast('可在「子女服务管理」审核授权','ok')">授权管理 ›</span></div>
+        <ul class="mlist"><li><div class="ic g">👧</div><div class="tx"><b>${esc(f.cname)} · ${esc(f.rel)}</b><p>授权范围：${esc(f.auth)} · 通知：${esc(f.notice)}</p></div><div class="rt"><span class="tag green">已绑定</span></div></li></ul></div>
+      <div class="mc"><div class="mc-h"><b>适老化设置</b><span>大字体已开启</span></div>
+        <ul class="mlist">${[['超大字体 / 高对比','on'],['语音播报与语音唤醒','on'],['手环跌倒自动呼救','on'],['离开围栏自动通知家人','on'],['房间大屏夜间护眼模式','on']].map(x=>`<li><div class="ic">⚙️</div><div class="tx"><b>${x[0]}</b><p>点击可切换，设置即时生效</p></div><div class="rt"><button class="btn sm ${x[1]==='on'?'g':''}" onclick="this.className='btn sm '+(this.classList.contains('g')?'':'g');toast('设置已更新（演示）','ok')">${x[1]==='on'?'已开启':'未开启'}</button></div></li>`).join('')}</ul></div>
+      <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
+  },
+
+  /* ===== 子女端 ===== */
+  cHome(kind){
+    const a=MB.A(), h=MB.H(), al=MB.ALARM();
+    const pend = MODULES.leave.rows.filter(l=>l.name===MB.elder&&['待审批','外出中','逾期'].includes(l.status));
+    const g=[['📅','探望预约','Mob.bookSheet()'],['💰','代付充值','Mob.topay()'],['🎥','查看录像','Mob.video()'],['💬','给爸留言','Mob.comment()'],
+      ['📋','健康报告','toast("已生成 10 月健康报告（PDF，演示）","ok")'],['🚑','陪同就医','Mob.repair()'],['🍱','远程订餐','Mob.meal()'],['🆘','紧急联系','Mob.sosCall()']];
+    return `<div class="mhero"><b>${esc(a.name)} · ${esc(a.room)}  今日状态良好</b><p>心率 ${esc(h.hr)} bpm · 血压 ${esc(h.bp)} · 血氧 ${esc(h.spo2)}% · 步数 ${esc(h.step)}　|　风险等级 ${esc(h.risk)}</p>
+      <div class="row"><div>在院天数<b>238</b></div><div>本月活动<b>14 场</b></div><div>满意度<b>4.8</b></div></div></div>
+      <div class="mc"><div class="mc-h"><b>实时动态与提醒</b><span>${al.length+pend.length} 条</span></div>
+        <ul class="mlist">${pend.map(l=>`<li><div class="ic w">📝</div><div class="tx"><b>请假${esc(l.status)} · ${esc(l.type)}</b><p>${esc(l.start)} → ${esc(l.end)} · ${esc(l.dest)}</p></div><div class="rt"><span class="link" onclick="Mob.approve(${l._id})">${l.status==='待审批'?'催审批':'跟踪'}</span></div></li>`).join('')}
+        ${al.map(x=>`<li><div class="ic r">🚨</div><div class="tx"><b>${esc(x.kind)} · ${esc(x.level)}</b><p>${esc(x.value)} · ${esc(x.time)}</p></div><div class="rt">${esc(x.status)}</div></li>`).join('')}
+        ${MODULES.remind.rows.filter(r=>r.target&&/徐世昌|全员/.test(r.target)).slice(0,2).map(r=>`<li><div class="ic g">⏰</div><div class="tx"><b>${esc(r.title)}</b><p>${esc(r.time)} · ${esc(r.kind)}</p></div><div class="rt"><span class="link" onclick="toast('已确认回执','ok')">确认</span></div></li>`).join('')}</ul></div>
+      <div class="mc"><div class="mc-h"><b>常用操作</b><span>授权范围内可查</span></div>
+        <div class="mgrid">${g.map(x=>`<div onclick="${x[2]}"><div class="e">${x[0]}</div>${x[1]}</div>`).join('')}</div></div>
+      <div class="mc"><div class="mc-h"><b>今日康养圈</b><span class="link" onclick="Mob.go('${kind}',1)">更多 ›</span></div>
+        ${MB.POSTS().slice(0,2).map(c=>`<div class="feed"><div class="u"><div class="av">${esc(c.author[0])}</div><div><b>${esc(c.author)}</b><small>${esc(c.date)}</small></div></div><p>${esc(c.text)}</p>
+        <div class="acts"><span onclick="Mob.like(${c._id})">👍 ${c.likes||0}</span><span onclick="Mob.comment(${c._id})">💬 留言</span></div></div>`).join('')}</div>`;
+  },
+  cFamily(){
+    const hs = MB.HIST().slice(0,4).map(r=>`<li><div class="ic ${r.risk==='高'?'r':'g'}">🩺</div><div class="tx"><b>${esc(r.type)} · ${esc(r.date)}</b><p>${esc(r.note||'')}</p></div><div class="rt">${esc(r.hr)}/${esc(r.spo2)}<br>${esc(r.risk)}险</div></li>`).join('');
+    const ai = MODULES.ai.rows.slice(0,2).map(x=>`<li><div class="ic">🤖</div><div class="tx"><b>${esc(x.name)} · ${esc(x.mood)}</b><p>${esc(x.snippet)}</p></div><div class="rt">${esc(x.topic)}</div></li>`).join('');
+    return `<div class="mcard2"><b>数据授权</b><p>父亲已授权「健康 + 位置 + 消费」。所有查看行为均记录在后台操作日志，可随时收回授权。</p>
+      <div style="margin-top:9px"><button class="btn sm" onclick="toast('授权范围已提交变更申请，待管理员审核','ok')">申请变更授权</button></div></div>
+      <div class="mc"><div class="mc-h"><b>体征记录（近 4 次）</b><span>同步自手环与护理记录</span></div><ul class="mlist">${hs}</ul></div>
+      <div class="mc"><div class="mc-h"><b>AI 陪伴会话摘要</b><span>情绪识别与关怀</span></div><ul class="mlist">${ai}</ul></div>
+      <div class="mc"><div class="mc-h"><b>给 ${esc(MB.elder)} 留言</b><span>将推送到房间大屏与手环</span></div>
+        <div class="field"><textarea class="txta" id="cMsg" rows="3" placeholder="爸，注意保暖，周末我带孙女来看您" style="height:70px;padding:8px 12px"></textarea></div>
+        <button class="btn p blk" onclick="Mob.comment()">发送留言</button></div>
+      <div class="mc"><div class="mc-h"><b>园区录像（授权）</b><span>需审批后查看</span></div>
+        <div class="mbtns"><button class="btn" onclick="Mob.video()">🎥 申请查看公共区域录像</button></div></div>`;
+  },
+  cBook(){
+    return `<div class="mc"><div class="mc-h"><b>发起探望 / 代预约</b><span>提交后进入后台「预约体验管理」</span></div>
+      <div class="mform"><div class="field"><label><i>*</i>项目</label><select class="sel" id="bkItem"><option>探望陪伴（含园区导览）</option><option>中医理疗体验</option><option>康复理疗评估</option><option>营养膳食体验</option><option>认知功能筛查</option></select></div>
+      <div class="field"><label><i>*</i>时间</label><input class="inp" id="bkDate" type="datetime-local" value="2026-10-31T14:00"></div>
+      <div class="field"><label>陪同人 / 备注</label><input class="inp" id="bkNote" value="携 6 岁孙女，需儿童餐与无障碍通道"></div>
+      <button class="btn g blk" onclick="Mob.bookSubmit()">提交预约</button></div></div>
+      <div class="mc"><div class="mc-h"><b>我的预约记录</b><span>${MB.BOOKS().length} 条</span></div>
+        <ul class="mlist">${MB.BOOKS().map(b=>`<li><div class="ic ${b.status==='已完成'?'g':'w'}">📅</div><div class="tx"><b>${esc(b.item)} · ${esc(b.name)}</b><p>${esc(b.date)} · ${esc(b.place)} · ${esc(b.staff||'待分配')}</p></div>
+        <div class="rt">${tagHTML({tag:MODULES.booking.cols.find(c=>c.k==='status').tag},b.status)}${b.status==='待确认'?'<div class="tiny">可取消</div>':''}</div></li>`).join('')}</ul></div>
+      <div class="mc"><div class="mc-h"><b>请假 / 外出代申请</b><span>需运营审批</span></div>
+        <div class="mbtns"><button class="btn p" onclick="Mob.leaveSheet()">为父亲提交外出申请</button></div></div>`;
+  },
+  cPay(){
+    const m = MB.MEM(); const pend = MODULES.order.rows.filter(o=>o.status==='待支付').slice(0,4);
+    return `<div class="mhero"><b>父亲会员卡 · ${esc(m.lv)}</b><p>储值余额 ¥${(+m.balance||0).toLocaleString()} · 积分 ${esc(m.point)} · 代付额度 ¥20,000/月（已用 ¥4,120）</p>
+      <div class="row"><div>本月代付<b>¥3,280</b></div><div>累计消费<b>¥${(+m.spend||0).toLocaleString()}</b></div><div>订阅<b>健康管理套餐</b></div></div></div>
+      <div class="mc"><div class="mc-h"><b>待支付订单</b><span>${pend.length} 笔 · 可代付</span></div>
+        ${pend.length?`<ul class="mlist">${pend.map(o=>`<li><div class="ic w">💳</div><div class="tx"><b>${esc(o.goods)}</b><p>${esc(o.no)} · ${esc(o.date)} · ${esc(o.name)}</p></div>
+        <div class="rt"><b>¥${esc(o.amount)}</b><div class="link" onclick="Mob.pay(${o._id})">代付</div></div></li>`).join('')}</ul>`:'<div class="tiny">暂无待支付订单</div>'}</div>
+      <div class="mc"><div class="mc-h"><b>储值充值</b><span>即时到账 · 开具电子发票</span></div>
+        <div class="mgrid" style="grid-template-columns:repeat(4,1fr)">${[500,1000,2000,5000].map(v=>`<div onclick="Mob.topay(${v})"><div class="e">¥${v}</div>充值</div>`).join('')}</div></div>
+      <div class="mc"><div class="mc-h"><b>消费明细</b><span>共 ${MODULES.order.rows.length} 笔</span></div>
+        <ul class="mlist">${MODULES.order.rows.slice(0,5).map(o=>`<li><div class="ic">🧾</div><div class="tx"><b>${esc(o.goods)}</b><p>${esc(o.date)} · ${esc(o.pay)} · ${esc(o.payer||o.name)}</p></div><div class="rt">¥${esc(o.amount)}<br><span class="tag ${o.status==='已核销'?'green':o.status==='待支付'?'warn':'ink'}">${esc(o.status)}</span></div></li>`).join('')}</ul></div>`;
+  },
+  cMine(){
+    const f = MODULES.family.rows.find(x=>x.cname===MB.child)||{cname:MB.child,ename:MB.elder,rel:'女儿',auth:'健康+位置+消费',pay:'已授权',quota:20000,notice:'告警+请假+消费+关怀',status:'已绑定'};
+    return `<div class="mc" style="display:flex;align-items:center;gap:12px"><div class="av" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px">👧</div>
+      <div style="flex:1"><b style="font-size:16px">${esc(S.user?S.user.name:f.cname)}</b><div class="tiny">${esc(f.rel)} · 绑定长者 ${esc(f.ename)} · ${esc(f.status)}</div></div><span class="tag blue">子女端</span></div>
+      <div class="mc"><div class="mc-h"><b>授权与代付</b><span>可在后台「子女服务管理」复核</span></div>
+        <ul class="mlist"><li><div class="ic g">🔓</div><div class="tx"><b>数据授权范围</b><p>${esc(f.auth)}</p></div><div class="rt">已生效</div></li>
+        <li><div class="ic">💳</div><div class="tx"><b>代付权限 / 额度</b><p>${esc(f.pay)} · ¥${esc(f.quota)}/月</p></div><div class="rt">可用</div></li>
+        <li><div class="ic w">🔔</div><div class="tx"><b>通知偏好</b><p>${esc(f.notice)}</p></div><div class="rt"><span class="link" onclick="toast('通知偏好已保存','ok')">修改</span></div></li></ul></div>
+      <div class="mc"><div class="mc-h"><b>家庭成员协作</b><span>3 位亲属</span></div>
+        <ul class="mlist">${MODULES.family.rows.slice(0,3).map(x=>`<li><div class="ic">${x.status==='已绑定'?'👪':'⏳'}</div><div class="tx"><b>${esc(x.cname)} · ${esc(x.rel)}</b><p>${esc(x.ename)} · ${esc(x.auth)} · 最近探望 ${esc(x.visit)}</p></div><div class="rt"><span class="tag ${x.status==='已绑定'?'green':'warn'}">${esc(x.status)}</span></div></li>`).join('')}</ul></div>
+      <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
+  }
+};
+
+/* ---------- 交互动作（写入模块数据，与后台实时联动） ---------- */
+const Mob = {
+  go(kind, i){ S[kind+'Tab'] = i; renderMobile(kind); },
+  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':'子女端'}`,'ok'); },
+
+  signup(id){ const a=MODULES.activity.rows.find(x=>x._id===id); if(!a) return;
+    const left=(+a.quota||0)-(+a.signed||0);
+    if(left<=0){ toast('名额已满，已加入候补队列','warn'); a.need='需家属陪同'; a.status='报名中'; }
+    else { a.signed=(+a.signed||0)+1; toast(`「${a.title}」报名成功，签到码已下发手环与大屏`,'ok'); }
+    persist(); renderMobile(S.view);
+    logAct('活动报名（'+S.view.toUpperCase()+'）', a.title+' · 已报名 '+a.signed, '低');
+    MODULES.remind && MODULES.remind.rows.unshift({ _id:++UID, title:'活动签到提醒：'+a.title, target:MB.elder, kind:'活动', time:a.date, level:'普通', repeat:'仅一次', channel:'站内+APP', owner:S.user?S.user.name:'系统', content:'请提前 10 分钟到场，凭手环二维码或人脸签到', status:'待推送', ack:'' });
+  },
+  actList(){ MB.sheet(`<h4>🎪 可报名活动 <span class="link" onclick="MB.close()">关闭</span></h4><ul class="mlist">${MB.ACTS().map(a=>`<li><div class="ic">${a.status==='进行中'?'🔴':'🎟'}</div><div class="tx"><b>${esc(a.title)}</b><p>${esc(a.date)} · ${esc(a.place)} · ${esc(a.desc||'')}</p></div><div class="rt"><button class="btn sm p" onclick="MB.close();Mob.signup(${a._id})">${(+a.quota||0)-(+a.signed||0)>0?'报名':'候补'}</button></div></li>`).join('')}</ul>`); },
+
+  meal(){ MB.sheet(`<h4>🍚 今日订餐 <span class="link" onclick="MB.close()">关闭</span></h4>
+    <ul class="mlist">${MODULES.menu.rows.filter(m=>m.meal==='午餐'&&m.status==='供应中').slice(0,6).map(d=>`<li><div class="ic">🍲</div><div class="tx"><b>${esc(d.dish)}</b><p>${esc(d.kcal)} kcal · ${esc(d.tag)} · ¥${esc(d.price)}</p></div><div class="rt"><button class="btn sm p" onclick="Mob.mealAdd('${esc(d.dish)}',${+d.price||0})">＋</button></div></li>`).join('')}</ul>
+    <div style="margin-top:10px" class="mbtns"><button class="btn g" onclick="Mob.mealSubmit()">提交订单（${MB.cart.length} 件）</button><button class="btn" onclick="MB.cart=[];MB.close();renderMobile(S.view)">清空</button></div>`); },
+  mealAdd(dish, price){ MB.cart.push({d:dish,p:price}); toast(`已加入购物车：${dish}`,'ok');
+    const n=$('cartN'), a=$('cartA'); if(n) n.textContent=MB.cart.length+' 件'; if(a) a.textContent='¥'+MB.cart.reduce((s,c)=>s+c.p,0); },
+  mealSubmit(){ if(!MB.cart.length){ toast('请先选择菜品','warn'); return; }
+    const total = MB.cart.reduce((s,c)=>s+c.p,0);
+    MODULES.order.rows.unshift({ _id:++UID, no:'DD'+String(Date.now()).slice(-10), name:MB.elder, goods:MB.cart.map(c=>c.d).join('、'), amount:total, pay:'储值余额', payer:MB.elder, point:0, date:now(), status:'待支付', staff:'', invoice:'待开具', remark:'APP/小程序订餐，需低盐' });
+    MODULES.arrange && MODULES.arrange.rows.unshift({ _id:++UID, name:MB.elder, date:today(), br:'小米南瓜粥+水煮蛋', lunch:MB.cart.map(c=>c.d).join('、'), dinner:'山药粥+豆腐羹', snack:'无糖点心', kcal:1580, salt:1750, check:'达标', cook:'待确认', note:'长者端自助订餐，请少盐' });
+    MB.cart=[]; MB.close(); persist(); renderMobile(S.view); logAct('自助订餐', '订单 ¥'+total, '低');
+    toast(`订餐已提交 ¥${total}，已生成配餐计划并推送厨房确认`,'ok');
+    setTimeout(()=>{ if(S.view==='admin'&&S.mod==='order') renderPage(); }, 60);
+  },
+
+  bookSheet(){ MB.sheet(`<h4>📅 预约 / 代预约 <span class="link" onclick="MB.close()">关闭</span></h4>
+    <div class="mform"><div class="field"><label><i>*</i>项目</label><select class="sel" id="sItem"><option>中医理疗体验</option><option>康复理疗评估</option><option>营养膳食体验</option><option>认知功能筛查</option><option>旅居客房体验</option></select></div>
+    <div class="field"><label>时间</label><input class="inp" id="sDate" type="datetime-local" value="2026-10-28T10:00"></div>
+    <div class="field"><label>场地 / 服务人</label><input class="inp" id="sPlace" value="康养区 理疗室 1 · 陈叙白"></div>
+    <div class="field"><label>备注</label><input class="inp" id="sNote" value="肩颈不适，希望安排上午"></div>
+    <button class="btn p blk" onclick="Mob.bookSubmit()">提交预约</button></div>`); },
+  bookSubmit(){ const it=$('sItem').value, d=($('sDate').value||'').replace('T',' '), pl=$('sPlace').value, nt=$('sNote').value;
+    const kind = S.mobileRole[S.view]==='child'?'子女代约':'长者';
+    MODULES.booking.rows.unshift({ _id:++UID, code:'YY'+String(Date.now()).slice(-11), name:S.mobileRole[S.view]==='child'?MB.child:MB.elder, kind, item:it,
+      date:d||'2026-10-28 10:00', dur:45, place:pl, staff:(pl.split('·')[1]||'').trim()||'待分配', price:128, from:S.view==='mp'?'小程序':'APP', note:nt, status:'待确认', lead:'—' });
+    MB.close(); persist(); renderMobile(S.view); logAct('提交预约（'+S.view.toUpperCase()+'）', it, '低');
+    toast(`预约已提交，等待运营在「预约体验管理」确认`,'ok'); },
+
+  leaveSheet(){ MB.sheet(`<h4>📝 外出 / 请假申请 <span class="link" onclick="MB.close()">关闭</span></h4>
+    <div class="mform"><div class="field"><label>类型</label><select class="sel" id="lType"><option>回家探亲</option><option>就医外出</option><option>短途旅居</option><option>参加活动</option></select></div>
+    <div class="field"><label><i>*</i>开始</label><input class="inp" id="lS" type="datetime-local" value="2026-10-27T09:00"></div>
+    <div class="field"><label><i>*</i>预计归园</label><input class="inp" id="lE" type="datetime-local" value="2026-10-27T18:00"></div>
+    <div class="field"><label>目的地 / 陪同人</label><input class="inp" id="lD" value="南京市鼓楼区 · 徐乐陪同"></div>
+    <div class="field"><label>事由</label><input class="inp" id="lR" value="家庭聚会"></div>
+    <button class="btn g blk" onclick="Mob.leaveSubmit()">提交申请（进入审批流）</button></div>`); },
+  leaveSubmit(){ const t=$('lType').value, s=($('lS').value||'').replace('T',' '), e=($('lE').value||'').replace('T',' '), d=$('lD').value, r=$('lR').value;
+    MODULES.leave.rows.unshift({ _id:++UID, code:'QJ'+String(Date.now()).slice(-11), name:MB.elder, type:t, start:s||now(), end:e||now(), dest:d.split('·')[0].trim(), with:(d.split('·')[1]||'').trim()||'家属', gphone:'139****8801', reason:r||d, status:'待审批', approver:'' });
+    MB.close(); persist(); renderMobile(S.view); logAct('提交请假申请', t, '低'); toast('已提交，运营端「请假管理」待审批角标 +1','ok'); },
+  approve(id){ const l=MODULES.leave.rows.find(x=>x._id===id); if(!l) return; toast(`已催办：${l.name} 的${l.type}申请（当前 ${l.status}）`,'warn'); pushAlert('子女催办请假审批', `${l.name} 的「${l.type}」申请待 ${l.approver||'运营'} 处理`); },
+
+  like(id){ const c=MODULES.circle.rows.find(x=>x._id===id); if(!c) return; c.likes=(+c.likes||0)+1; S.liked=S.liked||new Set(); S.liked.add(id);
+    persist(); renderMobile(S.view); toast('已点赞，内容同步到子女端','ok'); },
+  comment(id){ MB.sheet(`<h4>💬 留言 <span class="link" onclick="MB.close()">关闭</span></h4>
+    <div class="field"><textarea class="txta" id="cTxt" style="height:80px;padding:8px 12px" placeholder="写点什么给${id?'这篇动态':'父亲'}…">爸，血压记录我看到了，注意休息</textarea></div>
+    <button class="btn p blk" onclick="Mob.commentSend(${id||0})">发布留言（同步房间大屏）</button>`); },
+  commentSend(id){ const t=($('cTxt')&&$('cTxt').value)||'留言内容';
+    MODULES.circle.rows.unshift({ _id:++UID, author:S.mobileRole[S.view]==='child'?MB.child:MB.elder, kind:'子女留言', text:t, imgs:'', likes:0, cmts:0, share:'已同步', date:now(), status:S.mobileRole[S.view]==='child'?'已发布':'待审核' });
+    if(id){ const c=MODULES.circle.rows.find(x=>x._id===id); if(c) c.cmts=(+c.cmts||0)+1; }
+    MB.close(); persist(); renderMobile(S.view); logAct('发布留言', t.slice(0,20), '低'); toast('留言已发布并推送到对方终端','ok'); },
+  post(){ MB.sheet(`<h4>✍️ 发布康养圈动态 <span class="link" onclick="MB.close()">关闭</span></h4>
+    <div class="field"><label>内容（大字体输入）</label><textarea class="txta" id="pTxt" style="height:86px;padding:8px 12px">今天和老伙伴们下了一盘棋，还参加了书法课，心情很好！</textarea></div>
+    <div class="field"><label>同步给子女</label><select class="sel" id="pShare"><option>已同步</option><option>未同步</option></select></div>
+    <button class="btn g blk" onclick="Mob.postSend()">发布（需内容审核）</button>`); },
+  postSend(){ const t=$('pTxt').value, sh=$('pShare').value;
+    MODULES.circle.rows.unshift({ _id:++UID, author:MB.elder, kind:'康养圈动态', text:t, imgs:'📷', likes:0, cmts:0, share:sh, date:now(), status:'待审核' });
+    MB.close(); persist(); renderMobile(S.view); logAct('发布动态', t.slice(0,20), '低'); toast('已提交，运营端「康养圈」待审核 +1','ok'); },
+
+  aiOpen(){ MB.chat = MB.chat.length?MB.chat:[{me:0,t:'徐爷爷上午好呀☀ 今天园区 18℃，适合去银杏大道走走，要我帮您约李爷爷一起吗？'}];
+    MB.sheet(`<h4>🤖 AI 陪伴「小康」 <span class="link" onclick="Mob.aiClose()">结束会话</span></h4>
+      <div class="chat" id="aiBox" style="flex:1;overflow:auto;min-height:280px">${MB.chat.map(Mob.bubble).join('')}</div>
+      <div class="qk" style="margin-top:10px">${['今天吃什么好？','给我讲段评书','提醒我吃药','我有点想家'].map(q=>`<button onclick="Mob.aiAsk('${q}')">${q}</button>`).join('')}</div>`, 'height:82%;display:flex;flex-direction:column'); },
+  bubble(m){ return `<div class="m ${m.me?'me':''}"><div class="av">${m.me?'🧓':'🤖'}</div><div class="bb">${esc(m.t)}</div></div>`; },
+  aiAsk(q){ MB.chat.push({me:1,t:q}); const h=new Date().getHours();
+    const rp = /吃|餐/.test(q)?`今天午餐推荐清蒸鲈鱼配杂粮饭，低盐又高蛋白，您的血压最近控制得不错。需要我直接下单吗？`
+      : /评书|戏曲|讲/.test(q)?`好的，来一段《杨家将》选段🎶 唱完我们一起聊聊重阳节汇演的节目单吧。`
+      : /药/.test(q)?`已为您设置 12:30 降压药提醒，同时通知值班护士站。服药后请坐 5 分钟再起身～`
+      : /想家|难过|闷/.test(q)?`我懂这种想念的感觉。要不要我给徐乐发个提醒，今晚 19:00 你们视频聊聊？我也可以陪您翻翻老照片。`
+      : `${MB.greet()}！当前您的心率 78、血压 ${MB.H().bp}，状态平稳。今天有智能手机课堂（防诈实操）和太极课，我帮您报名哪一个？`;
+    if(/想家|难过|闷/.test(q)) MB.mood='低落';
+    MB.chat.push({me:0,t:rp});
+    const b=$('aiBox'); if(b){ b.innerHTML=MB.chat.map(Mob.bubble).join(''); b.scrollTop=b.scrollHeight; } },
+  aiClose(){ if(MB.chat.length>1){
+      MODULES.ai.rows.unshift({ _id:++UID, name:MB.elder, term:S.view==='mp'?'小程序':'APP', date:now(), turns:Math.floor(MB.chat.length/2),
+        topic:/想家|难过|闷/.test(MB.chat.map(c=>c.t).join(''))?'情绪陪伴':'日常问候', mood:MB.mood||'积极',
+        snippet:MB.chat.slice(-2).map(c=>c.t).join(' / ').slice(0,120), alert:MB.mood==='低落'?'已派关怀任务':'无', persona:'小康·贴心管家', dur:MB.chat.length });
+      if(MB.mood==='低落'){ pushAlert('AI 陪伴情绪预警', '识别到长者情绪低落，已自动生成人文关怀任务并指派管家'); MODULES.care.rows.unshift({ _id:++UID, name:MB.elder, type:'情绪疏导', date:today(), owner:'周与安', channel:'上门陪伴', content:'AI 识别情绪低落，安排 30 分钟陪伴聊天并邀请参加书法课', result:'', status:'待执行', sat:'待回访' }); }
+      MB.mood=null; MB.chat=[]; persist(); logAct('AI 陪伴会话归档', 'APP/小程序端', '低'); toast('会话已归档至「AI 聊天陪伴」并生成情绪分析','ok'); }
+    MB.close(); },
+
+  sos(){ MB.sheet(`<h4>🆘 一键呼救确认</h4><p style="font-size:13px;line-height:1.9;color:var(--sub)">将同时通知：<b>值班医护 · 智能门禁 · 房间大屏 · 子女端</b><br>定位：${esc(MB.A().zone)} ${esc(MB.A().room)}</p>
+    <div style="text-align:center;margin:14px 0"><div class="big" style="color:var(--danger)" id="sosN">3</div></div>
+    <button class="btn dg blk" style="height:46px;font-size:16px" onclick="Mob.sosGo()">立即呼救</button>`, 'text-align:left');
+    let n=3; const t=setInterval(()=>{ n--; const e=$('sosN'); if(e) e.textContent=n; if(n<=0){ clearInterval(t); Mob.sosGo(); } },1000); Mob._t=t; },
+  sosGo(){ clearInterval(Mob._t); MB.close();
+    pushAlert('SOS 一键呼救', `${MB.elder} 在 ${MB.A().room} 触发紧急呼叫，手环同步检测到心率 ${MB.H().hr}、血氧 ${MB.H().spo2}%，请 3 分钟内到场`);
+    logAct('SOS 呼救', MB.elder+' / '+S.view.toUpperCase(), '高'); persist(); },
+  sosCall(){ toast('已呼叫园区 24 小时值班电话（演示）','warn'); pushAlert('子女端发起紧急联系', `${MB.child} 请求与值班管家立即沟通，涉及长者 ${MB.elder}`); },
+
+  sport(){ const st=[['快走 30 分钟',32,3200,186],['太极基础',25,1400,120],['平衡训练',15,600,74]]; const x=st[Math.floor(Math.random()*st.length)];
+    MODULES.sport.rows.unshift({ _id:++UID, name:MB.elder, date:today(), plan:x[0], dur:x[1], step:x[2], hr:96, maxhr:118, kcal:x[3], rpe:'适中', safe:'运动后请补水 200ml，注意防滑', coach:'王芳', status:'已达标' });
+    const h=MB.HIST()[0]; if(h) h.step=(+h.step||0)+x[2]; persist(); renderMobile(S.view); logAct('运动打卡', x[0], '低'); toast(`已打卡：${x[0]} · ${x[2]} 步 · 消耗 ${x[3]} kcal`,'ok'); },
+  remind(id){ const r=MODULES.remind.rows.find(x=>x._id===id); if(!r) return; r.status='已确认'; r.ack=now();
+    persist(); renderMobile(S.view); toast(`已确认：${r.title}`,'ok'); logAct('确认提醒', r.title, '低');
+    if(r.kind==='用药'){ MODULES.health.rows.unshift({ _id:++UID, name:MB.elder, date:today(), hr:MB.H().hr, spo2:MB.H().spo2, bp:MB.H().bp, sleep:MB.H().sleep, step:MB.H().step, risk:'低', type:'护理记录', note:'长者端自助确认服药：'+r.title, doctor:'陈叙白', auth:'已授权' }); } },
+  scan(){ const a=MODULES.activity.rows.find(x=>x.status==='进行中')||MB.ACTS()[0];
+    if(a){ a.checkin=(+a.checkin||0)+1; persist(); logAct('扫码/人脸签到', a.title, '低'); toast(`核销成功：${a.title} · 累计签到 ${a.checkin} 人`,'ok'); } else toast('签到成功','ok'); },
+  repair(){ MB.sheet(`<h4>🛠 服务报修 / 申请 <span class="link" onclick="MB.close()">关闭</span></h4>
+    <div class="mform"><div class="field"><label>类型</label><select class="sel" id="rpType"><option>房间保洁</option><option>设备报修（呼叫器/手环）</option><option>陪同就医</option><option>助浴协助</option><option>餐饮调整</option></select></div>
+    <div class="field"><label>描述</label><input class="inp" id="rpTx" value="浴室地垫翘起，存在滑倒风险"></div>
+    <button class="btn p blk" onclick="Mob.repairSend()">提交（生成服务工单）</button></div>`); },
+  repairSend(){ const t=$('rpType').value, x=$('rpTx').value; MB.close();
+    MODULES.complaint.rows.unshift({ _id:++UID, code:'TS'+String(Date.now()).slice(-10), title:t+'：'+x.slice(0,18), from:S.user?S.user.name:MB.elder,
+      role:S.mobileRole[S.view]==='child'?'子女':'长者', channel:S.view==='mp'?'小程序':'APP', kind:['设备报修（呼叫器/手环）'].includes(t)?'意见':'咨询',
+      cate:/设备/.test(t)?'设备':/保洁/.test(t)?'环境':/餐/.test(t)?'膳食':'其他', content:x, level:/报修|滑倒/.test(t)?'重要':'普通',
+      owner:'孙婉清', sla:/报修|滑倒/.test(t)?'24 小时':'48 小时', date:now(), status:'待受理', reply:'' });
+    persist(); renderMobile(S.view); logAct('提交服务申请', t, '低'); toast('已受理，进入后台「投诉与服务管理」待处理','ok'); },
+  video(){ toast('已提交录像查看申请，需管理决策层授权（演示）','warn');
+    MODULES.auth2 && MODULES.auth2.rows.unshift({ _id:++UID, plat:'社区系统', scope:'健康摘要', obj:`子女 ${MB.child} → 长者 ${MB.elder}（公共区域录像调阅）`,
+      map:'video_no, time_range, area → 脱敏后回执', mask:'姓名去标识', start:today(), end:today(), cnt:0, check:'待校验', status:'待授权' });
+    persist(); logAct('申请录像查看', MB.A().room+' 公共区域', '高'); },
+  pay(id){ const o=MODULES.order.rows.find(x=>x._id===id); if(!o) return; o.status='已支付'; o.pay=(o.pay==='储值余额'?'子女代付':'子女代付'); o.payer=MB.child;
+    const m=MB.MEM(); m.spend=(+m.spend||0)+(+o.amount||0); m.point=(+m.point||0)+Math.round((+o.amount||0)/10);
+    persist(); renderMobile(S.view); logAct('子女代付', o.goods+' ¥'+o.amount, '中'); toast(`已为父亲代付 ¥${o.amount}，积分 +${Math.round(o.amount/10)}`,'ok'); },
+  topay(v){ v=v||500; const m=MB.MEM(); m.balance=(+m.balance||0)+v;
+    MODULES.order.rows.unshift({ _id:++UID, no:'CZ'+String(Date.now()).slice(-10), name:MB.elder, goods:'储值充值 ¥'+v, amount:v, pay:'微信支付', payer:MB.child, point:0, date:now(), status:'已支付', staff:'', invoice:'已开具', remark:'子女端充值' });
+    persist(); renderMobile(S.view); logAct('储值充值', '¥'+v, '中'); toast(`充值成功 ¥${v}，父亲余额现为 ¥${(+m.balance).toLocaleString()}`,'ok'); }
+};
+
+function renderMobile(kind){ MB.render(kind); }
+
+/* ---------- 3D 导航路线（孪生视图调用） ---------- */
+function navRoute(){
+  const to = ($('navTo')&&$('navTo').value) || '康复理疗室 2（康养区 B 栋）';
+  const steps = [['🛏',`出发：${MB.A().zone} ${MB.A().room}`, '室内定位 · 精度 1.5m'],
+    ['🚶','沿 A 栋连廊向 B 栋步行 68 m', '地面防滑 · 无台阶'],
+    ['🛗','乘 B 栋 2 号无障碍电梯至 2F', '已预约电梯 · 门禁自动开启'],
+    ['🚪','右转 20 m 到达目的地', to],
+    ['⏱','预计 4 分 30 秒', '沿途有 3 处休息座椅 · 摄像头覆盖']];
+  const host = $('navPath');
+  if(host) host.innerHTML = steps.map(s=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fbfcfe">
+    <span style="font-size:16px">${s[0]}</span><div style="flex:1"><b style="font-size:13px">${esc(s[1])}</b><div class="tiny">${esc(s[2])}</div></div></div>`).join('');
+  if(S.view==='admin') logAct('下发 3D 导航路线', to, '低');
+}
+
+/* ---------- 启动 ---------- */
+function bootApp(){
+  App.boot();
+  if(!location.hash) location.hash = '#/login';
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
