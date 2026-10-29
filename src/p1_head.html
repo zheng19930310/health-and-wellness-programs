@@ -545,6 +545,59 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .xk-note{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:#fbfdff}
 .xk-note summary{cursor:pointer;font-weight:600;font-size:13px;list-style:none}
 .xk-note .ln{font-size:12px;color:var(--sub);line-height:1.9;border-bottom:1px dashed var(--line);padding:3px 0}
+/* ---------- 紧急监管 · 左中右三栏 ---------- */
+.em3{display:grid;grid-template-columns:308px minmax(380px,1fr) 396px;gap:14px;align-items:start}
+.em-sc{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff;transition:.16s}
+.em-sc:hover{border-color:var(--blue);box-shadow:0 3px 12px rgba(22,104,220,.1);transform:translateY(-1px)}
+.em-sc .ico{font-size:19px;width:26px;text-align:center}
+.em-sc .nm{flex:1;min-width:0}
+.em-sc .nm b{font-size:13px;display:block}
+.em-sc .nm i{font-size:11px;color:var(--sub);font-style:normal}
+.em-sc .cnt{font-size:12px;font-weight:700;color:var(--blue);background:#eef4ff;border-radius:10px;padding:1px 8px;white-space:nowrap}
+.em-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex:0 0 auto;box-shadow:0 0 0 3px rgba(0,181,120,.16)}
+.em-dot.al{background:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.18);animation:emblink 1s infinite}
+@keyframes emblink{50%{opacity:.22}}
+.em-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.em-kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.em-kpi i{font-size:11px;color:var(--sub);font-style:normal;display:block}
+.em-kpi b{font-size:20px;letter-spacing:.5px;display:block;margin-top:2px;font-variant-numeric:tabular-nums}
+.em-kpi.red b{color:#e5484d}
+.em-kpi.warn b{color:#f5a623}
+.em-feed{max-height:750px;overflow:auto;padding-right:4px}
+.em-it{border:1px solid var(--line);border-left:4px solid var(--sub-l);border-radius:10px;padding:9px 11px;margin-bottom:9px;background:#fff;animation:emin .38s ease}
+@keyframes emin{from{opacity:0;transform:translateY(-10px)}}
+.em-it.l1{border-left-color:#e5484d;background:#fffafa}
+.em-it.l2{border-left-color:#f5a623;background:#fffdf7}
+.em-it.l3{border-left-color:#1668dc}
+.em-it .top{display:flex;align-items:center;gap:7px}
+.em-it .top b{font-size:13px;flex:1;min-width:0}
+.em-it .top .tm{font-size:11px;color:var(--sub);white-space:nowrap}
+.em-it p{font-size:12px;color:var(--sub);margin:4px 0 0;line-height:1.7}
+.em-it .rt{display:flex;align-items:center;gap:7px;margin-top:7px}
+.em-it .lv{font-size:10.5px;font-weight:700;border-radius:5px;padding:1px 6px;color:#fff}
+.em-it .lv.v1{background:#e5484d}.em-it .lv.v2{background:#f5a623}.em-it .lv.v3{background:#1668dc}
+.em-it .age{font-size:11px;color:var(--sub-l);margin-left:auto;white-space:nowrap}
+.em-it.done{opacity:.62}
+.em-pw{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.em-pw:last-child{border-bottom:0}
+.em-pw .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
+.em-radar-alarm .card-h h3:after{content:' ● 紧急';color:#e5484d;animation:emblink 1s infinite}
+.em-tag{font-size:10.5px;border-radius:5px;padding:1px 6px;background:#f1f4f9;color:var(--sub);white-space:nowrap}
+.em-tag.hot{background:#ffeceb;color:#e5484d;font-weight:700}
+@media (max-width:1420px){.em3{grid-template-columns:1fr 1fr}.em3>:nth-child(3){grid-column:1/-1}}
+@media (max-width:980px){.em3{grid-template-columns:1fr}}
+/* ---------- 移动端 · 紧急监管端 ---------- */
+.em-hero{background:linear-gradient(135deg,#c22c31,#f5a623)!important}
+.em-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px}
+.em-c{border:1px solid var(--line);border-radius:10px;padding:8px 4px;text-align:center;background:#fff}
+.em-c .e{font-size:20px}
+.em-c b{display:block;font-size:11.5px;margin-top:2px}
+.em-c i{display:block;font-size:10.5px;font-style:normal;color:var(--sub-l)}
+.em-c.al{border-color:#e5484d;background:#fff6f6}
+.em-c.al i{color:#e5484d;font-weight:700}
+.em-lv{font-size:9.5px;font-weight:700;border-radius:4px;padding:0 4px;color:#fff;vertical-align:1px}
+.em-lv.v1{background:#e5484d}.em-lv.v2{background:#f5a623}.em-lv.v3{background:#1668dc}
+.mlist li.em-al{border-left:3px solid #e5484d;background:#fff8f8}
 </style>
 </head>
 <body>

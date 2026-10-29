@@ -7,6 +7,7 @@ const XK = {
 
   /* 别名表：口语词 → 模块 key（运行时校验 MODULES 是否存在） */
   ALIAS: [
+    {k:'emergency',w:['紧急','预警','接警','备勤','执勤','sos','三级响应','雷达']},
     {k:'archive',  w:['档案','长者','老人','住户','长者档案','长者信息','人员档案']},
     {k:'health',   w:['健康','体征','心率','血压','血氧','病例','体检']},
     {k:'leave',    w:['请假','外出','销假']},
@@ -140,7 +141,7 @@ const XK = {
     if(/笔记/.test(q) && /(保存|记录|记到|写入|存成|存到)/.test(q)) return this.doNote(win);
     if(/笔记/.test(q) && /(查看|打开|列出|看看|列表|我的)/.test(q)){ this.showNotes(); return '已为你打开<b>笔记面板</b> 📚，可查看、复制或删除全部会话笔记。'; }
     /* 3D / 大屏入口 */
-    if(/3d|三维|孪生|样板间|室内导航|全局查看|效果图/.test(q)) return '管理后台「数字孪生 / 3D 监控」页内置了三个 3D 入口，我可以直接帮你打开：'+this.d3HTML()+`<button class="btn sm" onclick="XK.go('twin',this)">🏙 先进入「数字孪生 / 3D 监控」菜单</button>`;
+    if(/3d|三维|孪生|样板间|室内导航|全局查看|效果图/.test(q) && !/紧急监管|监管端/.test(q)) return '管理后台「数字孪生 / 3D 监控」页内置了三个 3D 入口，我可以直接帮你打开：'+this.d3HTML()+`<button class="btn sm" onclick="XK.go('twin',this)">🏙 先进入「数字孪生 / 3D 监控」菜单</button>`;
     if(/大屏|数据屏|投屏/.test(q)) return '好的，大数据屏是独立的投放端：<div class="xk-btns"><button class="btn p sm" onclick="App.go(\'screen\')">📊 打开数字中心大屏</button></div>';
     /* 跳转意图 */
     if(/跳转|打开|前往|进入|跳到|去一下|切换到|导航到/.test(q)){
@@ -155,7 +156,7 @@ const XK = {
     /* 模块总览 */
     if(/有哪些|全部功能|所有(模块|菜单)|菜单(结构|列表)|能管什么/.test(q)) return this.listHTML();
     /* 数据查询 */
-    if(/多少|统计|有几|数量|分布|排名|总(量|额|计)/.test(q)){ const r=this.dataQA(q); if(r) return r; }
+    if(/多少|统计|有几|数量|分布|排名|待处理|紧急|总(量|额|计)/.test(q)){ const r=this.dataQA(q); if(r) return r; }
     /* 提到某模块 → 给跳转+摘要 */
     const hits=this.findMod(q);
     if(hits.length) return '您是想找「<b>'+esc(MODULES[hits[0].k].title)+'</b>」吗？<div class="xk-btns">'+hits.map(h=>this.jumpBtn(h)).join('')+'</div>'+this.summarize(hits[0].k);
@@ -236,6 +237,15 @@ const XK = {
   dataQA(q){
     const hits=this.findMod(q); if(!hits.length) return null;
     const k=hits[0].k, m=MODULES[k], rows=(m.rows||[]);
+    if(k==='emergency' && typeof EME!=='undefined'){ EME.seed(); EME.syncCounts();
+      const open = EME.openCnt();
+      const byLvl = [1,2,3].map(l=>EME.list.filter(x=>x.lvl===l && !['已闭环','误报'].includes(x.status)).length);
+      const hot = EM_SCENES.filter(s=>EME.scenes[s.k]&&EME.scenes[s.k].open).map(s=>esc(s.name)+' <b>'+EME.scenes[s.k].open+'</b>');
+      return `🚨 <b>紧急监管</b>：当前接入 <b>${EME.list.length}</b> 条告警，待处理/处置中 <b>${open}</b> 条。<br>`
+        + `一级 <b>${byLvl[0]}</b> · 二级 <b>${byLvl[1]}</b> · 三级 <b>${byLvl[2]}</b>；`
+        + `紧急场景：${hot.length?hot.join(' · '):'无，园区安全运行'}。<br>`
+        + `执勤 ${EM_DUTY.length} 人 · 备勤 ${EM_STANDBY.length} 人。<div class="xk-btns">${this.jumpBtn({k:'emergency',s:12})}</div>`;
+    }
     let s=`📊 <b>${m.icon} ${esc(m.title)}</b>：共 <b>${rows.length}</b> 条演示数据。<br>`+this.dist(m)+'<br>';
     if(k==='order'){ const amt=rows.reduce((a,r)=>a+(+r.amount||0),0); s+='消费总金额约 <b>¥'+amt.toLocaleString()+'</b>。<br>'; }
     if(q.includes('长者')||q.includes('老人')||k==='archive'){ const lv={}; rows.forEach(r=>lv[r.level]=(lv[r.level]||0)+1); if(Object.keys(lv).length) s+='照护等级：'+Object.entries(lv).map(x=>x[0]+' <b>'+x[1]+'</b>').join(' · ')+'。<br>'; }

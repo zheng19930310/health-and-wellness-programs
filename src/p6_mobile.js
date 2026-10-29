@@ -6,12 +6,14 @@ const MB_TABS = {
   app: {
     elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['👤','我的','mine']],
     child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['👤','我的','mine']],
-    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']]
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
+    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
   },
   mp: {
     elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['👤','我的','mine']],
     child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['👤','我的','mine']],
-    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']]
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
+    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
   }
 };
 
@@ -46,6 +48,7 @@ const MB = {
     return `<div class="st"><span>${p(d.getHours())}:${p(d.getMinutes())}</span><span class="rt">🔔 5G ▮▮▮ 86%</span></div>`; },
   wxbar(role){ return `<div class="wxbar"><div class="t">‹ 康养服务${role==='child'?'（子女版）':''}</div><div class="caps"><span>⋯</span><span style="border-left:1px solid #e4e9f0;height:16px"></span><span>◉</span></div></div>`; },
   head(kind, role){
+    if(role==='guard'){ const g = typeof EME!=='undefined'?(EME.seed(), EME.openCnt()):0; return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>🚨 紧急监管端 · 安保中控室</h3><div class="sm">实时接收全园区预警报警 · 待处理 ${g} 条</div></div><div class="av">🛡</div></div></div>`; }
     if(role==='special'){ const sa=MB.SA(); return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${esc(sa.name)} · 智能手环</h3><div class="sm">大字 · 语音 · 到站自动打卡 · 一键呼救</div></div><div class="av">⌚</div></div></div>`; }
     const a = MB.A();
     if(role==='child') return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(S.user?S.user.name:MB.child)}</h3><div class="sm">${kind==='mp'?'小程序 · 微信授权已绑定':'APP · 已绑定长者 '+a.name} · 关注 ${a.name}（${a.room}）</div></div><div class="av">👪</div></div></div>`;
@@ -91,6 +94,7 @@ const MB = {
 
   /* ---------- 屏幕 ---------- */
   screen(kind, role, key){
+    if(role==='guard') return ({ home:MB.gHome, alert:MB.gAlert, standby:MB.gStandby, mine:MB.gMine })[key](kind);
     if(role==='special') return ({ home:MB.sBand, band:MB.sBand, checkin:MB.sCheckin, mine:MB.sMine })[key](kind);
     if(role==='child') return ({ home:MB.cHome, family:MB.cFamily, book:MB.cBook, pay:MB.cPay, mine:MB.cMine })[key](kind);
     return ({ home:MB.eHome, health:MB.eHealth, circle:MB.eCircle, svc:MB.eSvc, mine:MB.eMine })[key](kind);
@@ -303,13 +307,73 @@ const MB = {
       <li><div class="ic">👧</div><div class="tx"><b>紧急联系人</b><p>${esc(a.guardian||'蒋涛')} · ${esc(a.gphone||'135****1180')}</p></div><div class="rt"><span class="link" onclick="Mob.bandCall()">呼叫</span></div></li>
       <li><div class="ic w">🗣</div><div class="tx"><b>语音播报 / 大字体</b><p>已开启 · 不识长者友好模式</p></div><div class="rt"><button class="btn sm g" onclick="this.classList.toggle('g');toast('设置已更新（演示）','ok')">开</button></div></li></ul></div>
     <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
+  },
+
+  /* ===== 紧急监管端（APP / 小程序共用，Web 紧急监管的移动化转换） ===== */
+  gKpi(){ EME.seed();
+    const urg = EME.list.filter(x=>x.lvl===1 && !['已闭环','误报'].includes(x.status)).length;
+    return { open:EME.openCnt(), urg, last: EME.list.length?EME.list.slice().sort((a,b)=>b.ts-a.ts)[0]:null };
+  },
+  gFeed(n){
+    const order = {'待处理':0,'升级中':1,'处置中':2,'已闭环':3,'误报':4};
+    return EME.list.slice().sort((a,b)=>(order[a.status]||0)-(order[b.status]||0)||b.ts-a.ts).slice(0,n||8).map(it=>{
+      const done = it.status==='已闭环'||it.status==='误报';
+      return `<li class="${it.lvl===1&&!done?'em-al':''}"><div class="ic ${it.lvl===1?'r':it.lvl===2?'w':'g'}">${it.ico}</div>
+        <div class="tx"><b>${esc(it.kind)} <span class="em-lv v${it.lvl}">${it.lvl===1?'一级':it.lvl===2?'二级':'三级'}</span></b>
+          <p>${esc(it.obj)} · ${esc(it.val)}</p>
+          <p class="tiny">${esc(it.time.slice(5))} · ${esc(it.owner||'待接单')} · ${esc(it.status)}</p></div>
+        <div class="rt">${done?`<span class="tag green">${esc(it.status)}</span>`
+          :`<button class="btn sm p" onclick="EME.handle(${it.id})">处理</button>`}</div></li>`; }).join('')
+      || `<li><div class="tx"><p style="text-align:center;color:var(--sub-l)">当前无告警，园区安全运行中</p></div></li>`;
+  },
+  gHome(kind){
+    const k = MB.gKpi(), d=new Date(), p=n=>String(n).padStart(2,'0');
+    return `<div class="mhero em-hero"><b>${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} · ${p(d.getMonth()+1)}-${p(d.getDate())}</b>
+      <p>一级接警席位 · 3 分钟未确认升级院长/值班领导，必要时 120</p>
+      <div class="row"><div>待处理<b>${k.open}</b></div><div>一级紧急<b>${k.urg}</b></div><div>执勤/备勤<b>${EM_DUTY.length}/${EM_STANDBY.length}</b></div></div></div>
+    <div class="mc"><div class="mc-h"><b>最近预警</b><span>${k.last?esc(k.last.time.slice(11))+' · '+esc(k.last.kind):'暂无'}</span></div>
+      <ul class="mlist">${MB.gFeed(5)}</ul>
+      <div class="mbtns"><button class="btn g blk" onclick="Mob.go('${kind}',1)">🚨 进入告警处置 ›</button></div></div>
+    <div class="mc"><div class="mc-h"><b>场景安全状态</b><span>${EM_SCENES.length} 类 · 🟢 安全 / 🔴 紧急</span></div>
+      <div class="em-g">${EM_SCENES.map(s=>{ const st=EME.scenes[s.k]||{n:0,open:0};
+        return `<div class="em-c${st.open?' al':''}" onclick="EME.scene('${s.k}')"><div class="e">${s.ico}</div><b>${esc(s.name)}</b><i>${st.open?'紧急':'安全'} · ${st.n} 条</i></div>`; }).join('')}</div></div>
+    <div class="mc"><div class="mc-h"><b>备勤人员 · 快速通话</b><span>点击直拨</span></div>
+      <ul class="mlist">${EM_STANDBY.slice(0,3).map(s=>`<li><div class="ic g">🛡</div><div class="tx"><b>${esc(s.name)}</b><p>${esc(s.role)}</p></div>
+        <div class="rt"><span class="link" onclick="emCall('${esc(s.name)}','${esc(s.role)}','${esc(s.phone)}')">📞 通话</span></div></li>`).join('')}</ul></div>`;
+  },
+  gAlert(kind){
+    const k = MB.gKpi();
+    return `<div class="mhero"><b>🚨 实时告警列表</b><p>最新在上 · 待处理 ${k.open} 条 · 一级 ${k.urg} 条 · 与 Web 端紧急监管同源</p></div>
+      <div class="mc"><div class="mc-h"><b>全部告警</b><span class="link" onclick="renderMobile('${kind}')">↻ 刷新</span></div><ul class="mlist">${MB.gFeed(14)}</ul></div>
+      <div class="mc"><div class="mc-h"><b>三级响应规则</b><span>点击展开</span></div>
+      <ul class="mlist">${EM_RULES.map(r=>`<li><div class="ic ${r.color==='red'?'r':r.color==='warn'?'w':'g'}">${r.color==='red'?'🆘':r.color==='warn'?'⚠️':'ℹ️'}</div>
+        <div class="tx"><b>${esc(r.lvl)}</b><p>${esc(r.scenes)}</p><p class="tiny">接警 ${esc(r.first)} · 处置 ${esc(r.main)}</p></div>
+        <div class="rt"><span class="link" onclick="toast('${esc(r.esc)}','warn')">升级</span></div></li>`).join('')}</ul></div>`;
+  },
+  gStandby(kind){
+    const row = (x, tag) => `<li><div class="ic ${tag}">🛡</div><div class="tx"><b>${esc(x.name)} <span class="em-lv v3">${esc(x.role.split(' · ')[0])}</span></b><p>${esc(x.phone)} · 总机转接</p></div>
+      <div class="rt"><button class="btn sm g" onclick="emCall('${esc(x.name)}','${esc(x.role)}','${esc(x.phone)}')">📞</button></div></li>`;
+    return `<div class="mhero"><b>🛡 执勤 / 备勤调度</b><p>执勤 ${EM_DUTY.length} 人 24h 在岗 · 备勤 ${EM_STANDBY.length} 人随叫随到</p></div>
+      <div class="mc"><div class="mc-h"><b>当班执勤</b><span>安保中控室</span></div><ul class="mlist">${EM_DUTY.map(x=>row(x,'g')).join('')}</ul></div>
+      <div class="mc"><div class="mc-h"><b>备勤人员</b><span>升级处置链</span></div><ul class="mlist">${EM_STANDBY.map(x=>row(x,'w')).join('')}</ul></div>
+      <div class="mc"><div class="mc-h"><b>一键群呼</b><span>演练 / 重大事件</span></div>
+      <div class="mbtns"><button class="btn p blk" onclick="toast('已发起群呼：执勤 ${EM_DUTY.length} 人 + 备勤 ${EM_STANDBY.length} 人（演示）','ok');logAct('紧急监管 · 群呼','执勤+备勤','高')">📣 群呼全部人员</button></div></div>`;
+  },
+  gMine(kind){
+    return `<div class="mc" style="display:flex;align-items:center;gap:12px"><div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#e5484d,#f5a623);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px">🛡</div>
+      <div style="flex:1"><b style="font-size:17px">${esc(S.user?S.user.name:'赵启明')}</b><div class="tiny">${esc(S.user?S.user.role:'安保中控室 · 紧急监管端')} · ${kind==='app'?'APP 端':'小程序端'}</div></div><span class="tag red">一级接警席</span></div>
+    <div class="mc"><div class="mc-h"><b>接警能力</b><span>与 Web 后台同源</span></div>
+      <ul class="mlist">${[['📥','实时接收','全系统预警报警统一汇聚，秒级滚动'],['🗺','场景状态','10 类场景安全/紧急状态与记录数'],['🚑','接单处置','确认→处置→闭环/误报，全留痕'],['⏫','自动升级','一级 3 分钟 / 二级 15 分钟未处理自动升级'],['📞','快速通话','执勤与备勤人员一键直拨']].map(x=>`<li><div class="ic">${x[0]}</div><div class="tx"><b style="font-size:15px">${x[1]}</b><p>${x[2]}</p></div></li>`).join('')}</ul></div>
+    <div class="mc"><div class="mc-h"><b>本端快捷入口</b><span>演示</span></div>
+      <div class="mgrid">${[['🚨','紧急监管台',"App.go('admin','emergency')"],['🏙','3D 监控',"App.go('admin','twin')"],['📈','设备告警',"App.go('admin','iot')"],['🛰','数字大屏',"App.go('screen')"]].map(x=>`<div onclick="${x[2]}"><div class="e">${x[0]}</div>${x[1]}</div>`).join('')}</div></div>
+    <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
   }
 };
 
 /* ---------- 交互动作（写入模块数据，与后台实时联动） ---------- */
 const Mob = {
   go(kind, i){ S[kind+'Tab'] = i; renderMobile(kind); },
-  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':r==='child'?'子女端':'特殊长者手环端'}`,'ok'); },
+  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':r==='child'?'子女端':r==='guard'?'紧急监管端':'特殊长者手环端'}`,'ok'); },
 
   signup(id){ const a=MODULES.activity.rows.find(x=>x._id===id); if(!a) return;
     const left=(+a.quota||0)-(+a.signed||0);

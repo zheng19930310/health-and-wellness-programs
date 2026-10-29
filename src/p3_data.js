@@ -15,6 +15,7 @@ const ACCOUNTS = [
   { u:'service', p:'123456',   name:'孙婉清', role:'投诉与服务监督',roleKey:'service', ends:['home','admin'],                       desc:'投诉受理、升级督办、满意度' },
   { u:'social',  p:'123456',   name:'周与安', role:'社工/志愿者',  roleKey:'social',   ends:['home','admin','mp'],                  desc:'人文关怀、活动、课堂、康养圈' },
   { u:'clean',   p:'123456',   name:'吴桂芳', role:'保洁后勤人员', roleKey:'clean',    ends:['home','admin'],                       desc:'清洁排期、执行记录、检查验收' },
+  { u:'guard',   p:'123456',   name:'赵启明', role:'安保中控室 · 紧急监管端', roleKey:'guard', ends:['home','admin','screen','app','mp'], desc:'一级接警席位：实时接收全园区预警报警、调度执勤与备勤、快速通话' },
   { u:'elder',   p:'123456',   name:'徐世昌', role:'长者/住客',    roleKey:'elder',    ends:['home','app','mp'],                    desc:'长者端：健康、活动、订餐、康养圈' },
   { u:'child',   p:'123456',   name:'徐乐(女)',role:'子女/家属',   roleKey:'child',    ends:['home','app','mp'],                    desc:'子女端：远程照护、代付、探望预约' },
   { u:'special', p:'123456',   name:'蒋明远', role:'特殊长者',     roleKey:'special',  ends:['home','app','mp'],                    desc:'智能手环端：仅时间/震动/SOS/自动打卡（不识长者）' }
@@ -22,13 +23,14 @@ const ACCOUNTS = [
 /* 角色可见模块（RBAC 简化演示） */
 const ROLE_MENUS = {
   admin:   '*',
-  manager: ['dashboard','screen','twin','reports','archive','leave','activity','booking','consume','complaint','plan','iot','fraud','open','sys'],
-  ops:     ['dashboard','archive','leave','activity','booking','care','family','complaint','plan','remind','clean','circle','consume','meal','fraud','ai','class'],
-  doctor:  ['dashboard','archive','health','leave','care','sport','meal','psych','hospice','ai','remind','reports'],
-  iot:     ['dashboard','screen','twin','iot','video','bio','ocr','deviceops','remind','sys'],
-  service: ['dashboard','complaint','care','circle','reports','remind','activity','archive'],
+  manager: ['dashboard','emergency','screen','twin','reports','archive','leave','activity','booking','consume','complaint','plan','iot','fraud','open','sys'],
+  ops:     ['dashboard','emergency','archive','leave','activity','booking','care','family','complaint','plan','remind','clean','circle','consume','meal','fraud','ai','class'],
+  doctor:  ['dashboard','emergency','archive','health','leave','care','sport','meal','psych','hospice','ai','remind','reports'],
+  iot:     ['dashboard','emergency','screen','twin','iot','video','bio','ocr','deviceops','remind','sys'],
+  service: ['dashboard','emergency','complaint','care','circle','reports','remind','activity','archive'],
   social:  ['dashboard','care','activity','class','circle','psych','hospice','fraud','remind','archive'],
   clean:   ['dashboard','clean','iot','remind','plan'],
+  guard:   ['dashboard','emergency','screen','twin','iot','video','deviceops','remind','archive'],
   elder:   ['dashboard','archive'],
   child:   ['dashboard','archive'],
   special: ['dashboard','archive']
@@ -51,6 +53,8 @@ M('dashboard', { title:'数字中心驾驶舱', icon:'🛰', grp:'园区总览',
   desc:'聚合经营服务看板、数字孪生视图与 3D 导航监控，支持多屏协同投放大屏' });
 M('twin', { title:'数字孪生 / 3D 监控', icon:'🏙', grp:'园区总览', custom:'twin',
   desc:'三维园区模型叠加设备、人员、告警图层，点选设备联动视频与处置' });
+M('emergency', { title:'紧急监管', icon:'🚨', grp:'园区总览', custom:'emergency',
+  desc:'实时接收全系统预警报警并滚动播报，场景安全/紧急状态一目了然，三级响应快速处置' });
 M('reports', { title:'数据统计与报表', icon:'📑', grp:'园区总览', custom:'reports',
   desc:'长者、运营、消费、安全、设备多维报表，支持图表化与导出' });
 
@@ -1315,3 +1319,37 @@ M('apilog', { title:'对接调用日志', icon:'📊', grp:'系统',
 
 /* 模块中文名（供面包屑/详情引用） */
 const GRP_ORDER = ['园区总览','长者服务','服务运营','健康促进','消费经营','设备安防','系统'];
+
+/* ================= 紧急监管 · 基础数据 =================
+ * 三级响应体系：一级（紧急）安保中控室接警，医护部+护理/管家主处置，3 分钟未确认升级院长/值班领导，必要时 120；
+ * 二级（警告）管家/护理/后勤处置，15 分钟未处理升级部门主管；三级（提示）IoT 自动派单 IT运维/后勤，按工单时效升级。 */
+const EM_SCENES = [
+  {k:'sos',    ico:'🆘', name:'一键 SOS',   lvl:1, place:['居室紧急按钮','康复理疗室','营养餐厅','北区卫生间拉绳']},
+  {k:'fall',   ico:'🦯', name:'跌倒检测',   lvl:1, place:['浴室毫米波雷达','银杏大道','文化活动室']},
+  {k:'heart',  ico:'💔', name:'心率骤变',   lvl:1, place:['智能手环实时监测']},
+  {k:'fence',  ico:'🧭', name:'走失越界',   lvl:1, place:['东区周界围栏','南门离园通道']},
+  {k:'bed',    ico:'🛏', name:'离床超时',   lvl:2, place:['智能床垫监测']},
+  {k:'env',    ico:'🌡', name:'温湿度异常', lvl:2, place:['康养公寓 3F 走廊','药房储藏间']},
+  {k:'door',   ico:'🚪', name:'门禁非授权', lvl:2, place:['天台通道门禁','后门库房门禁']},
+  {k:'offline',ico:'📴', name:'设备离线',   lvl:3, place:['3F 走廊摄像头','理疗室手环基站']},
+  {k:'bat',    ico:'🔋', name:'低电量',     lvl:3, place:['手环 SJ-0118','床垫传感器 M-22']},
+  {k:'drift',  ico:'🌫', name:'环境轻微偏离', lvl:3, place:['文化活动室新风','旅游区客房空调']}
+];
+const EM_RULES = [
+  {lvl:'一级（紧急）', color:'red',  scenes:'一键SOS、跌倒、心率骤变、走失越界', first:'安保中控室', main:'医护部+护理/管家', esc:'3分钟未确认升级院长/值班领导，必要时120'},
+  {lvl:'二级（警告）', color:'warn', scenes:'离床超时、温湿度异常、门禁非授权', first:'安保中控室', main:'管家/护理/后勤', esc:'15分钟未处理升级部门主管'},
+  {lvl:'三级（提示）', color:'blue', scenes:'设备离线、低电量、环境轻微偏离', first:'IoT后台自动派单', main:'IT运维/后勤', esc:'按工单时效升级'}
+];
+const EM_DUTY = [
+  {name:'赵启明', role:'安保中控室 · 当班班长', phone:'138****2201'},
+  {name:'陈叙白', role:'医护值班医生',       phone:'137****5510'},
+  {name:'何雨欣', role:'护理值班组长',       phone:'136****8802'},
+  {name:'李静怡', role:'管家值班',           phone:'135****3301'}
+];
+const EM_STANDBY = [
+  {name:'王建国', role:'院长 · 一级升级处置',  phone:'139****0001'},
+  {name:'刘敏',   role:'行政值班领导',         phone:'139****0088'},
+  {name:'孙婉清', role:'服务监督 · 投诉升级',  phone:'138****6602'},
+  {name:'郑安',   role:'IT 运维 · 工单处置',   phone:'137****1230'},
+  {name:'高翔',   role:'后勤备勤 · 门禁/环控', phone:'136****9902'}
+];

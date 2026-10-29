@@ -145,7 +145,7 @@
     <div class="mb-side">
       <h2>📱 APP 端原型</h2>
       <p>完整移动服务入口，按角色分为长者端与子女端。适老化大字体、高对比、语音优先，覆盖健康、生活服务、安全求助、消费与社交。</p>
-      <div class="seg" id="appRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button><button data-r="special">手环端</button></div>
+      <div class="seg" id="appRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button><button data-r="special">手环端</button><button data-r="guard">紧急监管端</button></div>
       <div class="f">
         <i>✅ 首页 / 健康 / 服务 / 我的 四大 Tab</i>
         <i>✅ 健康数据可视化 + 运动打卡</i>
@@ -153,6 +153,7 @@
         <i>✅ SOS 一键呼救 → 后台告警联动</i>
         <i>✅ 子女端：远程照护、代付充值、探望预约</i>
         <i>✅ 特殊长者：智能手环 时间/震动/SOS/到达自动打卡</i>
+        <i>✅ 紧急监管端：实时告警滚动、场景安全状态、接单处置、备勤一键通话</i>
       </div>
       <button class="btn g back" onclick="App.go('home')">← 返回门户选择端</button>
     </div>
@@ -166,7 +167,7 @@
     <div class="mb-side">
       <h2>💬 小程序端原型</h2>
       <p>轻量服务入口，无需下载。以卡片 + 宫格组织高频服务，与 Web 后台共享账号与权限体系，扫码即可体验活动报名、预约与康养圈。</p>
-      <div class="seg" id="mpRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button><button data-r="special">手环端</button></div>
+      <div class="seg" id="mpRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button><button data-r="special">手环端</button><button data-r="guard">紧急监管端</button></div>
       <div class="f">
         <i>✅ 微信胶囊导航 + 底部 Tab 结构</i>
         <i>✅ 扫码签到 / 人脸核销入口</i>
@@ -174,6 +175,7 @@
         <i>✅ 请假与预约表单（可提交）</i>
         <i>✅ 子女端：授权查看、代付、探望</i>
         <i>✅ 特殊长者：智能手环 时间/震动/SOS/到达自动打卡</i>
+        <i>✅ 紧急监管端：接警列表、三级响应规则、执勤/备勤调度与群呼</i>
       </div>
       <button class="btn g back" onclick="App.go('home')">← 返回门户选择端</button>
     </div>

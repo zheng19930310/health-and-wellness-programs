@@ -195,6 +195,256 @@ const CUSTOM = {
       <div class="card" style="margin-top:16px"><div class="card-h"><h3>设备实时读数</h3><span class="tiny">点击卡片可查看联动与视频</span></div>
       <div class="card-b"><div class="sw-box">${live.map(d=>`<div class="ck" style="cursor:pointer" onclick="parkTip(event,${d._id})"><b><span class="dot ${d.online==='在线'?'on':'al'}"></span>${esc(d.name)}</b><p>${liveReadings(d).map(r=>esc(r[0]+' '+r[1])).join('　')}</p></div>`).join('')}</div></div></div>`;
     drawMonitor();
+  },
+  emergency(key){
+    const m = MODULES[key];
+    $('crumb').innerHTML = `首页 / 园区总览 / <b>${esc(m.title)}</b>`;
+    EME.seed();
+    $('page').innerHTML = `<div class="page-h"><div><h2>🚨 紧急监管</h2><p>${esc(m.desc)}　·　一级 3 分钟升级 / 二级 15 分钟升级 / 三级按工单时效</p></div>
+      <div class="acts"><span class="tag red"><span class="dot" style="background:#ff6b6b"></span>实时接收中</span>
+      <button class="btn" onclick="emRules()">📜 三级响应规则</button><button class="btn" onclick="EME.spawn(true)">⚡ 模拟一条新告警</button></div></div>
+    <div class="em3">
+      <div class="card"><div class="card-h"><h3>场景安全状态</h3><span class="tiny">🟢 安全 · 🔴 紧急 · 点击看记录</span></div><div class="card-b" id="emScenes" style="max-height:660px;overflow:auto"></div></div>
+      <div>
+        <div class="em-kpis" id="emKpi"></div>
+        <div class="card"><div class="card-h"><h3>园区实时扫描雷达</h3><span class="tiny" id="emRadarTip">正常巡逻</span></div>
+          <div class="card-b" style="display:flex;justify-content:center;padding:10px"><canvas id="emRadar" width="360" height="360" style="max-width:100%"></canvas></div></div>
+        <div class="card" style="margin-top:14px"><div class="card-h"><h3>备勤人员 · 快速通话</h3><span class="tiny">点击 📞 立即呼叫</span></div><div class="card-b" id="emStandby"></div></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>实时紧急信息</h3><span class="tiny">最新在上 · 自动滚动</span></div><div class="card-b"><div id="emFeed" class="em-feed"></div></div></div>
+    </div>`;
+    $('emStandby').innerHTML = EM_STANDBY.map(s=>`<div class="em-pw"><div class="av">🛡</div><div style="flex:1"><b>${esc(s.name)}</b><div class="tiny">${esc(s.role)} · ${esc(s.phone)}</div></div>
+      <button class="btn sm g" onclick="emCall('${esc(s.name)}','${esc(s.role)}','${esc(s.phone)}')">📞 通话</button></div>`).join('')
+      + `<div class="tiny" style="margin-top:8px">执勤 ${EM_DUTY.length} 人（安保中控室 24h 在岗）：${EM_DUTY.map(d=>esc(d.name)).join(' / ')}</div>`;
+    EME.start();
+  }
+};
+
+/* ============================================================
+ *  紧急监管 · 三级响应实时引擎（纯前端模拟，无后端）
+ * ============================================================ */
+function emRules(){
+  Modal.open('📜 紧急监管 · 三级响应规则', `<div class="tbwrap"><table class="tb"><thead><tr><th>级别</th><th>触发场景</th><th>第一接警</th><th>主处置</th><th>升级</th></tr></thead><tbody>`+
+    EM_RULES.map(r=>`<tr><td><span class="tag ${r.color}">${esc(r.lvl)}</span></td><td>${esc(r.scenes)}</td><td>${esc(r.first)}</td><td>${esc(r.main)}</td><td>${esc(r.esc)}</td></tr>`).join('')+
+    `</tbody></table></div><div class="tiny" style="margin-top:10px">一级（紧急）由安保中控室第一接警，医护部 + 护理/管家主处置，3 分钟未确认升级院长/值班领导，必要时拨 120；二级 15 分钟未处理升级部门主管；三级由 IoT 后台自动派单，按工单时效升级。</div>`,
+    `<button class="btn" onclick="Modal.close()">关闭</button>`);
+}
+function emCall(name, role, phone){
+  Modal.open('📞 快速通话 · '+esc(name), `<div class="em-pw" style="border:0;padding:0 0 12px"><div class="av" style="width:46px;height:46px;font-size:22px">🛡</div>
+    <div style="flex:1"><b style="font-size:15px">${esc(name)}</b><div class="tiny">${esc(role)} · ${esc(phone)}</div></div>
+    <span class="tag green" id="emCallSt">呼叫中…</span></div>
+    <div class="tiny">通话经由安保中控室总机转接（演示）　·　<span id="emCallTm">00:00</span></div>`,
+    `<button class="btn" onclick="clearInterval(window.__emCall);Modal.close()">挂断</button>`);
+  clearInterval(window.__emCall); let s=0;
+  const tick=()=>{ const n=$('emCallTm'); if(!n){ clearInterval(window.__emCall); return; }
+    s++; n.textContent = String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+    if(s===3){ const st=$('emCallSt'); if(st){ st.textContent='已接通'; st.className='tag blue'; } toast(`已接通 ${name}（${role}）`,'ok'); } };
+  tick(); window.__emCall = setInterval(tick, 1000);
+  logAct('紧急监管 · 快速通话', name+' / '+role, '中');
+}
+const EME = {
+  list:[], timers:null, seq:0, scenes:{}, raf:null, angle:0, fly:[],
+  seed(){
+    if(this._seeded) { this.syncCounts(); return; }
+    this._seeded = true;
+    EM_SCENES.forEach(s=>{ this.scenes[s.k] = { n: 3 + Math.floor(Math.random()*26), open:0 }; });
+    /* 预置一批历史告警：一级 2 条（含 1 条已闭环）、二级 3 条、三级 3 条，覆盖各状态便于演示 */
+    const plan = [[0,2,'open'],[1,6,'open'],[2,11,'open'],[4,4,'open'],[5,9,'open'],[6,18,'done'],[7,7,'open'],[8,26,'open'],[3,3,'false'],[9,14,'done']];
+    const ar = MODULES.archive.rows;
+    plan.forEach((x,i)=>{ const sc = EM_SCENES[x[0]], a = ar[i%ar.length];
+      const obj = i%2 ? (a.name+' · '+a.room) : sc.place[i%sc.place.length];
+      const it = this._mk(sc, obj, '历史采集越限', x[2], x[1]);
+      if(x[2]==='done'){ it.owner = EM_DUTY[i%EM_DUTY.length].name; it.result = '现场处置完毕，已回访长者与家属'; }
+      this.list.push(it); });
+    this.syncCounts();
+  },
+  /* 同步各场景未闭环数量 */
+  syncCounts(){ EM_SCENES.forEach(s=>{ const st=this.scenes[s.k]; if(!st) return; st.open = this.list.filter(x=>x.scene===s.k && !['已闭环','误报'].includes(x.status)).length; }); },
+  _mk(sc, obj, val, st, ago){
+    const d = new Date(Date.now()-(ago||0)*60000), p = n=>String(n).padStart(2,'0');
+    return { id:++this.seq, lvl:sc.lvl, scene:sc.k, ico:sc.ico, kind:sc.name, obj:obj||sc.place[0], val:val||'—',
+      rule: EM_RULES[sc.lvl-1].esc,
+      time: d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()),
+      ts: d.getTime(), status: st==='done'?'已闭环':st==='false'?'误报':'待处理', owner: st==='done'?(EM_DUTY[0].name):'—', result: st==='done'?'现场处置完毕，已回访':'', esc: st==='esc' };
+  },
+  start(){ this.stop(); this.renderAll();
+    this.timers = { t1:setInterval(()=>this.tick(),1000), t2:setInterval(()=>{ if(!this.live()) return; if(Math.random()>0.42) this.spawn(); },8000) };
+    this.radar();
+  },
+  /* 仅当当前停留在紧急监管页时保持推送 */
+  live(){ return S.view==='admin' && S.mod==='emergency' && !!document.querySelector('#emKpi'); },
+  stop(){ const t=this.timers||{}; clearInterval(t.t1); clearInterval(t.t2); this.timers=null; if(this.raf) cancelAnimationFrame(this.raf); this.raf=null; },
+  tick(){ if(!this.live()) return this.stop(); this.renderKpi(); this.renderFeed(); this.escalate(); },
+  /* 生成一条新告警（force=true 为手动模拟） */
+  spawn(force){
+    const sc = force ? EM_SCENES[Math.floor(Math.random()*4)] : EM_SCENES[Math.floor(Math.random()*EM_SCENES.length)];
+    const ar = MODULES.archive.rows, a = ar[Math.floor(Math.random()*ar.length)];
+    const vals = { sos:'紧急按钮触发，语音已接通', fall:'毫米波识别跌倒姿态，未起身', heart:'心率 132bpm，超阈值 22%', fence:'越过东区电子围栏 12m',
+      bed:'夜间离床 21 分钟未归', env:'湿度 31%RH，低于下限 35%', door:'非授权时段开启（22:41）', offline:'心跳超时 3 分钟', bat:'电量 8%，需更换/充电', drift:'CO₂ 980ppm，轻微偏高' };
+    const obj = Math.random()>0.5 ? (a.name+' · '+a.room) : sc.place[Math.floor(Math.random()*sc.place.length)];
+    const it = this._mk(sc, obj, vals[sc.k]||'实时采集越限', 'open', 0);
+    this.list.unshift(it); if(this.list.length>40) this.list.length=40;
+    this.scenes[sc.k].n++; this.syncScene();
+    MODULES.devalarm.rows.unshift({ _id:++UID, no:'EM'+String(Date.now()).slice(-8), time:it.time, kind:sc.name, level:['','I 级（紧急）','II 级（重要）','III 级（提示）'][sc.lvl],
+      obj:obj, dev:'紧急监管实时通道', value:it.val, rule:it.rule, owner:'—', status:'待处置', result:'' });
+    if(MODULES.devalarm.rows.length>40) MODULES.devalarm.rows.length=40;
+    if(sc.lvl===1){ this.notify(it); }
+    else toast(`${sc.ico} ${sc.name}：${obj}（${sc.lvl===2?'二级 警告':'三级 提示'}）`, sc.lvl===2?'warn':'');
+    if($('emFeed')){ this.renderAll(); const f=$('emFeed'); if(f) f.scrollTop=0; }
+    persist();
+  },
+  /* 一级紧急：语音播报 + 震动 + 红色告警条 */
+  notify(it){
+    toast(`🚨 一级紧急：${it.kind} · ${it.obj}，请立即接警处置`,'err');
+    try{ if(navigator.vibrate) navigator.vibrate([240,120,240]); }catch(e){}
+    try{ if(window.speechSynthesis){ const u=new SpeechSynthesisUtterance('一级紧急告警，'+it.kind+'，位置'+it.obj+'，请安保中控室立即接警处置'); u.lang='zh-CN'; u.rate=1.05; speechSynthesis.speak(u); } }catch(e){}
+  },
+  /* 超时未处理 → 按三级响应规则自动升级 */
+  escalate(){
+    const lim = {1:3, 2:15, 3:60}; let ch=false;
+    this.list.forEach(it=>{ if(it.status!=='待处理'||it.esc) return;
+      if((Date.now()-it.ts)/60000 > lim[it.lvl]){ it.esc=true; it.status='升级中'; ch=true;
+        if(it.lvl===1){ const u=EM_STANDBY[0]; it.owner=u.name; toast(`⏫ 一级告警 3 分钟未确认，已升级 ${u.name}（${u.role}）`,'err'); } } });
+    if(ch){ this.renderFeed(); this.renderKpi(); }
+  },
+  openCnt(){ return this.list.filter(x=>x.status==='待处理'||x.status==='处置中'||x.status==='升级中').length; },
+  /* ---------- 渲染 ---------- */
+  renderAll(){ this.renderScenes(); this.renderKpi(); this.renderFeed(); },
+  renderScenes(){
+    const host=$('emScenes'); if(!host) return;
+    host.innerHTML = EM_SCENES.map(s=>{ const st=this.scenes[s.k]||{n:0,open:0};
+      return `<div class="em-sc" onclick="EME.scene('${s.k}')">
+        <span class="ico">${s.ico}</span><div class="nm"><b>${esc(s.name)}</b><i>${s.lvl===1?'一级 紧急':s.lvl===2?'二级 警告':'三级 提示'} · ${esc(s.place[0])}等 ${s.place.length} 处</i></div>
+        <span class="em-tag${st.open?' hot':''}">${st.open?'紧急':'安全'}</span><span class="em-dot${st.open?' al':''}"></span>
+        <span class="cnt">${st.n}</span></div>`; }).join('');
+  },
+  renderKpi(){
+    const host=$('emKpi'); if(!host) return;
+    const d=new Date(), p=n=>String(n).padStart(2,'0'), clock=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+    const open=this.openCnt(), urg=this.list.filter(x=>x.lvl===1&&(x.status==='待处理'||x.status==='处置中'||x.status==='升级中')).length;
+    const last=this.list.length?this.list.slice().sort((a,b)=>b.ts-a.ts)[0]:null;
+    host.innerHTML = `<div class="em-kpi"><i>当前时间</i><b style="font-size:17px">${clock}</b></div>
+      <div class="em-kpi ${last?'warn':''}"><i>最近预警时间</i><b style="font-size:17px">${last?esc(last.time.slice(11))+' · '+esc(last.ico+last.kind):'暂无'}</b></div>
+      <div class="em-kpi ${open?'red':''}"><i>待处理告警</i><b>${open} 条${urg?` <span style="font-size:12px;color:#e5484d">一级 ${urg}</span>`:''}</b></div>
+      <div class="em-kpi"><i>执勤 / 备勤人员</i><b>${EM_DUTY.length} <span style="font-size:12px;color:var(--sub)">执勤</span> + ${EM_STANDBY.length} <span style="font-size:12px;color:var(--sub)">备勤</span></b></div>`;
+  },
+  renderFeed(){
+    const host=$('emFeed'); if(!host) return;
+    const order = {'待处理':0,'升级中':1,'处置中':2,'已闭环':3,'误报':4};
+    const arr = this.list.slice().sort((a,b)=> (order[a.status]||0)-(order[b.status]||0) || b.ts-a.ts);
+    host.innerHTML = arr.length?arr.map(it=>{
+      const mins = Math.max(0, Math.floor((Date.now()-it.ts)/60000));
+      const done = it.status==='已闭环'||it.status==='误报';
+      const tag = it.status==='待处理'?'red':it.status==='升级中'?'red':it.status==='处置中'?'warn':it.status==='误报'?'ink':'green';
+      return `<div class="em-it l${it.lvl}${done?' done':''}">
+        <div class="top"><b>${it.ico} ${esc(it.kind)}</b><span class="tm">${esc(it.time.slice(5))}</span></div>
+        <p>${esc(it.obj)}　·　${esc(it.val)}</p>
+        <div class="rt"><span class="lv v${it.lvl}">${it.lvl===1?'一级':it.lvl===2?'二级':'三级'}</span>
+          <span class="tag ${tag}">${esc(it.status)}</span><span class="tiny">${esc(it.owner||'—')}</span>
+          <span class="age">${mins<1?'刚刚':mins+' 分钟前'}</span></div>
+        <div class="rt">${done?`<span class="tiny">${esc(it.result||'已归档')}</span>`:
+          `<button class="btn sm p" onclick="EME.handle(${it.id})">🚑 处理</button>`+
+          (it.status==='处置中'?`<button class="btn sm g" onclick="EME.close2(${it.id})">✓ 闭环</button>`:'')+
+          `<button class="btn sm" onclick="EME.falsify(${it.id})">误报</button>`+
+          `<button class="btn sm" onclick="EME.callOut(${it.id})">📞 呼叫处置人</button>`}</div></div>`;
+    }).join('') : `<div class="noech">暂无告警，园区安全运行中</div>`;
+  },
+  /* 场景状态同步（左栏红/绿） */
+  syncScene(){ this.escalate(); this.syncCounts(); this.renderScenes(); },
+  handle(id){
+    const it=this.list.find(x=>x.id===id); if(!it) return;
+    const pool = it.lvl===1?EM_DUTY.slice(0,3).concat(EM_STANDBY.slice(0,2)):it.lvl===2?EM_DUTY.slice(1):EM_STANDBY.slice(3);
+    const rule = EM_RULES[it.lvl-1];
+    Modal.open(`${it.ico} 告警处置 · ${esc(it.kind)}（${it.lvl===1?'一级 紧急':it.lvl===2?'二级 警告':'三级 提示'}）`,
+      `<div class="grid2"><div class="field"><label>触发位置 / 对象</label><input class="txt" value="${esc(it.obj)}" readonly></div>
+        <div class="field"><label>采集数值</label><input class="txt" value="${esc(it.val)}" readonly></div>
+        <div class="field"><label>上报时间</label><input class="txt" value="${esc(it.time)}" readonly></div>
+        <div class="field"><label>指派处置人</label><select class="txt" id="emOwner">${pool.map(o=>`<option>${esc(o.name)} · ${esc(o.role)}</option>`).join('')}</select></div></div>
+      <div class="field"><label>处置措施</label><textarea class="txta" id="emAct" placeholder="到场确认 → 处置记录 → 回访家属 → 闭环归档">${it.lvl===1?'对讲机通知就近护理员 30 秒内到场，医护同步待命，已推送子女端':'安排值班人员现场确认并登记工单'}</textarea></div>
+      <div class="tiny" style="margin-top:4px">响应要求：<b>${esc(rule.first)}</b> 接警 → <b>${esc(rule.main)}</b> 主处置 → <b style="color:#e5484d">${esc(rule.esc)}</b></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn g" onclick="EME._take(${id})">确认接单</button>`);
+  },
+  _take(id){ const it=this.list.find(x=>x.id===id); if(!it) return;
+    const o=$('emOwner'), a=$('emAct');
+    it.owner = o?o.value.split(' · ')[0]:it.owner; it.status='处置中'; it.result=(a?a.value:'').slice(0,60);
+    Modal.close(); toast(`已接单：${it.kind} → ${it.owner} 处置中`,'ok'); logAct('紧急监管 · 接单处置', it.kind+' / '+it.obj, '高');
+    this.syncScene(); this.renderFeed(); this.renderKpi(); persist();
+  },
+  close2(id){ const it=this.list.find(x=>x.id===id); if(!it) return;
+    it.status='已闭环'; it.esc=false; it.result = it.result||'现场处置完毕，已回访长者与家属';
+    toast('已闭环归档，同步至设备告警日志','ok'); logAct('紧急监管 · 闭环', it.kind+' / '+it.obj, '中');
+    const a=MODULES.devalarm.rows.find(r=>r.obj===it.obj&&r.kind===it.kind); if(a){ a.status='已闭环'; a.owner=it.owner; a.result=it.result; }
+    this.syncScene(); this.renderFeed(); this.renderKpi(); this.renderScenes(); persist();
+  },
+  falsify(id){ const it=this.list.find(x=>x.id===id); if(!it) return;
+    it.status='误报'; it.esc=false; it.result='经核实为误报，已回写规则库抑制同类误报';
+    toast('已标记误报，规则库同步优化','warn'); logAct('紧急监管 · 标记误报', it.kind+' / '+it.obj, '低');
+    this.syncScene(); this.renderFeed(); this.renderKpi(); persist();
+  },
+  callOut(id){ const it=this.list.find(x=>x.id===id); if(!it) return;
+    const u = it.lvl===1?EM_STANDBY[0]:EM_DUTY[1];
+    emCall(u.name, u.role+'（'+it.kind+' 处置）', u.phone);
+  },
+  scene(i){
+    const s = typeof i==='number'?EM_SCENES[i]:EM_SCENES.find(x=>x.k===i)||EM_SCENES[0];
+    const rows = this.list.filter(x=>x.scene===s.k);
+    Modal.open(`${s.ico} ${esc(s.name)} · 记录信息（${rows.length} 条）`,
+      `<div class="tbwrap"><table class="tb"><thead><tr><th>时间</th><th>位置 / 对象</th><th>采集数值</th><th>状态</th><th>处置人</th></tr></thead><tbody>`+
+      (rows.length?rows.map(r=>`<tr><td class="mono">${esc(r.time)}</td><td>${esc(r.obj)}</td><td>${esc(r.val)}</td><td><span class="tag ${r.status==='已闭环'?'green':r.status==='误报'?'ink':r.status==='处置中'?'warn':'red'}">${esc(r.status)}</span></td><td>${esc(r.owner)}</td></tr>`).join('')
+        : `<tr><td colspan="5" class="tiny">该场景当前无告警记录，状态安全</td></tr>`)+`</tbody></table></div>
+      <div class="tiny" style="margin-top:8px">监测点位：${s.place.map(p=>esc(p)).join(' / ')}　·　响应级别：${s.lvl===1?'一级（紧急）':s.lvl===2?'二级（警告）':'三级（提示）'}</div>`,
+      `<button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="Modal.close();S.flt.iot={};App.go('admin','iot')">查看设备告警日志 →</button>`);
+  },
+  /* ---------- 雷达扫描 ---------- */
+  radar(){
+    const cv=$('emRadar'); if(!cv) return;
+    const ctx=cv.getContext('2d'), W=cv.width, H=cv.height, cx=W/2, cy=H/2, R0=W/2-16;
+    if(!this.fly.length){
+      const ang=[18,58,96,138,176,214,252,288,322,352];
+      this.fly = EM_SCENES.map((s,i)=>({ x:cx+Math.cos(ang[i]*Math.PI/180)*R0*(0.34+(i%4)*0.18), y:cy+Math.sin(ang[i]*Math.PI/180)*R0*(0.34+(i%4)*0.18), s:s }));
+    }
+    const loop=()=>{
+      if(!$('emRadar')){ this.raf=null; return; }
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle='#081a2e'; ctx.beginPath(); ctx.arc(cx,cy,R0+10,0,7); ctx.fill();
+      ctx.strokeStyle='rgba(74,168,255,.28)'; ctx.lineWidth=1;
+      [0.28,0.52,0.76,1].forEach(f=>{ ctx.beginPath(); ctx.arc(cx,cy,R0*f,0,7); ctx.stroke(); });
+      ctx.beginPath(); ctx.moveTo(cx-R0,cy); ctx.lineTo(cx+R0,cy); ctx.moveTo(cx,cy-R0); ctx.lineTo(cx,cy+R0); ctx.stroke();
+      this.angle=(this.angle+0.022)%(Math.PI*2);
+      const g=ctx.createConicGradient?ctx.createConicGradient(this.angle,cx,cy):null;
+      if(g){ g.addColorStop(0,'rgba(92,224,176,.34)'); g.addColorStop(0.12,'rgba(92,224,176,0)'); g.addColorStop(1,'rgba(92,224,176,0)');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R0,0,7); ctx.fill(); }
+      ctx.strokeStyle='rgba(92,224,176,.85)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(this.angle)*R0, cy+Math.sin(this.angle)*R0); ctx.stroke();
+      const alarm = this.openCnt()>0 && this.list.some(x=>x.lvl===1 && !['已闭环','误报'].includes(x.status));
+      for (let i = 0; i < this.fly.length; i++) {
+        const f = this.fly[i];
+        const st = this.scenes[f.s.k] || { open:0 };
+        const open = st.open > 0;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, open ? 4.4 : 3, 0, 7);
+        ctx.fillStyle = open ? '#ff5b5b' : (f.s.lvl === 3 ? '#4aa8ff' : '#5ce0b0');
+        ctx.fill();
+        if (open) {
+          const ph = (Date.now() % 1400) / 1400;
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, 4.4 + ph * 13, 0, 7);
+          ctx.strokeStyle = 'rgba(255,91,91,' + (0.6 * (1 - ph)) + ')';
+          ctx.lineWidth = 1.6;
+          ctx.stroke();
+        }
+      }
+      if(alarm){ const ph=(Date.now()%1600)/1600; ctx.beginPath(); ctx.arc(cx,cy,R0*(0.25+ph*0.75),0,7);
+        ctx.strokeStyle='rgba(255,70,70,'+(0.5*(1-ph))+')'; ctx.lineWidth=3; ctx.stroke(); }
+      ctx.font='10px system-ui'; ctx.textAlign='center'; ctx.fillStyle='#8fb6d9';
+      ctx.fillText('N', cx, cy-R0-1); ctx.fillText('S', cx, cy+R0+9); ctx.textAlign='left';
+      ctx.fillText('康养区', cx-R0*0.62, cy-R0*0.5); ctx.fillText('文化区', cx+R0*0.28, cy+R0*0.42); ctx.fillText('旅游区', cx-R0*0.3, cy+R0*0.66);
+      const tip=$('emRadarTip'); if(tip){ tip.textContent = alarm?'⚠ 检测到紧急事件':(this.openCnt()?'监测中 · 二级/三级告警':'正常巡逻'); tip.style.color = alarm?'#e5484d':''; }
+      const card=cv.closest('.card'); if(card) card.classList.toggle('em-radar-alarm', alarm);
+      this.raf=requestAnimationFrame(loop);
+    };
+    if(this.raf) cancelAnimationFrame(this.raf);
+    this.raf=requestAnimationFrame(loop);
   }
 };
 function dashView(v){
