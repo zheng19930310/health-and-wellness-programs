@@ -15,7 +15,7 @@ const ACCOUNTS = [
   { u:'service', p:'123456',   name:'孙婉清', role:'投诉与服务监督',roleKey:'service', ends:['home','admin'],                       desc:'投诉受理、升级督办、满意度' },
   { u:'social',  p:'123456',   name:'周与安', role:'社工/志愿者',  roleKey:'social',   ends:['home','admin','mp'],                  desc:'人文关怀、活动、课堂、康养圈' },
   { u:'clean',   p:'123456',   name:'吴桂芳', role:'保洁后勤人员', roleKey:'clean',    ends:['home','admin'],                       desc:'清洁排期、执行记录、检查验收' },
-  { u:'guard',   p:'123456',   name:'赵启明', role:'安保中控室 · 紧急监管端', roleKey:'guard', ends:['home','admin','screen','app','mp'], desc:'一级接警席位：实时接收全园区预警报警、调度执勤与备勤、快速通话' },
+  { u:'guard',   p:'123456',   name:'秦守安', role:'安保中控室 · 紧急监管端', roleKey:'guard', ends:['home','admin','screen','app','mp'], desc:'一级接警席位：实时接收全园区预警报警、调度执勤与备勤、快速通话' },
   { u:'elder',   p:'123456',   name:'徐世昌', role:'长者/住客',    roleKey:'elder',    ends:['home','app','mp'],                    desc:'长者端：健康、活动、订餐、康养圈' },
   { u:'child',   p:'123456',   name:'徐乐(女)',role:'子女/家属',   roleKey:'child',    ends:['home','app','mp'],                    desc:'子女端：远程照护、代付、探望预约' },
   { u:'special', p:'123456',   name:'蒋明远', role:'特殊长者',     roleKey:'special',  ends:['home','app','mp'],                    desc:'智能手环端：仅时间/震动/SOS/自动打卡（不识长者）' }
