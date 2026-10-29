@@ -72,9 +72,9 @@ function showAccounts(){
     <div class="ends">可进入：${a.ends.map(e=>({admin:'Web 后台',screen:'大屏',app:'APP',mp:'小程序',home:'门户'})[e]).join(' · ')}</div>
     <div class="pv">点击填入</div></div>`).join('');
   Modal.open('🔑 演示账号一览（12 个角色 · 点击卡片自动填入）', `<div style="font-size:12.5px;color:var(--sub);margin-bottom:12px">原型为纯前端演示，账号密码固定写死。不同角色登录后可见的模块与可进入的端不同（RBAC 简化演示）；<b style="color:#e5484d">guard</b> 为「紧急监管 · 一级接警席」专属账号，可在 APP / 小程序端切到紧急监管端。超级管理员：<b style="color:var(--blue-d)">admin / admin123</b>，其余账号密码统一为 <b style="color:var(--green-d)">123456</b>。</div><div class="acc-list">${rows}</div>`,
-    `<button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="fillAcc('admin','admin123');Modal.close()">使用超级管理员登录</button>`);
+    `<button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="fillAcc('admin','admin123')">使用超级管理员登录</button>`);
 }
-function fillAcc(u,p){ $('lgUser').value=u; $('lgPwdIn').value=p; toast(`已填入 ${u} / ${p}，点击登录即可`,'ok'); }
+function fillAcc(u,p){ $('lgUser').value=u; $('lgPwdIn').value=p; Modal.close(); toast(`已填入 ${u} / ${p}，点击登录即可`,'ok'); }
 
 /* ---------- 路由 ---------- */
 const App = {
