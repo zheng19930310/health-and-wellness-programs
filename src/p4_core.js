@@ -9,6 +9,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 
 /* ---------- 全局状态 ---------- */
 const S = { user:null, view:'login', mod:'dashboard', tab:{}, page:{}, kw:{}, flt:{}, sel:{}, mobileRole:{app:'elder', mp:'elder'}, mpTab:0, appTab:0, folded:false };
+try{ S.folded = localStorage.getItem('ky_proto_v1_fold')==='1'; }catch(e){}
 const SEED = {};
 function snapshot(){ GRP_ORDER.forEach(()=>{}); Object.keys(MODULES).forEach(k=>{ if(MODULES[k].rows && MODULES[k].rows.length) SEED[k]=clone(MODULES[k].rows); }); }
 const LS = 'ky_proto_v1';
@@ -157,6 +158,7 @@ function renderNav(){
   });
   html += `<div class="grp">原型说明</div><a href="javascript:App.about()" class=""><span class="ic">ℹ️</span>关于本原型</a><a href="javascript:App.resetData()" class=""><span class="ic">♻️</span>重置演示数据</a>`;
   $('nav').innerHTML = html;
+  applyFold();
   $('topAv').textContent = S.user.name[0]; $('topName').textContent = S.user.name; $('topRole').textContent = S.user.role;
   const al = MODULES.devalarm.rows.filter(r=>r.status==='待处置').length + MODULES.complaint.rows.filter(r=>r.status==='待受理').length;
   $('msgBdg').textContent = al; $('msgBdg').style.display = al?'':'none';
@@ -178,6 +180,13 @@ function badgeCount(k){
   return (map[k]?rows.filter(map[k]).length:0);
 }
 App.foldGroup = h => { let n=h.nextElementSibling; while(n && !n.classList.contains('grp')){ n.classList.toggle('hide'); n=n.nextElementSibling; } };
+/* 侧栏收起/展开：只切换 .folded 类，样式由 CSS 接管，菜单重建后状态不丢失 */
+function applyFold(){
+  const s = $('side'); if(!s) return;
+  s.classList.toggle('folded', !!S.folded);
+  const b = $('foldBtn'); if(b){ b.title = S.folded?'展开侧栏':'收起侧栏'; b.textContent = S.folded?'»':'☰'; }
+}
+App.toggleFold = () => { S.folded = !S.folded; applyFold(); try{ localStorage.setItem(LS+'_fold', S.folded?'1':'0'); }catch(e){} };
 App.about = () => Modal.open('ℹ️ 关于本原型', `<div style="font-size:13px;line-height:2">
   <p><b>康养项目综合管理平台 · 前端高保真原型</b>（单 HTML 文件，无后端，数据全部为模拟）</p>
   <p>· 依据 PRD V1.1 实现 Web 管理后台 27 个模块，支持<b>增删改查、条件检索、分页、批量删除、CSV 导出、流程状态流转与详情查看</b>。</p>
@@ -192,8 +201,7 @@ function initTop(){
   $('endDd').addEventListener('click', e=>{ const b=e.target.closest('button[data-go]'); if(b){ $('endDd').classList.remove('on'); App.go(b.dataset.go); } });
   $('msgBtn').onclick = e => { e.stopPropagation(); $('msgDd').classList.toggle('on'); $('endDd').classList.remove('on'); renderMsg(); };
   document.addEventListener('click', ()=>{ $('endDd').classList.remove('on'); $('msgDd').classList.remove('on'); });
-  $('foldBtn').onclick = ()=>{ S.folded=!S.folded; const s=$('side'); s.style.flex=s.folded?'0 0 62px':'0 0 236px'; s.style.width=s.folded?'62px':'236px';
-    s.querySelectorAll('.nav a span:not(.ic), .nav .grp').forEach(n=>n.style.display=s.folded?'none':''); };
+  $('foldBtn').onclick = App.toggleFold;
   $('globalSearch').addEventListener('keydown', e=>{ if(e.key==='Enter'){ const kw=e.target.value.trim(); if(!kw) return; S.kw.archive=kw; S.mod='archive'; App.go('admin','archive'); toast(`已在「个人档案管理」中检索：${kw}`,'ok'); } });
 }
 function renderMsg(){

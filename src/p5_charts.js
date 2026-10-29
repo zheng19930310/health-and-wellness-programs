@@ -204,12 +204,12 @@ const CUSTOM = {
       <div class="acts"><span class="tag red"><span class="dot" style="background:#ff6b6b"></span>实时接收中</span>
       <button class="btn" onclick="emRules()">📜 三级响应规则</button><button class="btn" onclick="EME.spawn(true)">⚡ 模拟一条新告警</button></div></div>
     <div class="em3">
-      <div class="card"><div class="card-h"><h3>场景安全状态</h3><span class="tiny">🟢 安全 · 🔴 紧急 · 点击看记录</span></div><div class="card-b" id="emScenes" style="max-height:660px;overflow:auto"></div></div>
+      <div class="card"><div class="card-h"><h3>场景安全状态</h3><span class="tiny">🟢 安全 · 🔴 紧急</span></div><div class="card-b" id="emScenes" style="max-height:660px;overflow:auto;padding:12px 12px"></div></div>
       <div>
         <div class="em-kpis" id="emKpi"></div>
         <div class="card"><div class="card-h"><h3>园区实时扫描雷达</h3><span class="tiny" id="emRadarTip">正常巡逻</span></div>
-          <div class="card-b" style="display:flex;justify-content:center;padding:10px"><canvas id="emRadar" width="360" height="360" style="max-width:100%"></canvas></div></div>
-        <div class="card" style="margin-top:14px"><div class="card-h"><h3>备勤人员 · 快速通话</h3><span class="tiny">点击 📞 立即呼叫</span></div><div class="card-b" id="emStandby"></div></div>
+          <div class="card-b" style="display:flex;justify-content:center;padding:8px"><canvas id="emRadar" width="360" height="360"></canvas></div></div>
+        <div class="card" style="margin-top:12px"><div class="card-h"><h3>备勤人员 · 快速通话</h3><span class="tiny">点击 📞 立即呼叫</span></div><div class="card-b" id="emStandby" style="padding:10px 14px"></div></div>
       </div>
       <div class="card"><div class="card-h"><h3>实时紧急信息</h3><span class="tiny">最新在上 · 自动滚动</span></div><div class="card-b"><div id="emFeed" class="em-feed"></div></div></div>
     </div>`;
@@ -346,7 +346,7 @@ const EME = {
           `<button class="btn sm p" onclick="EME.handle(${it.id})">🚑 处理</button>`+
           (it.status==='处置中'?`<button class="btn sm g" onclick="EME.close2(${it.id})">✓ 闭环</button>`:'')+
           `<button class="btn sm" onclick="EME.falsify(${it.id})">误报</button>`+
-          `<button class="btn sm" onclick="EME.callOut(${it.id})">📞 呼叫处置人</button>`}</div></div>`;
+          `<button class="btn sm" onclick="EME.callOut(${it.id})">📞 呼叫</button>`}</div></div>`;
     }).join('') : `<div class="noech">暂无告警，园区安全运行中</div>`;
   },
   /* 场景状态同步（左栏红/绿） */

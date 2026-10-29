@@ -207,6 +207,14 @@ h1,h2,h3,h4{margin:0;font-weight:700}
 .nav a .cnt{margin-left:auto;font-size:10.5px;background:rgba(255,255,255,.14);border-radius:9px;padding:0 6px;line-height:17px;height:17px}
 .nav a .cnt.red{background:var(--danger)}
 .nav a.hide,.nav .grp.hide{display:none}
+/* 侧栏收起：用类驱动，避免菜单重建后内联样式丢失 */
+.side.folded{width:64px;flex:0 0 64px}
+.side.folded .s-logo{padding:0;justify-content:center}
+.side.folded .s-logo>div{display:none}
+.side.folded .nav{padding:10px 6px 20px}
+.side.folded .nav a{justify-content:center;padding:10px 0;gap:0}
+.side.folded .nav a>span:not(.ic),.side.folded .nav a .cnt,.side.folded .nav .grp{display:none}
+.side.folded .nav a.on:before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:2px;background:#fff;opacity:.85}
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
 .top{height:60px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;flex:0 0 auto;position:relative;z-index:15}
 .top .crumb{font-size:13px;color:var(--sub)}
@@ -230,9 +238,10 @@ h1,h2,h3,h4{margin:0;font-weight:700}
 .body{flex:1;overflow:auto;padding:20px 22px 40px}
 .page-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
 .page-h h2{font-size:19px;display:flex;align-items:center;gap:9px}
-.page-h p{margin:5px 0 0;color:var(--sub);font-size:12.8px}
-.page-h .acts{display:flex;gap:9px;flex-wrap:wrap}
-.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.page-h p{margin:5px 0 0;color:var(--sub);font-size:12.8px;min-width:0}
+.page-h>div{min-width:0}
+.page-h .acts{display:flex;gap:9px;flex-wrap:wrap;flex:0 1 auto}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);min-width:0}
 .card+.card{margin-top:16px}
 .card-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .card-h h3{font-size:14.5px;display:flex;align-items:center;gap:8px}
@@ -545,25 +554,25 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .xk-note{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:#fbfdff}
 .xk-note summary{cursor:pointer;font-weight:600;font-size:13px;list-style:none}
 .xk-note .ln{font-size:12px;color:var(--sub);line-height:1.9;border-bottom:1px dashed var(--line);padding:3px 0}
-/* ---------- 紧急监管 · 左中右三栏 ---------- */
-.em3{display:grid;grid-template-columns:308px minmax(380px,1fr) 396px;gap:14px;align-items:start}
-.em-sc{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff;transition:.16s}
+/* ---------- 紧急监管 · 左中右三栏（流式压缩，保证三栏同屏） ---------- */
+.em3{display:grid;grid-template-columns:minmax(210px,264px) minmax(300px,1fr) minmax(300px,352px);gap:12px;align-items:start}
+.em-sc{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid var(--line);border-radius:10px;margin-bottom:7px;cursor:pointer;background:#fff;transition:.16s;min-width:0}
 .em-sc:hover{border-color:var(--blue);box-shadow:0 3px 12px rgba(22,104,220,.1);transform:translateY(-1px)}
-.em-sc .ico{font-size:19px;width:26px;text-align:center}
+.em-sc .ico{font-size:17px;width:22px;text-align:center;flex:0 0 auto}
 .em-sc .nm{flex:1;min-width:0}
-.em-sc .nm b{font-size:13px;display:block}
-.em-sc .nm i{font-size:11px;color:var(--sub);font-style:normal}
-.em-sc .cnt{font-size:12px;font-weight:700;color:var(--blue);background:#eef4ff;border-radius:10px;padding:1px 8px;white-space:nowrap}
+.em-sc .nm b{font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.em-sc .nm i{font-size:10.5px;color:var(--sub);font-style:normal;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.em-sc .cnt{font-size:11.5px;font-weight:700;color:var(--blue);background:#eef4ff;border-radius:10px;padding:1px 6px;white-space:nowrap;flex:0 0 auto}
 .em-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex:0 0 auto;box-shadow:0 0 0 3px rgba(0,181,120,.16)}
 .em-dot.al{background:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.18);animation:emblink 1s infinite}
 @keyframes emblink{50%{opacity:.22}}
-.em-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
-.em-kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.em-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:12px}
+.em-kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 11px;min-width:0;overflow:hidden}
 .em-kpi i{font-size:11px;color:var(--sub);font-style:normal;display:block}
 .em-kpi b{font-size:20px;letter-spacing:.5px;display:block;margin-top:2px;font-variant-numeric:tabular-nums}
 .em-kpi.red b{color:#e5484d}
 .em-kpi.warn b{color:#f5a623}
-.em-feed{max-height:750px;overflow:auto;padding-right:4px}
+.em-feed{max-height:750px;overflow:auto;padding-right:4px;min-width:0}
 .em-it{border:1px solid var(--line);border-left:4px solid var(--sub-l);border-radius:10px;padding:9px 11px;margin-bottom:9px;background:#fff;animation:emin .38s ease}
 @keyframes emin{from{opacity:0;transform:translateY(-10px)}}
 .em-it.l1{border-left-color:#e5484d;background:#fffafa}
@@ -573,7 +582,9 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .em-it .top b{font-size:13px;flex:1;min-width:0}
 .em-it .top .tm{font-size:11px;color:var(--sub);white-space:nowrap}
 .em-it p{font-size:12px;color:var(--sub);margin:4px 0 0;line-height:1.7}
-.em-it .rt{display:flex;align-items:center;gap:7px;margin-top:7px}
+.em-it .rt{display:flex;align-items:center;gap:6px;margin-top:7px;flex-wrap:wrap;min-width:0}
+.em-it .rt .tiny{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.em-it .rt .btn.sm{padding:0 8px;height:24px;font-size:11.5px}
 .em-it .lv{font-size:10.5px;font-weight:700;border-radius:5px;padding:1px 6px;color:#fff}
 .em-it .lv.v1{background:#e5484d}.em-it .lv.v2{background:#f5a623}.em-it .lv.v3{background:#1668dc}
 .em-it .age{font-size:11px;color:var(--sub-l);margin-left:auto;white-space:nowrap}
@@ -582,10 +593,11 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .em-pw:last-child{border-bottom:0}
 .em-pw .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
 .em-radar-alarm .card-h h3:after{content:' ● 紧急';color:#e5484d;animation:emblink 1s infinite}
+#emRadar{width:min(100%,340px);height:auto;display:block;margin:0 auto}
 .em-tag{font-size:10.5px;border-radius:5px;padding:1px 6px;background:#f1f4f9;color:var(--sub);white-space:nowrap}
 .em-tag.hot{background:#ffeceb;color:#e5484d;font-weight:700}
-@media (max-width:1420px){.em3{grid-template-columns:1fr 1fr}.em3>:nth-child(3){grid-column:1/-1}}
-@media (max-width:980px){.em3{grid-template-columns:1fr}}
+@media (max-width:1240px){.em3{grid-template-columns:minmax(200px,240px) minmax(0,1fr)}.em3>:nth-child(3){grid-column:1/-1}}
+@media (max-width:860px){.em3{grid-template-columns:1fr}}
 /* ---------- 移动端 · 紧急监管端 ---------- */
 .em-hero{background:linear-gradient(135deg,#c22c31,#f5a623)!important}
 .em-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px}
@@ -2159,6 +2171,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 
 /* ---------- 全局状态 ---------- */
 const S = { user:null, view:'login', mod:'dashboard', tab:{}, page:{}, kw:{}, flt:{}, sel:{}, mobileRole:{app:'elder', mp:'elder'}, mpTab:0, appTab:0, folded:false };
+try{ S.folded = localStorage.getItem('ky_proto_v1_fold')==='1'; }catch(e){}
 const SEED = {};
 function snapshot(){ GRP_ORDER.forEach(()=>{}); Object.keys(MODULES).forEach(k=>{ if(MODULES[k].rows && MODULES[k].rows.length) SEED[k]=clone(MODULES[k].rows); }); }
 const LS = 'ky_proto_v1';
@@ -2307,6 +2320,7 @@ function renderNav(){
   });
   html += `<div class="grp">原型说明</div><a href="javascript:App.about()" class=""><span class="ic">ℹ️</span>关于本原型</a><a href="javascript:App.resetData()" class=""><span class="ic">♻️</span>重置演示数据</a>`;
   $('nav').innerHTML = html;
+  applyFold();
   $('topAv').textContent = S.user.name[0]; $('topName').textContent = S.user.name; $('topRole').textContent = S.user.role;
   const al = MODULES.devalarm.rows.filter(r=>r.status==='待处置').length + MODULES.complaint.rows.filter(r=>r.status==='待受理').length;
   $('msgBdg').textContent = al; $('msgBdg').style.display = al?'':'none';
@@ -2328,6 +2342,13 @@ function badgeCount(k){
   return (map[k]?rows.filter(map[k]).length:0);
 }
 App.foldGroup = h => { let n=h.nextElementSibling; while(n && !n.classList.contains('grp')){ n.classList.toggle('hide'); n=n.nextElementSibling; } };
+/* 侧栏收起/展开：只切换 .folded 类，样式由 CSS 接管，菜单重建后状态不丢失 */
+function applyFold(){
+  const s = $('side'); if(!s) return;
+  s.classList.toggle('folded', !!S.folded);
+  const b = $('foldBtn'); if(b){ b.title = S.folded?'展开侧栏':'收起侧栏'; b.textContent = S.folded?'»':'☰'; }
+}
+App.toggleFold = () => { S.folded = !S.folded; applyFold(); try{ localStorage.setItem(LS+'_fold', S.folded?'1':'0'); }catch(e){} };
 App.about = () => Modal.open('ℹ️ 关于本原型', `<div style="font-size:13px;line-height:2">
   <p><b>康养项目综合管理平台 · 前端高保真原型</b>（单 HTML 文件，无后端，数据全部为模拟）</p>
   <p>· 依据 PRD V1.1 实现 Web 管理后台 27 个模块，支持<b>增删改查、条件检索、分页、批量删除、CSV 导出、流程状态流转与详情查看</b>。</p>
@@ -2342,8 +2363,7 @@ function initTop(){
   $('endDd').addEventListener('click', e=>{ const b=e.target.closest('button[data-go]'); if(b){ $('endDd').classList.remove('on'); App.go(b.dataset.go); } });
   $('msgBtn').onclick = e => { e.stopPropagation(); $('msgDd').classList.toggle('on'); $('endDd').classList.remove('on'); renderMsg(); };
   document.addEventListener('click', ()=>{ $('endDd').classList.remove('on'); $('msgDd').classList.remove('on'); });
-  $('foldBtn').onclick = ()=>{ S.folded=!S.folded; const s=$('side'); s.style.flex=s.folded?'0 0 62px':'0 0 236px'; s.style.width=s.folded?'62px':'236px';
-    s.querySelectorAll('.nav a span:not(.ic), .nav .grp').forEach(n=>n.style.display=s.folded?'none':''); };
+  $('foldBtn').onclick = App.toggleFold;
   $('globalSearch').addEventListener('keydown', e=>{ if(e.key==='Enter'){ const kw=e.target.value.trim(); if(!kw) return; S.kw.archive=kw; S.mod='archive'; App.go('admin','archive'); toast(`已在「个人档案管理」中检索：${kw}`,'ok'); } });
 }
 function renderMsg(){
@@ -2858,12 +2878,12 @@ const CUSTOM = {
       <div class="acts"><span class="tag red"><span class="dot" style="background:#ff6b6b"></span>实时接收中</span>
       <button class="btn" onclick="emRules()">📜 三级响应规则</button><button class="btn" onclick="EME.spawn(true)">⚡ 模拟一条新告警</button></div></div>
     <div class="em3">
-      <div class="card"><div class="card-h"><h3>场景安全状态</h3><span class="tiny">🟢 安全 · 🔴 紧急 · 点击看记录</span></div><div class="card-b" id="emScenes" style="max-height:660px;overflow:auto"></div></div>
+      <div class="card"><div class="card-h"><h3>场景安全状态</h3><span class="tiny">🟢 安全 · 🔴 紧急</span></div><div class="card-b" id="emScenes" style="max-height:660px;overflow:auto;padding:12px 12px"></div></div>
       <div>
         <div class="em-kpis" id="emKpi"></div>
         <div class="card"><div class="card-h"><h3>园区实时扫描雷达</h3><span class="tiny" id="emRadarTip">正常巡逻</span></div>
-          <div class="card-b" style="display:flex;justify-content:center;padding:10px"><canvas id="emRadar" width="360" height="360" style="max-width:100%"></canvas></div></div>
-        <div class="card" style="margin-top:14px"><div class="card-h"><h3>备勤人员 · 快速通话</h3><span class="tiny">点击 📞 立即呼叫</span></div><div class="card-b" id="emStandby"></div></div>
+          <div class="card-b" style="display:flex;justify-content:center;padding:8px"><canvas id="emRadar" width="360" height="360"></canvas></div></div>
+        <div class="card" style="margin-top:12px"><div class="card-h"><h3>备勤人员 · 快速通话</h3><span class="tiny">点击 📞 立即呼叫</span></div><div class="card-b" id="emStandby" style="padding:10px 14px"></div></div>
       </div>
       <div class="card"><div class="card-h"><h3>实时紧急信息</h3><span class="tiny">最新在上 · 自动滚动</span></div><div class="card-b"><div id="emFeed" class="em-feed"></div></div></div>
     </div>`;
@@ -3000,7 +3020,7 @@ const EME = {
           `<button class="btn sm p" onclick="EME.handle(${it.id})">🚑 处理</button>`+
           (it.status==='处置中'?`<button class="btn sm g" onclick="EME.close2(${it.id})">✓ 闭环</button>`:'')+
           `<button class="btn sm" onclick="EME.falsify(${it.id})">误报</button>`+
-          `<button class="btn sm" onclick="EME.callOut(${it.id})">📞 呼叫处置人</button>`}</div></div>`;
+          `<button class="btn sm" onclick="EME.callOut(${it.id})">📞 呼叫</button>`}</div></div>`;
     }).join('') : `<div class="noech">暂无告警，园区安全运行中</div>`;
   },
   /* 场景状态同步（左栏红/绿） */
