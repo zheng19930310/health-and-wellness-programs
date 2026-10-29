@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>康养项目综合管理平台 · 高保真前端原型</title>
+<!-- 站点图标：由 build.js 将下方占位符替换为 assets/ 内图标内联的 data URI（保持单文件可双击打开） -->
+<link rel="icon" type="image/svg+xml" href="__FAVICON_SVG__">
+<link rel="icon" type="image/png" sizes="32x32" href="__FAVICON_PNG__">
+<link rel="apple-touch-icon" href="__FAVICON_APPLE__">
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 <script>
 if(!window.echarts){document.write('<script src="https://unpkg.com/echarts@5.5.1/dist/echarts.min.js"><\/script>');}
@@ -91,6 +95,10 @@ h1,h2,h3,h4{margin:0;font-weight:700}
 .lg-brand{color:#fff;max-width:560px;animation:up .7s ease both}
 .lg-brand .logo{display:flex;align-items:center;gap:12px;margin-bottom:26px}
 .lg-brand .logo .mk{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 8px 24px rgba(0,181,120,.35)}
+.lg-brand .logo .mk-img{width:46px;height:46px;border-radius:13px;display:block;box-shadow:0 8px 24px rgba(0,181,120,.35)}
+/* 图标文件加载成功则用矢量 logo，加载失败（单文件离线打开）自动回退到 emoji */
+.lg-brand .logo .mk-img[src=""]{display:none}
+.lg-brand .logo .mk-img:not([src=""])+.mk{display:none}
 .lg-brand .logo b{font-size:21px;letter-spacing:1px}
 .lg-brand .logo span{display:block;font-size:12px;color:rgba(255,255,255,.65);letter-spacing:3px;font-weight:400}
 .lg-brand h1{font-size:clamp(28px,3.4vw,44px);line-height:1.25;font-weight:800;letter-spacing:1px}
