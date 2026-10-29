@@ -29,7 +29,7 @@ const Modal = {
   onOk(){ const f=$('mBody').querySelector('form'); if(f) f.requestSubmit ? f.dispatchEvent(new Event('submit',{cancelable:true})) : null; }
 };
 document.addEventListener('click', e=>{ if(e.target===$('mask')) Modal.close(); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ Modal.close(); close3D(); document.querySelectorAll('.dd.on').forEach(d=>d.classList.remove('on')); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ if($('mask')&&$('mask').classList.contains('on')){ Modal.close(); } else if($('emWin')&&$('emWin').classList.contains('on')){ emCloseWin(); } else { close3D(); } document.querySelectorAll('.dd.on').forEach(d=>d.classList.remove('on')); } });
 
 /* ---------- 全屏 3D 视图查看器（内嵌独立单文件页面） ---------- */
 function open3D(url, title){
@@ -222,6 +222,7 @@ function renderMsg(){
 function renderPage(){
   const key = S.mod; const m0 = MODULES[key];
   if(!m0){ App.go('admin','dashboard'); return; }
+  if(key!=='emergency'){ if(typeof emHideWin==='function') emHideWin(); S._emBack = key; }
   if(m0.tabs){ renderTabs(key, m0); return; }
   if(m0.custom){ return CUSTOM[m0.custom] ? CUSTOM[m0.custom](key) : page404(); }
   renderTable(key);

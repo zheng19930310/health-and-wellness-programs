@@ -145,6 +145,14 @@ h1,h2,h3,h4{margin:0;font-weight:700}
 .v3d-acts a{color:#8ecbff;font-size:12.5px;text-decoration:none}
 .v3d-acts a:hover{text-decoration:underline}
 .v3d-mask iframe{flex:1;width:100%;height:100%;border:0;background:#000}
+/* ============ 紧急监管 · 全屏值守窗口（独立弹层，z-index 低于 Modal:900，高于后台布局） ============ */
+.em-win{position:fixed;inset:0;z-index:850;background:var(--bg);display:none;flex-direction:column}
+.em-win.on{display:flex;animation:fade .18s}
+.em-win .bar{flex:0 0 auto;min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 18px;background:linear-gradient(90deg,#0a2a4a,#0b3a3a);color:#eafcff;box-shadow:0 2px 12px rgba(0,0,0,.22)}
+.em-win .bar .bt{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.em-win .bar b{font-size:16px;letter-spacing:.5px}
+.em-win .bar .tip{font-size:12px;color:#8fd6c4}
+.em-win .body{flex:1;min-height:0;overflow:auto;padding:16px 20px}
 .m-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
 .m-h h3{font-size:16px}
 .m-h .x{width:30px;height:30px;border-radius:8px;color:var(--sub);font-size:18px;line-height:1}

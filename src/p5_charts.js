@@ -200,7 +200,7 @@ const CUSTOM = {
     const m = MODULES[key];
     $('crumb').innerHTML = `首页 / 园区总览 / <b>${esc(m.title)}</b>`;
     EME.seed();
-    $('page').innerHTML = `<div class="page-h"><div><h2>🚨 紧急监管</h2><p>${esc(m.desc)}　·　一级 3 分钟升级 / 二级 15 分钟升级 / 三级按工单时效</p></div>
+    emEnsureWin().innerHTML = `<div class="page-h"><div><h2>🚨 紧急监管</h2><p>${esc(m.desc)}　·　一级 3 分钟升级 / 二级 15 分钟升级 / 三级按工单时效</p></div>
       <div class="acts"><span class="tag red"><span class="dot" style="background:#ff6b6b"></span>实时接收中</span>
       <button class="btn" onclick="emRules()">📜 三级响应规则</button><button class="btn" onclick="EME.spawn(true)">⚡ 模拟一条新告警</button></div></div>
     <div class="em3">
@@ -223,6 +223,29 @@ const CUSTOM = {
 /* ============================================================
  *  紧急监管 · 三级响应实时引擎（纯前端模拟，无后端）
  * ============================================================ */
+/* ---------- 紧急监管 · 全屏值守窗口（Web 端专用，独立弹层展示，可关闭返回菜单） ---------- */
+function emEnsureWin(){
+  let w = $('emWin');
+  if(!w){
+    w = document.createElement('div'); w.id = 'emWin'; w.className = 'em-win';
+    w.innerHTML = `<div class="bar"><div class="bt"><b>🚨 紧急监管 · 全屏实时值守台</b><span class="tip">独立窗口 · 实时接警 · 三级响应快速处置</span></div>`
+      + `<button class="btn" onclick="emCloseWin()">✕ 关闭窗口</button></div>`
+      + `<div class="body" id="emWinBody"></div>`;
+    document.body.appendChild(w);
+  }
+  w.classList.add('on');
+  document.body.style.overflow = 'hidden';
+  return $('emWinBody');
+}
+function emHideWin(){ const w=$('emWin'); if(w) w.classList.remove('on'); document.body.style.overflow=''; if(typeof EME!=='undefined') EME.stop(); }
+function emCloseWin(){
+  const w = $('emWin'); if(!w || !w.classList.contains('on')) return;
+  emHideWin();
+  const back = (S._emBack && S._emBack!=='emergency') ? S._emBack : 'dashboard';
+  App.go('admin', back);
+  toast('已关闭紧急监管全屏窗口，返回菜单页','ok');
+}
+
 function emRules(){
   Modal.open('📜 紧急监管 · 三级响应规则', `<div class="tbwrap"><table class="tb"><thead><tr><th>级别</th><th>触发场景</th><th>第一接警</th><th>主处置</th><th>升级</th></tr></thead><tbody>`+
     EM_RULES.map(r=>`<tr><td data-k="级别"><span class="tag ${r.color}">${esc(r.lvl)}</span></td><td data-k="触发场景">${esc(r.scenes)}</td><td data-k="第一接警">${esc(r.first)}</td><td data-k="主处置">${esc(r.main)}</td><td data-k="升级时限">${esc(r.esc)}</td></tr>`).join('')+
