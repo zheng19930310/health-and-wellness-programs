@@ -589,7 +589,8 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .em-kpi.red b{color:#e5484d}
 .em-kpi.warn b{color:#f5a623}
 .em-feed{max-height:750px;overflow:auto;padding-right:4px;min-width:0}
-.em-it{border:1px solid var(--line);border-left:4px solid var(--sub-l);border-radius:10px;padding:9px 11px;margin-bottom:9px;background:#fff;animation:emin .38s ease}
+.em-it{border:1px solid var(--line);border-left:4px solid var(--sub-l);border-radius:10px;padding:9px 11px;margin-bottom:9px;background:#fff}
+.em-it.em-new{animation:emin .38s ease}
 @keyframes emin{from{opacity:0;transform:translateY(-10px)}}
 .em-it.l1{border-left-color:#e5484d;background:#fffafa}
 .em-it.l2{border-left-color:#f5a623;background:#fffdf7}
@@ -3014,7 +3015,7 @@ const EME = {
       time: d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()),
       ts: d.getTime(), status: st==='done'?'已闭环':st==='false'?'误报':'待处理', owner: st==='done'?(EM_DUTY[0].name):'—', result: st==='done'?'现场处置完毕，已回访':'', esc: st==='esc' };
   },
-  start(){ this.stop(); this.renderAll();
+  start(){ this.stop(); this._feedSig=''; this._shownMaxId=0; this.renderAll();
     this.timers = { t1:setInterval(()=>this.tick(),1000), t2:setInterval(()=>{ if(!this.live()) return; if(Math.random()>0.42) this.spawn(); },8000) };
     this.radar();
   },
@@ -3079,11 +3080,17 @@ const EME = {
     const host=$('emFeed'); if(!host) return;
     const order = {'待处理':0,'升级中':1,'处置中':2,'已闭环':3,'误报':4};
     const arr = this.list.slice().sort((a,b)=> (order[a.status]||0)-(order[b.status]||0) || b.ts-a.ts);
+    const now = Date.now(), prevMax = this._shownMaxId||0;
+    /* 快照签名：仅当集合/状态/处置人/分钟级年龄变化时才重绘，杜绝每秒重建导致的闪烁 */
+    const sig = arr.map(it=> it.id+':'+it.status+':'+(it.owner||'')+':'+Math.max(0,Math.floor((now-it.ts)/60000))).join('|');
+    if(sig === this._feedSig) return;
+    const hasNew = arr.some(it=> it.id>prevMax), keepTop = host.scrollTop;
     host.innerHTML = arr.length?arr.map(it=>{
-      const mins = Math.max(0, Math.floor((Date.now()-it.ts)/60000));
+      const mins = Math.max(0, Math.floor((now-it.ts)/60000));
       const done = it.status==='已闭环'||it.status==='误报';
+      const isNew = it.id>prevMax;
       const tag = it.status==='待处理'?'red':it.status==='升级中'?'red':it.status==='处置中'?'warn':it.status==='误报'?'ink':'green';
-      return `<div class="em-it l${it.lvl}${done?' done':''}">
+      return `<div class="em-it l${it.lvl}${done?' done':''}${isNew?' em-new':''}">
         <div class="top"><b>${it.ico} ${esc(it.kind)}</b><span class="tm">${esc(it.time.slice(5))}</span></div>
         <p>${esc(it.obj)}　·　${esc(it.val)}</p>
         <div class="rt"><span class="lv v${it.lvl}">${it.lvl===1?'一级':it.lvl===2?'二级':'三级'}</span>
@@ -3095,6 +3102,9 @@ const EME = {
           `<button class="btn sm" onclick="EME.falsify(${it.id})">误报</button>`+
           `<button class="btn sm" onclick="EME.callOut(${it.id})">📞 呼叫</button>`}</div></div>`;
     }).join('') : `<div class="noech">暂无告警，园区安全运行中</div>`;
+    host.scrollTop = hasNew ? 0 : keepTop;
+    this._feedSig = sig;
+    this._shownMaxId = arr.reduce((m,x)=> x.id>m?x.id:m, prevMax);
   },
   /* 场景状态同步（左栏红/绿） */
   syncScene(){ this.escalate(); this.syncCounts(); this.renderScenes(); },
