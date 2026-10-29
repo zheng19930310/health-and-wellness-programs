@@ -25,7 +25,20 @@ const Modal = {
   onOk(){ const f=$('mBody').querySelector('form'); if(f) f.requestSubmit ? f.dispatchEvent(new Event('submit',{cancelable:true})) : null; }
 };
 document.addEventListener('click', e=>{ if(e.target===$('mask')) Modal.close(); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ Modal.close(); document.querySelectorAll('.dd.on').forEach(d=>d.classList.remove('on')); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ Modal.close(); close3D(); document.querySelectorAll('.dd.on').forEach(d=>d.classList.remove('on')); } });
+
+/* ---------- 全屏 3D 视图查看器（内嵌独立单文件页面） ---------- */
+function open3D(url, title){
+  let ov = $('v3d');
+  if(!ov){
+    ov = document.createElement('div'); ov.id='v3d'; ov.className='v3d-mask';
+    ov.innerHTML = `<div class="v3d-bar"><b id="v3dTitle"></b><div class="v3d-acts"><a id="v3dOpen" href="#" target="_blank" rel="noopener">↗ 新窗口打开</a><button class="btn" onclick="close3D()">✕ 关闭</button></div></div><iframe id="v3dFrame" src="about:blank" allow="fullscreen"></iframe>`;
+    document.body.appendChild(ov);
+  }
+  $('v3dTitle').textContent = title||'3D 视图'; $('v3dOpen').setAttribute('href', url); $('v3dFrame').src = url;
+  ov.classList.add('on');
+}
+function close3D(){ const ov=$('v3d'); if(ov && ov.classList.contains('on')){ ov.classList.remove('on'); $('v3dFrame').src='about:blank'; } }
 
 /* ---------- 登录 ---------- */
 function initLogin(){
@@ -86,6 +99,7 @@ function route(){
   if(v==='home') renderHome();
   if(v==='admin'){ renderNav(); renderPage(); }
   if(v==='screen') initScreen();
+  if((v==='app'||v==='mp') && S.user && ['elder','child','special'].includes(S.user.roleKey)){ S.mobileRole[v]=S.user.roleKey; }
   if(v==='app') renderMobile('app');
   if(v==='mp') renderMobile('mp');
   if(v==='login'){ const i=$('lgUser'); setTimeout(()=>i&&i.focus(),200); }
@@ -113,8 +127,8 @@ function renderHome(){
   const ends = [
     {k:'admin', cls:'e1', ico:'🖥', t:'Web 管理后台', d:'27 个业务模块：档案、请假、活动、预约、关怀、消费、设备、系统管理与报表，支持增删改查与流程流转。', tag:'重点交付'},
     {k:'screen', cls:'e2', ico:'📊', t:'数字中心 · 大数据屏', d:'ECharts 实时可视化：经营趋势、健康风险、设备在线率、告警流与数字孪生园区地图。', tag:'1920×1080'},
-    {k:'app', cls:'e3', ico:'📱', t:'APP 端原型', d:'长者端 / 子女端双角色高保真原型：健康可视化、活动报名、订餐、AI 陪伴、SOS 呼救、代付充值。', tag:'可交互'},
-    {k:'mp', cls:'e4', ico:'💬', t:'小程序端原型', d:'微信胶囊导航 + 宫格服务：扫码签到、康养圈动态、请假与预约表单、子女授权查看。', tag:'轻量入口'}
+    {k:'app', cls:'e3', ico:'📱', t:'APP 端原型', d:'长者端 / 子女端 / 特殊长者手环端三角色高保真原型：健康可视化、活动报名、订餐、AI 陪伴、SOS 呼救、到位置动打卡。', tag:'可交互'},
+    {k:'mp', cls:'e4', ico:'💬', t:'小程序端原型', d:'微信胶囊导航 + 宫格服务：扫码签到、康养圈动态、请假与预约表单、子女授权查看、手环端自动打卡。', tag:'轻量入口'}
   ];
   $('hmEnds').innerHTML = ends.map(e=>{ const ok=a.ends.includes(e.k); return `<div class="end ${e.cls}" style="${ok?'':'opacity:.42;filter:grayscale(.5)'}" onclick="${ok?`App.go('${e.k}')`:`toast('${a.role} 无该端权限，可换 admin / manager / iot 等账号体验','warn')`}">
     <div class="badge">${ok?e.tag:'无权限'}</div><div class="ico">${e.ico}</div><h3>${e.t}</h3><p>${e.d}</p><div class="go">进入 →</div></div>`; }).join('');

@@ -128,6 +128,15 @@ h1,h2,h3,h4{margin:0;font-weight:700}
 .modal{background:#fff;border-radius:14px;width:640px;max-width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--sh-lg);animation:pop .22s cubic-bezier(.2,.9,.3,1.2)}
 @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
 .modal.hdr{width:920px}
+/* ============ 全屏 3D 视图查看器 ============ */
+.v3d-mask{position:fixed;inset:0;z-index:1200;background:#050b12;display:none;flex-direction:column}
+.v3d-mask.on{display:flex;animation:fade .18s}
+.v3d-bar{flex:0 0 auto;height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:linear-gradient(90deg,#0a2a4a,#0b3a3a);border-bottom:1px solid rgba(74,168,255,.3)}
+.v3d-bar b{font-size:15px;letter-spacing:1px;color:#eafcff}
+.v3d-acts{display:flex;align-items:center;gap:16px}
+.v3d-acts a{color:#8ecbff;font-size:12.5px;text-decoration:none}
+.v3d-acts a:hover{text-decoration:underline}
+.v3d-mask iframe{flex:1;width:100%;height:100%;border:0;background:#000}
 .m-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
 .m-h h3{font-size:16px}
 .m-h .x{width:30px;height:30px;border-radius:8px;color:var(--sub);font-size:18px;line-height:1}
@@ -379,7 +388,7 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .twin2{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0}
 
 /* ============ MOBILE (APP / 小程序) ============ */
-.mb{height:100vh;display:flex;align-items:center;justify-content:center;gap:38px;padding:20px;background:
+.mb{height:100%;overflow:auto;display:flex;align-items:safe center;justify-content:safe center;gap:38px;padding:20px;background:
  radial-gradient(900px 500px at 15% 0%,rgba(22,104,220,.35),transparent 60%),
  radial-gradient(800px 460px at 90% 100%,rgba(0,181,120,.28),transparent 60%),linear-gradient(160deg,#0a1524,#0d1f33)}
 .mb-side{width:300px;color:#fff;flex:0 0 300px}
@@ -391,7 +400,7 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .mb-side .f{margin-top:20px;display:flex;flex-direction:column;gap:9px;font-size:12.5px;color:rgba(255,255,255,.7)}
 .mb-side .f i{font-style:normal;display:flex;gap:9px;align-items:center}
 .mb-side .back{margin-top:24px}
-.phone{width:392px;height:812px;flex:0 0 auto;border-radius:44px;background:#05080f;padding:12px;box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08),inset 0 0 0 2px #1b2836;position:relative}
+.phone{width:392px;height:min(812px, calc(100vh - 44px));flex:0 0 auto;margin:auto;border-radius:44px;background:#05080f;padding:12px;box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08),inset 0 0 0 2px #1b2836;position:relative}
 .phone:before{content:"";position:absolute;left:50%;top:12px;transform:translateX(-50%);width:118px;height:26px;background:#05080f;border-radius:0 0 16px 16px;z-index:9}
 .scr{height:100%;width:100%;border-radius:33px;overflow:hidden;background:#f4f7fb;display:flex;flex-direction:column;position:relative}
 .st{height:44px;flex:0 0 44px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 6px;font-size:12px;font-weight:600;color:#0b1220;background:transparent;position:relative;z-index:8}
@@ -404,7 +413,7 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .app-hd .av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;border:1.5px solid rgba(255,255,255,.4)}
 .app-body{flex:1;overflow-y:auto;padding:14px 14px 16px;position:relative;z-index:2}
 .app-body::-webkit-scrollbar{width:0}
-.tabb{flex:0 0 auto;height:62px;background:#fff;border-top:1px solid #e9eef5;display:flex;padding-bottom:12px}
+.tabb{flex:0 0 auto;position:relative;z-index:5;height:62px;background:#fff;border-top:1px solid #e9eef5;display:flex;padding-bottom:12px}
 .tabb button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;color:#8b9aad}
 .tabb button .e{font-size:19px}
 .tabb button.on{color:var(--blue);font-weight:600}
@@ -480,7 +489,7 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .mform .field>label{font-size:12px}
 .mbtns{display:flex;gap:10px}
 .mbtns .btn{flex:1;justify-content:center;height:40px}
-.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:18px 18px 0 0;padding:16px;z-index:20;box-shadow:0 -10px 40px rgba(0,0,0,.2);animation:slide .25s}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:calc(100% - 26px);overflow-y:auto;overscroll-behavior:contain;background:#fff;border-radius:18px 18px 0 0;padding:16px;z-index:20;box-shadow:0 -10px 40px rgba(0,0,0,.2);animation:slide .25s}
 @keyframes slide{from{transform:translateY(100%)}to{transform:none}}
 .sheet h4{font-size:15px;margin-bottom:12px;display:flex;justify-content:space-between}
 @media (max-width:1000px){.mb{flex-direction:column;overflow:auto}.mb-side{width:100%;flex:none;text-align:center}.mb-side .f{align-items:center}}
@@ -494,6 +503,48 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 @keyframes tin{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
 .tipbar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:1500;font-size:11.5px;color:var(--sub-l);background:rgba(255,255,255,.85);border:1px solid var(--line);padding:5px 14px;border-radius:20px;backdrop-filter:blur(6px)}
 .noech{display:flex;align-items:center;justify-content:center;height:100%;color:var(--sub-l);font-size:13px;background:repeating-linear-gradient(45deg,#f7f9fc,#f7f9fc 10px,#fbfcfe 10px,#fbfcfe 20px);border-radius:10px}
+
+/* ============ 小康 · 智能交流助手 ============ */
+#xkFab{position:fixed;right:24px;bottom:24px;z-index:850;display:none;align-items:center;gap:9px;padding:11px 18px 11px 13px;border-radius:30px;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;cursor:pointer;box-shadow:0 10px 28px rgba(0,90,110,.35);user-select:none;transition:.18s}
+#xkFab.on{display:flex}
+#xkFab:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,90,110,.45)}
+#xkFab .fi{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:19px}
+#xkFab b{font-size:14px;letter-spacing:1px}
+#xkFab small{font-size:10.5px;opacity:.85;border-left:1px solid rgba(255,255,255,.4);padding-left:9px}
+.xk-win{position:fixed;z-index:851;width:384px;height:522px;background:#fff;border-radius:14px;box-shadow:0 18px 50px rgba(8,28,52,.28);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);animation:pop .2s}
+.xk-win.min{height:46px}
+.xk-win.min .xk-msgs,.xk-win.min .xk-chips,.xk-win.min .xk-in{display:none}
+.xk-win.act{border-color:var(--green)}
+.xk-hd{flex:0 0 46px;display:flex;align-items:center;gap:8px;padding:0 10px 0 14px;background:linear-gradient(120deg,#0d8f66,var(--blue));color:#fff;cursor:grab;font-size:13.5px;touch-action:none}
+.xk-hd .t{font-weight:700;letter-spacing:.5px}
+.xk-hd .ctx{font-size:10.5px;background:rgba(255,255,255,.18);border-radius:10px;padding:2px 8px;max-width:116px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.xk-hd .sp{flex:1}
+.xk-hd button{width:24px;height:24px;border-radius:6px;color:#fff;font-size:12.5px;line-height:1;background:transparent;cursor:pointer}
+.xk-hd button:hover{background:rgba(255,255,255,.22)}
+.xk-msgs{flex:1;overflow-y:auto;padding:12px;background:#f6f9fc;display:flex;flex-direction:column;gap:10px}
+.xk-m{display:flex;gap:8px;align-items:flex-start}
+.xk-m .av{flex:0 0 26px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff}
+.xk-b{max-width:78%;padding:8px 11px;border-radius:10px;font-size:12.8px;line-height:1.75;background:#fff;border:1px solid var(--line);word-break:break-word}
+.xk-m.me{flex-direction:row-reverse}
+.xk-m.me .av{background:#8fa4bd}
+.xk-m.me .xk-b{background:var(--blue);color:#fff;border-color:var(--blue-d)}
+.xk-m.sys{justify-content:center}
+.xk-m.sys .xk-b{max-width:92%;background:#eef6f1;border:1px dashed #b9dcca;color:var(--sub);font-size:11.5px;text-align:center}
+.xk-typing .xk-b:after{content:'…';animation:xkb 1s infinite}
+@keyframes xkb{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+.xk-btns{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.xk-sug{cursor:pointer;color:var(--blue);border-bottom:1px dashed var(--blue);margin:0 2px;font-size:12px}
+.xk-sug:hover{color:var(--green-d)}
+.xk-chips{flex:0 0 auto;display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--line);background:#fff;overflow-x:auto;white-space:nowrap}
+.xk-chips button{flex:0 0 auto;font-size:11.5px;color:var(--green-d);background:var(--green-l);border:1px solid #c8ecdd;border-radius:14px;padding:4px 10px;cursor:pointer}
+.xk-chips button:hover{background:#d5f2e6}
+.xk-in{flex:0 0 auto;display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);background:#fff}
+.xk-in input{flex:1;height:36px;border:1px solid var(--line);border-radius:18px;padding:0 14px;font-size:12.8px;outline:none;background:#f7fafd}
+.xk-in input:focus{border-color:var(--green);background:#fff}
+.xk-in button{flex:0 0 36px;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;font-size:15px;cursor:pointer;border:0}
+.xk-note{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:#fbfdff}
+.xk-note summary{cursor:pointer;font-weight:600;font-size:13px;list-style:none}
+.xk-note .ln{font-size:12px;color:var(--sub);line-height:1.9;border-bottom:1px dashed var(--line);padding:3px 0}
 </style>
 </head>
 <body>
@@ -645,13 +696,14 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
     <div class="mb-side">
       <h2>📱 APP 端原型</h2>
       <p>完整移动服务入口，按角色分为长者端与子女端。适老化大字体、高对比、语音优先，覆盖健康、生活服务、安全求助、消费与社交。</p>
-      <div class="seg" id="appRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button></div>
+      <div class="seg" id="appRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button><button data-r="special">手环端</button></div>
       <div class="f">
         <i>✅ 首页 / 健康 / 服务 / 我的 四大 Tab</i>
         <i>✅ 健康数据可视化 + 运动打卡</i>
         <i>✅ 活动报名、订餐、AI 陪伴（可交互）</i>
         <i>✅ SOS 一键呼救 → 后台告警联动</i>
         <i>✅ 子女端：远程照护、代付充值、探望预约</i>
+        <i>✅ 特殊长者：智能手环 时间/震动/SOS/到达自动打卡</i>
       </div>
       <button class="btn g back" onclick="App.go('home')">← 返回门户选择端</button>
     </div>
@@ -665,13 +717,14 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
     <div class="mb-side">
       <h2>💬 小程序端原型</h2>
       <p>轻量服务入口，无需下载。以卡片 + 宫格组织高频服务，与 Web 后台共享账号与权限体系，扫码即可体验活动报名、预约与康养圈。</p>
-      <div class="seg" id="mpRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button></div>
+      <div class="seg" id="mpRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button><button data-r="special">手环端</button></div>
       <div class="f">
         <i>✅ 微信胶囊导航 + 底部 Tab 结构</i>
         <i>✅ 扫码签到 / 人脸核销入口</i>
         <i>✅ 康养圈动态、点赞、留言</i>
         <i>✅ 请假与预约表单（可提交）</i>
         <i>✅ 子女端：授权查看、代付、探望</i>
+        <i>✅ 特殊长者：智能手环 时间/震动/SOS/到达自动打卡</i>
       </div>
       <button class="btn g back" onclick="App.go('home')">← 返回门户选择端</button>
     </div>
@@ -701,7 +754,8 @@ const ACCOUNTS = [
   { u:'social',  p:'123456',   name:'周与安', role:'社工/志愿者',  roleKey:'social',   ends:['home','admin','mp'],                  desc:'人文关怀、活动、课堂、康养圈' },
   { u:'clean',   p:'123456',   name:'吴桂芳', role:'保洁后勤人员', roleKey:'clean',    ends:['home','admin'],                       desc:'清洁排期、执行记录、检查验收' },
   { u:'elder',   p:'123456',   name:'徐世昌', role:'长者/住客',    roleKey:'elder',    ends:['home','app','mp'],                    desc:'长者端：健康、活动、订餐、康养圈' },
-  { u:'child',   p:'123456',   name:'徐乐(女)',role:'子女/家属',   roleKey:'child',    ends:['home','app','mp'],                    desc:'子女端：远程照护、代付、探望预约' }
+  { u:'child',   p:'123456',   name:'徐乐(女)',role:'子女/家属',   roleKey:'child',    ends:['home','app','mp'],                    desc:'子女端：远程照护、代付、探望预约' },
+  { u:'special', p:'123456',   name:'蒋明远', role:'特殊长者',     roleKey:'special',  ends:['home','app','mp'],                    desc:'智能手环端：仅时间/震动/SOS/自动打卡（不识长者）' }
 ];
 /* 角色可见模块（RBAC 简化演示） */
 const ROLE_MENUS = {
@@ -714,7 +768,8 @@ const ROLE_MENUS = {
   social:  ['dashboard','care','activity','class','circle','psych','hospice','fraud','remind','archive'],
   clean:   ['dashboard','clean','iot','remind','plan'],
   elder:   ['dashboard','archive'],
-  child:   ['dashboard','archive']
+  child:   ['dashboard','archive'],
+  special: ['dashboard','archive']
 };
 
 /* ---------------- 长者基础数据（多模块引用） ---------------- */
@@ -770,7 +825,8 @@ M('archive', { title:'个人档案管理', icon:'📇', grp:'长者服务',
     ['孙德福','男',88,'3201****19380418','康养区 B 栋','B-101','专护','钻石定制套餐','188****3306','孙丽','188****7712','阿司匹林','心衰 III 级 / 房颤','2023-12-01','临终关怀,重点监护','在院'],
     ['钱月英','女',71,'3201****19550925','旅游区 旅居客房','T-306','自理','旅居体验套餐','137****4418','钱伟','138****5560','无','无','2025-10-09','旅居,短住,体验转化','入住办理中'],
     ['郑海山','男',77,'3201****19491130','康养区 C 栋','C-220','半自理','健康管理套餐','136****9911','郑洁','135****2204','无','糖尿病 / 白内障术后','2024-08-14','糖尿病,需随访','在院'],
-    ['冯静怡','女',74,'3201****19520315','文化区','W-108','自理','文化增值套餐','132****7788','冯磊','133****6677','无','无','2025-04-02','老年课堂助教,志愿者','在院']
+    ['冯静怡','女',74,'3201****19520315','文化区','W-108','自理','文化增值套餐','132****7788','冯磊','133****6677','无','无','2025-04-02','老年课堂助教,志愿者','在院'],
+    ['蒋明远','男',80,'3201****19460715','康养区 A 栋','A-105','半自理','生活照护套餐','134****6602','蒋涛','135****1180','无','轻度认知障碍 / 不识字（文盲），不便使用智能手机','2025-05-20','特殊长者,智能手环,自动打卡','在院']
   ]),
   detail:'archive'
 });
@@ -794,6 +850,7 @@ M('health', { title:'健康与病例档案', icon:'❤️', grp:'长者服务',
   rows: R(['name','date','hr','spo2','bp','sleep','step','risk','type','note','doctor','auth'],[
     ['徐世昌','2026-10-26',78,97,'136/84',7.2,4210,'低','手环体征','夜间睡眠平稳，晨间心率正常，建议继续控盐饮食','陈叙白','已授权'],
     ['孙德福','2026-10-26',102,92,'152/95',4.5,320,'高','手环体征','心率偏快伴血氧下降，已触发 I 级告警并通知值班医护','陈叙白','已授权'],
+    ['蒋明远','2026-10-26',74,98,'126/80',6.8,3200,'低','手环体征','智能手环自动打卡体征正常；不识长者，仅需时间/震动/SOS/自动打卡','何雨欣','已授权'],
     ['张桂兰','2026-10-25',72,96,'128/80',6.0,0,'中','护理记录','翻身拍背 q2h，皮肤完好，骶尾部轻度压红已减压','何雨欣','已授权'],
     ['王秀珍','2026-10-25',84,94,'130/82',5.5,2100,'中','理疗记录','呼吸训练 + 雾化 1 次，耐受良好，血氧回升至 94%','陈叙白','未授权'],
     ['陈国栋','2026-10-24',68,98,'124/78',6.8,3300,'低','体检摘要','MMSE 22 分，轻度认知障碍，建议加强定向训练','柳文清','已授权'],
@@ -2024,7 +2081,20 @@ const Modal = {
   onOk(){ const f=$('mBody').querySelector('form'); if(f) f.requestSubmit ? f.dispatchEvent(new Event('submit',{cancelable:true})) : null; }
 };
 document.addEventListener('click', e=>{ if(e.target===$('mask')) Modal.close(); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ Modal.close(); document.querySelectorAll('.dd.on').forEach(d=>d.classList.remove('on')); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ Modal.close(); close3D(); document.querySelectorAll('.dd.on').forEach(d=>d.classList.remove('on')); } });
+
+/* ---------- 全屏 3D 视图查看器（内嵌独立单文件页面） ---------- */
+function open3D(url, title){
+  let ov = $('v3d');
+  if(!ov){
+    ov = document.createElement('div'); ov.id='v3d'; ov.className='v3d-mask';
+    ov.innerHTML = `<div class="v3d-bar"><b id="v3dTitle"></b><div class="v3d-acts"><a id="v3dOpen" href="#" target="_blank" rel="noopener">↗ 新窗口打开</a><button class="btn" onclick="close3D()">✕ 关闭</button></div></div><iframe id="v3dFrame" src="about:blank" allow="fullscreen"></iframe>`;
+    document.body.appendChild(ov);
+  }
+  $('v3dTitle').textContent = title||'3D 视图'; $('v3dOpen').setAttribute('href', url); $('v3dFrame').src = url;
+  ov.classList.add('on');
+}
+function close3D(){ const ov=$('v3d'); if(ov && ov.classList.contains('on')){ ov.classList.remove('on'); $('v3dFrame').src='about:blank'; } }
 
 /* ---------- 登录 ---------- */
 function initLogin(){
@@ -2085,6 +2155,7 @@ function route(){
   if(v==='home') renderHome();
   if(v==='admin'){ renderNav(); renderPage(); }
   if(v==='screen') initScreen();
+  if((v==='app'||v==='mp') && S.user && ['elder','child','special'].includes(S.user.roleKey)){ S.mobileRole[v]=S.user.roleKey; }
   if(v==='app') renderMobile('app');
   if(v==='mp') renderMobile('mp');
   if(v==='login'){ const i=$('lgUser'); setTimeout(()=>i&&i.focus(),200); }
@@ -2112,8 +2183,8 @@ function renderHome(){
   const ends = [
     {k:'admin', cls:'e1', ico:'🖥', t:'Web 管理后台', d:'27 个业务模块：档案、请假、活动、预约、关怀、消费、设备、系统管理与报表，支持增删改查与流程流转。', tag:'重点交付'},
     {k:'screen', cls:'e2', ico:'📊', t:'数字中心 · 大数据屏', d:'ECharts 实时可视化：经营趋势、健康风险、设备在线率、告警流与数字孪生园区地图。', tag:'1920×1080'},
-    {k:'app', cls:'e3', ico:'📱', t:'APP 端原型', d:'长者端 / 子女端双角色高保真原型：健康可视化、活动报名、订餐、AI 陪伴、SOS 呼救、代付充值。', tag:'可交互'},
-    {k:'mp', cls:'e4', ico:'💬', t:'小程序端原型', d:'微信胶囊导航 + 宫格服务：扫码签到、康养圈动态、请假与预约表单、子女授权查看。', tag:'轻量入口'}
+    {k:'app', cls:'e3', ico:'📱', t:'APP 端原型', d:'长者端 / 子女端 / 特殊长者手环端三角色高保真原型：健康可视化、活动报名、订餐、AI 陪伴、SOS 呼救、到位置动打卡。', tag:'可交互'},
+    {k:'mp', cls:'e4', ico:'💬', t:'小程序端原型', d:'微信胶囊导航 + 宫格服务：扫码签到、康养圈动态、请假与预约表单、子女授权查看、手环端自动打卡。', tag:'轻量入口'}
   ];
   $('hmEnds').innerHTML = ends.map(e=>{ const ok=a.ends.includes(e.k); return `<div class="end ${e.cls}" style="${ok?'':'opacity:.42;filter:grayscale(.5)'}" onclick="${ok?`App.go('${e.k}')`:`toast('${a.role} 无该端权限，可换 admin / manager / iot 等账号体验','warn')`}">
     <div class="badge">${ok?e.tag:'无权限'}</div><div class="ico">${e.ico}</div><h3>${e.t}</h3><p>${e.d}</p><div class="go">进入 →</div></div>`; }).join('');
@@ -2636,11 +2707,12 @@ const CUSTOM = {
       <button class="btn" onclick="App.go('screen')">全屏模式</button></div></div>
       <div class="bar2"><div class="card"><div class="card-h"><h3>园区三维模型（孪生视图）</h3><span class="tiny">分块加载 · 支持点选与图层开关</span></div>
       <div class="card-b"><div class="park" id="twinPark" style="height:460px"></div>
-      <div class="sw-box" style="margin-top:12px">${[['建筑图层','3 大分区 · 12 栋'],['设备图层',MODULES.device.rows.length+' 台已映射'],['人员图层','在住 118 · 员工 42'],['告警图层',MODULES.devalarm.rows.filter(a=>a.status!=='已闭环').length+' 条未闭环'],['时间回溯','支持 7 日回放'],['推演模拟','客流/能耗预测']].map(x=>`<div class="ck"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('')}</div></div></div>
+      <div class="sw-box" style="margin-top:12px">${[['建筑图层','3 大分区 · 12 栋'],['设备图层',MODULES.device.rows.length+' 台已映射'],['人员图层','在住 118 · 员工 42'],['告警图层',MODULES.devalarm.rows.filter(a=>a.status!=='已闭环').length+' 条未闭环'],['时间回溯','支持 7 日回放'],['推演模拟','客流/能耗预测']].map(x=>`<div class="ck"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('')}</div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn p" onclick="open3D('assets/3d/campus-twin.html','智慧康养园区 · 全局三维孪生')">🌐 全局查看 · 园区三维孪生</button><button class="btn" onclick="open3D('assets/3d/living-room-3d.html','康养居室 · 室内精装 3D 样板间')">🛋 室内 3D · 客厅样板间</button></div></div></div>
       <div><div class="card"><div class="card-h"><h3>3D 导航与路线指引</h3></div><div class="card-b">
         <div class="field"><label>目的地检索</label><input class="inp" id="navTo" value="康复理疗室 2（康养区 B 栋）"></div>
         <div id="navPath" style="display:flex;flex-direction:column;gap:9px"></div>
-        <div style="height:12px"></div><button class="btn g blk" onclick="navRoute()">🧭 生成导航路线并推送长者端</button></div></div>
+        <div style="height:12px"></div><button class="btn g blk" onclick="navRoute()">🧭 生成导航路线并推送长者端</button><button class="btn blk" style="margin-top:10px" onclick="open3D('assets/3d/indoor-navigation.html','园区室内导航 · 1F-3F 实景路线指引')">🧭 打开 3D 室内导航实景</button></div></div>
       <div class="card"><div class="card-h"><h3>视频联动墙</h3><span class="tiny">告警自动弹窗</span></div><div class="card-b"><div class="grid3" style="gap:10px" id="vidWall"></div></div></div>
       </div></div>`;
     parkHTML('twinPark');
@@ -2855,18 +2927,31 @@ function drawScreenCharts(soft){
 const MB_TABS = {
   app: {
     elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['👤','我的','mine']]
+    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['👤','我的','mine']],
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']]
   },
   mp: {
     elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['👤','我的','mine']]
+    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['👤','我的','mine']],
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']]
   }
 };
 
 const MB = {
-  elder:'徐世昌', child:'徐乐', cart:[], chat:[], aiLog:null, postIdx:0,
+  elder:'徐世昌', child:'徐乐', special:'蒋明远', cart:[], chat:[], aiLog:null, postIdx:0,
   A(){ const r = MODULES.archive.rows.find(a=>a.name===MB.elder);
        return r || { name:MB.elder, room:'A-305', zone:'康养区 A 栋', level:'半自理', pkg:'健康管理套餐', guardian:'徐乐' }; },
+  SA(){ const r = MODULES.archive.rows.find(a=>a.name===MB.special);
+       return r || { name:MB.special, room:'A-105', zone:'康养区 A 栋', level:'半自理', pkg:'生活照护套餐', guardian:'蒋涛', gphone:'135****1180', age:80 }; },
+  wx(){ const h=new Date().getHours(); const t=[['🌙','晴','18℃','夜间偏凉，注意保暖'],['🌅','多云','22℃','空气良好，适合晨间活动'],['☀️','晴','26℃','光照充足，记得多喝水'],['🌆','晴转多云','23℃','体感舒适，适宜散步']]; const i=h<6?0:h<11?1:h<18?2:3; return {ico:t[i][0],text:t[i][1],temp:t[i][2],tip:t[i][3]}; },
+  BH(){ const rs = MODULES.health.rows.filter(h=>h.name===MB.special); return rs[0] || { hr:74, spo2:98, bp:'126/80', sleep:6.8, step:3200, date:today(), bat:'86%', tip:'该喝温水了' }; },
+  BLOCS(){ return [
+    {id:1,ico:'🍚',name:'康养餐厅',time:'11:30 午餐',act:'低盐营养餐供应',hint:'到餐厅自动确认今日订餐'},
+    {id:2,ico:'💆',name:'康复理疗室',time:'14:00 理疗',act:'中医理疗体验',hint:'到达自动开始理疗签到'},
+    {id:3,ico:'🎪',name:'文化活动室',time:'15:30 活动',act:'合唱团社区联排',hint:'到达自动签到并计入活动'},
+    {id:4,ico:'🌳',name:'银杏大道',time:'16:30 散步',act:'健走打卡',hint:'GPS 围栏自动计步打卡'},
+    {id:5,ico:'🏥',name:'医务室',time:'按需',act:'体征测量',hint:'到达自动上传手环体征'}
+  ]; },
   MEM(){ const r = MODULES.member.rows.find(m=>m.name===MB.elder);
        return r || { lv:'金卡会员', balance:3680, point:1240, spend:42800, no:'HY20250312001', status:'正常' }; },
   H(){ const rs = MODULES.health.rows.filter(h=>h.name===MB.elder); return rs[0] || { hr:78, spo2:97, bp:'136/84', sleep:7.2, step:4210, risk:'低', date:today(), doctor:'陈叙白' }; },
@@ -2883,6 +2968,7 @@ const MB = {
     return `<div class="st"><span>${p(d.getHours())}:${p(d.getMinutes())}</span><span class="rt">🔔 5G ▮▮▮ 86%</span></div>`; },
   wxbar(role){ return `<div class="wxbar"><div class="t">‹ 康养服务${role==='child'?'（子女版）':''}</div><div class="caps"><span>⋯</span><span style="border-left:1px solid #e4e9f0;height:16px"></span><span>◉</span></div></div>`; },
   head(kind, role){
+    if(role==='special'){ const sa=MB.SA(); return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${esc(sa.name)} · 智能手环</h3><div class="sm">大字 · 语音 · 到站自动打卡 · 一键呼救</div></div><div class="av">⌚</div></div></div>`; }
     const a = MB.A();
     if(role==='child') return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(S.user?S.user.name:MB.child)}</h3><div class="sm">${kind==='mp'?'小程序 · 微信授权已绑定':'APP · 已绑定长者 '+a.name} · 关注 ${a.name}（${a.room}）</div></div><div class="av">👪</div></div></div>`;
     return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(a.name)}</h3><div class="sm">${esc(a.zone)} · ${esc(a.room)} · ${esc(a.level)} · ${esc(a.pkg||'健康管理套餐')}</div></div><div class="av">🧓</div></div></div>`;
@@ -2891,6 +2977,8 @@ const MB = {
   tabb(kind, role, tabs, idx){
     return `<div class="tabb">`+tabs.map((t,i)=> t[2]==='sos'
       ? `<button class="sos" onclick="Mob.sos()"><span class="e">🆘</span>SOS</button>`
+      : t[2]==='broadcast'
+      ? `<button onclick="Mob.broadcast()"><span class="e">${t[0]}</span>${t[1]}</button>`
       : `<button class="${i===idx?'on':''}" onclick="Mob.go('${kind}',${i})"><span class="e">${t[0]}</span>${t[1]}</button>`).join('')+`</div>`;
   },
   sheet(html, style){ MB.close(); const host = $(S.view==='mp'?'mpScr':'appScr'); if(!host) return;
@@ -2904,7 +2992,7 @@ const MB = {
     const role = S.mobileRole[kind] || 'elder';
     const tabs = MB_TABS[kind][role];
     let idx = S[kind+'Tab']||0; if(idx>=tabs.length) idx=0;
-    const key = tabs[idx][2]==='sos' ? 'home' : tabs[idx][2];
+    const key = (tabs[idx][2]==='sos'||tabs[idx][2]==='broadcast') ? 'home' : tabs[idx][2];
     host.innerHTML = (kind==='app'?MB.status():MB.wxbar(role)) + MB.head(kind,role)
       + `<div class="app-body">${MB.screen(kind,role,key)}</div>` + MB.tabb(kind,role,tabs,idx);
     const seg = $(kind+'Role');
@@ -2925,6 +3013,7 @@ const MB = {
 
   /* ---------- 屏幕 ---------- */
   screen(kind, role, key){
+    if(role==='special') return ({ home:MB.sBand, band:MB.sBand, checkin:MB.sCheckin, mine:MB.sMine })[key](kind);
     if(role==='child') return ({ home:MB.cHome, family:MB.cFamily, book:MB.cBook, pay:MB.cPay, mine:MB.cMine })[key](kind);
     return ({ home:MB.eHome, health:MB.eHealth, circle:MB.eCircle, svc:MB.eSvc, mine:MB.eMine })[key](kind);
   },
@@ -3082,13 +3171,67 @@ const MB = {
       <div class="mc"><div class="mc-h"><b>家庭成员协作</b><span>3 位亲属</span></div>
         <ul class="mlist">${MODULES.family.rows.slice(0,3).map(x=>`<li><div class="ic">${x.status==='已绑定'?'👪':'⏳'}</div><div class="tx"><b>${esc(x.cname)} · ${esc(x.rel)}</b><p>${esc(x.ename)} · ${esc(x.auth)} · 最近探望 ${esc(x.visit)}</p></div><div class="rt"><span class="tag ${x.status==='已绑定'?'green':'warn'}">${esc(x.status)}</span></div></li>`).join('')}</ul></div>
       <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
+  },
+
+  /* ===== 特殊长者 · 智能手环端 ===== */
+  sBand(kind){
+    const a=MB.SA(), h=MB.BH(), d=new Date(), p=n=>String(n).padStart(2,'0');
+    const wk=['日','一','二','三','四','五','六'][d.getDay()];
+    const log = S.bandLog||[];
+    const dots = MB.BLOCS().map(L=>{const ok=log.some(x=>x.id===L.id);return `<div style="flex:1;text-align:center"><div style="width:44px;height:44px;margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;background:${ok?'linear-gradient(135deg,#1668dc,#00b578)':'#eef2f7'};color:${ok?'#fff':'#9aa7b6'}">${L.ico}</div><div style="font-size:10.5px;margin-top:4px;color:var(--sub)">${esc(L.name)}</div></div>`;}).join('');
+    const next = MB.BLOCS().find(L=>!log.some(x=>x.id===L.id));
+    const done = MB.BLOCS().filter(L=>log.some(x=>x.id===L.id)).length;
+    return `<div class="mc" style="text-align:center;background:linear-gradient(160deg,#0f2038,#0a1524);color:#fff">
+      <div style="font-size:13px;opacity:.82">${d.getMonth()+1} 月 ${d.getDate()} 日 · 周${wk} · ${esc(a.zone)}</div>
+      <div class="big" style="font-size:66px;line-height:1.1;letter-spacing:2px;margin:2px 0">${p(d.getHours())}:${p(d.getMinutes())}</div>
+      <div style="font-size:12.5px;opacity:.85">🔋 ${esc(h.bat||'86%')} · 📶 手环已连接 · 🟢 定位正常</div></div>
+    <div class="mc"><div class="mc-h"><b>今日自动打卡</b><span>${done} / ${MB.BLOCS().length}</span></div>
+      <div style="display:flex;gap:6px">${dots}</div>
+      ${next?`<p class="tiny" style="margin-top:10px">下一站：<b>${next.ico} ${esc(next.name)}</b>（${esc(next.time)}）— 到达将自动打卡</p>`:'<p class="tiny" style="margin-top:10px">今日打卡已全部完成 ✅</p>'}</div>
+    <div class="mc" style="border:2px solid var(--green)"><div class="mc-h"><b>📳 手环提醒</b><span>语音已播报</span></div>
+      <ul class="mlist"><li><div class="ic g">🔔</div><div class="tx"><b style="font-size:16px">${esc(h.tip||'该喝温水了')}</b><p>震动 + 语音提示 · 无需操作</p></div></li></ul></div>
+    <div style="display:flex;gap:12px;margin:4px 0 12px">
+      <button class="btn dg" style="flex:1;height:78px;font-size:20px;border-radius:18px;line-height:1.4" onclick="Mob.sos()">🆘<br>呼救</button>
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+        <button class="btn p" style="flex:1;font-size:15px" onclick="Mob.bandCall()">👧 呼叫家人</button>
+        <button class="btn" style="flex:1;font-size:15px" onclick="Mob.bandVibrate()">📳 震动了没</button>
+      </div></div>
+    <div class="mc"><div class="mc-h"><b>实时体征（手环）</b><span>${esc(h.date||today())}</span></div>
+      <div class="hcards" style="grid-template-columns:repeat(3,1fr)"><div class="hc1"><label>心率</label><b>${esc(h.hr)}<i style="font-size:11px"> bpm</i></b></div>
+      <div class="hc2"><label>血压</label><b style="font-size:16px">${esc(h.bp)}</b></div><div class="hc3"><label>血氧</label><b>${esc(h.spo2)}<i style="font-size:11px"> %</i></b></div></div></div>
+    <div class="mbtns"><button class="btn g blk" onclick="Mob.go('${kind}',1)">📍 查看今日打卡 ›</button></div>`;
+  },
+  sCheckin(kind){
+    const log = S.bandLog||[];
+    const locs = MB.BLOCS().map(L=>{const done=log.some(x=>x.id===L.id);const rec=log.find(x=>x.id===L.id);
+      return `<div class="mc" style="display:flex;align-items:center;gap:12px;${done?'border:1.5px solid var(--green)':''}">
+        <div style="width:48px;height:48px;border-radius:14px;background:${done?'linear-gradient(135deg,#1668dc,#00b578)':'var(--blue-l)'};color:${done?'#fff':'#1668dc'};display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 auto">${L.ico}</div>
+        <div style="flex:1;min-width:0"><b style="font-size:15px">${esc(L.name)}</b><p class="tiny" style="margin:2px 0 0">${esc(L.time)} · 活动：${esc(L.act)}</p><p class="tiny" style="color:var(--sub-l)">${esc(L.hint)}</p></div>
+        <div style="text-align:right;flex:0 0 auto">${done?`<span class="tag green">已打卡</span><div class="tiny">${esc(rec.t||'')}</div>`:`<button class="btn sm p" onclick="Mob.arrive(${L.id})">模拟到达</button>`}</div></div>`;}).join('');
+    return `<div class="mhero"><b>🛰 到位置动打卡</b><p>长者走到以下特殊位置时，手环通过蓝牙 / GPS 围栏自动打卡、震动确认，并自动参加对应活动，全程无需任何操作。</p></div>
+      ${locs}
+      <div class="mc"><div class="mc-h"><b>今日打卡记录</b><span>${log.length} 条 · 已同步后台健康档案</span></div>
+        <ul class="mlist">${log.length?log.slice().reverse().map(x=>`<li><div class="ic g">${x.ico||'📍'}</div><div class="tx"><b>${esc(x.name)}</b><p>${esc(x.act||'')} · 手环自动签到</p></div><div class="rt">${esc(x.t||'')}</div></li>`).join(''):'<li><div class="tx"><p style="text-align:center;color:var(--sub-l)">暂无记录，点击上方“模拟到达”体验</p></div></li>'}</ul></div>
+      <div class="mbtns"><button class="btn g" onclick="Mob.arriveAll()">一键演示全部到达</button><button class="btn" onclick="S.bandLog=[];renderMobile(S.view)">清空记录</button></div>`;
+  },
+  sMine(kind){
+    const a=MB.SA();
+    return `<div class="mc" style="display:flex;align-items:center;gap:12px"><div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#1668dc,#00b578);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px">⌚</div>
+      <div style="flex:1"><b style="font-size:17px">${esc(a.name)}</b><div class="tiny">${esc(a.zone)} ${esc(a.room)} · ${esc(a.age||80)} 岁 · 特殊长者</div></div><span class="tag green">在院</span></div>
+    <div class="mc"><div class="mc-h"><b>我的智能手环</b><span>仅 5 项功能 · 零文字</span></div>
+      <ul class="mlist">${[['🕒','显示时间','超大数字，整点震动报时'],['📳','震动提醒','吃药 / 活动 / 吃饭前震动 + 语音'],['🆘','一键呼救','长按 3 秒直连值班与家属'],['🛰','自动打卡','到特殊位置自动签到，无需操作'],['🔊','语音播报','一键报时、报当前位置、报天气']].map(x=>`<li><div class="ic">${x[0]}</div><div class="tx"><b style="font-size:15px">${x[1]}</b><p>${x[2]}</p></div></li>`).join('')}</ul></div>
+    <div class="mc"><div class="mc-h"><b>设备与照护</b><span>IoT 已登记</span></div>
+      <ul class="mlist"><li><div class="ic g">🔋</div><div class="tx"><b>电量 / 连接</b><p>${esc(MB.BH().bat||'86%')} · 蓝牙 + GPS 双定位</p></div><div class="rt"><span class="tag green">在线</span></div></li>
+      <li><div class="ic">👧</div><div class="tx"><b>紧急联系人</b><p>${esc(a.guardian||'蒋涛')} · ${esc(a.gphone||'135****1180')}</p></div><div class="rt"><span class="link" onclick="Mob.bandCall()">呼叫</span></div></li>
+      <li><div class="ic w">🗣</div><div class="tx"><b>语音播报 / 大字体</b><p>已开启 · 不识长者友好模式</p></div><div class="rt"><button class="btn sm g" onclick="this.classList.toggle('g');toast('设置已更新（演示）','ok')">开</button></div></li></ul></div>
+    <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
   }
 };
 
 /* ---------- 交互动作（写入模块数据，与后台实时联动） ---------- */
 const Mob = {
   go(kind, i){ S[kind+'Tab'] = i; renderMobile(kind); },
-  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':'子女端'}`,'ok'); },
+  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':r==='child'?'子女端':'特殊长者手环端'}`,'ok'); },
 
   signup(id){ const a=MODULES.activity.rows.find(x=>x._id===id); if(!a) return;
     const left=(+a.quota||0)-(+a.signed||0);
@@ -3159,7 +3302,7 @@ const Mob = {
   aiOpen(){ MB.chat = MB.chat.length?MB.chat:[{me:0,t:'徐爷爷上午好呀☀ 今天园区 18℃，适合去银杏大道走走，要我帮您约李爷爷一起吗？'}];
     MB.sheet(`<h4>🤖 AI 陪伴「小康」 <span class="link" onclick="Mob.aiClose()">结束会话</span></h4>
       <div class="chat" id="aiBox" style="flex:1;overflow:auto;min-height:280px">${MB.chat.map(Mob.bubble).join('')}</div>
-      <div class="qk" style="margin-top:10px">${['今天吃什么好？','给我讲段评书','提醒我吃药','我有点想家'].map(q=>`<button onclick="Mob.aiAsk('${q}')">${q}</button>`).join('')}</div>`, 'height:82%;display:flex;flex-direction:column'); },
+      <div class="qk" style="margin-top:10px">${['今天吃什么好？','给我讲段评书','提醒我吃药','我有点想家'].map(q=>`<button onclick="Mob.aiAsk('${q}')">${q}</button>`).join('')}</div>`, 'height:76%;display:flex;flex-direction:column'); },
   bubble(m){ return `<div class="m ${m.me?'me':''}"><div class="av">${m.me?'🧓':'🤖'}</div><div class="bb">${esc(m.t)}</div></div>`; },
   aiAsk(q){ MB.chat.push({me:1,t:q}); const h=new Date().getHours();
     const rp = /吃|餐/.test(q)?`今天午餐推荐清蒸鲈鱼配杂粮饭，低盐又高蛋白，您的血压最近控制得不错。需要我直接下单吗？`
@@ -3214,7 +3357,40 @@ const Mob = {
     persist(); renderMobile(S.view); logAct('子女代付', o.goods+' ¥'+o.amount, '中'); toast(`已为父亲代付 ¥${o.amount}，积分 +${Math.round(o.amount/10)}`,'ok'); },
   topay(v){ v=v||500; const m=MB.MEM(); m.balance=(+m.balance||0)+v;
     MODULES.order.rows.unshift({ _id:++UID, no:'CZ'+String(Date.now()).slice(-10), name:MB.elder, goods:'储值充值 ¥'+v, amount:v, pay:'微信支付', payer:MB.child, point:0, date:now(), status:'已支付', staff:'', invoice:'已开具', remark:'子女端充值' });
-    persist(); renderMobile(S.view); logAct('储值充值', '¥'+v, '中'); toast(`充值成功 ¥${v}，父亲余额现为 ¥${(+m.balance).toLocaleString()}`,'ok'); }
+    persist(); renderMobile(S.view); logAct('储值充值', '¥'+v, '中'); toast(`充值成功 ¥${v}，父亲余额现为 ¥${(+m.balance).toLocaleString()}`,'ok'); },
+
+  /* ===== 特殊长者手环：到达自动打卡与联动 ===== */
+  arrive(id){ S.bandLog=S.bandLog||[]; const L=MB.BLOCS().find(x=>x.id===id); if(!L) return;
+    if(S.bandLog.some(x=>x.id===id)){ toast('该位置今日已自动打卡','warn'); return; }
+    Mob._blog(L); persist(); renderMobile(S.view); logAct('手环自动打卡', L.name+' / '+S.view.toUpperCase(), '低');
+    const act=MODULES.activity.rows.find(a=>a.title===L.act);
+    toast(`📳 手环震动：已自动打卡「${L.name}」${act?'，并参加活动《'+L.act+'》':''}`,'ok'); },
+  _blog(L){ S.bandLog=S.bandLog||[]; S.bandLog.push({id:L.id,name:L.name,ico:L.ico,act:L.act,t:now().slice(11,16)});
+    const act=MODULES.activity.rows.find(a=>a.title===L.act); if(act) act.checkin=(+act.checkin||0)+1;
+    const h=MB.BH();
+    MODULES.health.rows.unshift({ _id:++UID, name:MB.special, date:today(), hr:h.hr, spo2:h.spo2, bp:h.bp, sleep:h.sleep||0, step:(+h.step||0)+(L.id===4?600:0), risk:'低', type:'护理记录', note:'手环自动打卡：到达「'+L.name+'」'+(act?'，自动签到活动《'+L.act+'》':'，完成定位与体征确认')+'，手环已震动确认', doctor:'何雨欣', auth:'已授权' }); },
+  arriveAll(){ S.bandLog=S.bandLog||[]; MB.BLOCS().forEach(L=>{ if(!S.bandLog.some(x=>x.id===L.id)) Mob._blog(L); }); persist(); renderMobile(S.view); logAct('手环自动打卡（批量演示）', MB.special, '低'); toast('📳 已模拟长者依次到达全部特殊位置并自动打卡','ok'); },
+  bandVibrate(){ toast('📳 手环已震动并语音播报（演示）','ok'); logAct('手环震动测试', MB.special, '低'); },
+  bandCall(){ toast('📞 已语音呼叫家人（'+(MB.SA().gphone||'135****1180')+'）','warn'); pushAlert('特殊长者手环呼叫', `${MB.special} 通过智能手环发起亲情呼叫，已通知家属与值班管家`); logAct('手环亲情呼叫', MB.special, '中'); },
+broadcast(){ const a=MB.SA(), d=new Date(), p=n=>String(n).padStart(2,'0');
+    const wk=['日','一','二','三','四','五','六'][d.getDay()]; const h=d.getHours();
+    const seg=h<6?'凌晨':h<11?'上午':h<13?'中午':h<18?'下午':'晚上';
+    const t=`${d.getMonth()+1} 月 ${d.getDate()} 日 周${wk} ${seg} ${p(d.getHours())} 点 ${p(d.getMinutes())} 分`;
+    const last=(S.bandLog||[]).slice(-1)[0];
+    const loc=last?`${esc(last.name)}（${esc(a.zone)}）`:`${esc(a.zone)} ${esc(a.room)} 附近`;
+    const wx=MB.wx();
+    const msg=`现在是${t}。您当前位置：${loc}。今天天气：${wx.text}，气温${wx.temp}，${wx.tip}。`;
+    if(navigator.vibrate){ try{ navigator.vibrate([120,60,120]); }catch(e){} }
+    try{ if(window.speechSynthesis){ const u=new SpeechSynthesisUtterance(msg); u.lang='zh-CN'; u.rate=.92; speechSynthesis.cancel(); speechSynthesis.speak(u); } }catch(e){}
+    MB.sheet(`<h4>🔊 手环语音播报</h4>
+      <div style="font-size:16px;line-height:2.1;color:var(--ink)">
+        <div>🕒 ${esc(t)}</div>
+        <div>📍 当前位置：${loc}</div>
+        <div>${wx.ico} 今日天气：${esc(wx.text)} ${esc(wx.temp)} · ${esc(wx.tip)}</div>
+      </div>
+      <p class="tiny" style="margin-top:10px">已震动 + 语音播报（不识长者友好，无需操作）</p>
+      <div class="mbtns"><button class="btn g blk" onclick="Mob.broadcast()">🔊 再播一次</button><button class="btn" onclick="speechSynthesis&&speechSynthesis.cancel();MB.close()">关闭</button></div>`, 'text-align:left');
+    toast('🔊 已播报时间、位置与天气','ok'); logAct('手环语音播报', MB.special, '低'); }
 };
 
 function renderMobile(kind){ MB.render(kind); }
@@ -3240,6 +3416,300 @@ function bootApp(){
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp); else bootApp();
 
+</script>
+<script>
+/* ================= 小康 · 智能交流助手（Web 管理后台 · 任意界面 · 可多窗口） =================
+   能力：① 聊当前菜单内容  ② 快速跳转任意功能  ③ 查模块数据  ④ 聊天记入笔记（localStorage 持久化）
+   形态：右下角悬浮按钮随时唤起；支持同时开多个可拖拽会话窗口；原型内置规则知识库（未接大模型）。 */
+const XK = {
+  wins: [], seq: 0, zTop: 850, notes: [], fab: null, maxWin: 6,
+  NKEY: LS + '_xk',
+
+  /* 别名表：口语词 → 模块 key（运行时校验 MODULES 是否存在） */
+  ALIAS: [
+    {k:'archive',  w:['档案','长者','老人','住户','长者档案','长者信息','人员档案']},
+    {k:'health',   w:['健康','体征','心率','血压','血氧','病例','体检']},
+    {k:'leave',    w:['请假','外出','销假']},
+    {k:'care',     w:['关怀','走访','慰问']},
+    {k:'family',   w:['子女','家属','授权管理']},
+    {k:'complaint',w:['投诉','意见','督办','满意度']},
+    {k:'activity', w:['活动','报名','签到']},
+    {k:'booking',  w:['预约','理疗预约','体验']},
+    {k:'plan',     w:['计划','照护计划']},
+    {k:'remind',   w:['提醒','待办']},
+    {k:'clean',    w:['清洁','卫生','保洁','消毒']},
+    {k:'circle',   w:['康养圈','动态','时光']},
+    {k:'meal',     w:['订餐','点餐','营养餐']},
+    {k:'arrange',  w:['配餐','排餐','食谱']},
+    {k:'diet',     w:['膳食','饮食']},
+    {k:'order',    w:['消费','订单','收银','账单']},
+    {k:'point',    w:['积分']},
+    {k:'member',   w:['会员']},
+    {k:'consume',  w:['储值','充值','代付']},
+    {k:'iot',      w:['设备','物联网','手环','在线率']},
+    {k:'devalarm', w:['告警','报警','异常处置']},
+    {k:'video',    w:['视频','监控','录像','摄像头']},
+    {k:'bio',      w:['生物识别','人脸','指纹']},
+    {k:'ocr',      w:['证照','扫描识别']},
+    {k:'deviceops',w:['运维','工单','报修']},
+    {k:'sys',      w:['系统','权限','账号','角色','参数']},
+    {k:'fraud',    w:['防诈','诈骗','反诈']},
+    {k:'ai',       w:['陪伴','智能陪伴']},
+    {k:'class',    w:['课堂','课程']},
+    {k:'sport',    w:['运动','锻炼']},
+    {k:'psych',    w:['心理','情绪']},
+    {k:'hospice',  w:['临终','安宁']},
+    {k:'reports',  w:['报表','统计报表']},
+    {k:'twin',     w:['数字孪生','孪生','三维','室内导航','样板间']},
+    {k:'dashboard',w:['驾驶舱','首页','总览','看板']}
+  ],
+
+  /* ---------- 挂载与可见性 ---------- */
+  mount(){
+    if(this.fab) return;
+    const d=document.createElement('div'); d.id='xkFab'; d.title='小康 · 智能交流助手（任意界面可唤起，可多开）';
+    d.innerHTML='<span class="fi">🌿</span><b>小康</b><small>智能交流</small>';
+    d.onclick=()=>XK.open();
+    document.body.appendChild(d); this.fab=d;
+    this.loadNotes();
+  },
+  sync(){
+    if(!this.fab) this.mount();
+    const on = !!(S.user && S.view==='admin');
+    this.fab.classList.toggle('on', on);
+    this.wins.slice().forEach(w=>{
+      w.el.style.display = on ? '' : 'none';
+      if(!on) return;
+      const t=S.mod;
+      if(w.lastMod!==t){
+        const m=MODULES[t];
+        w.el.querySelector('.ctx').textContent = m ? ('📍 '+m.title) : '';
+        if(w.lastMod) this.push(w,'sys','当前菜单已切换到「'+esc(m?m.title:t)+'」，可以继续问我');
+        w.lastMod=t;
+      }
+    });
+  },
+
+  /* ---------- 会话窗口 ---------- */
+  open(){
+    if(this.wins.length>=this.maxWin) return toast('最多同时打开 '+this.maxWin+' 个会话窗口','warn');
+    const i=++this.seq, n=this.wins.length;
+    const win={ id:i, msgs:[], min:false, lastMod:null, x:0, y:0, el:null };
+    const el=document.createElement('div'); el.className='xk-win';
+    win.x=Math.max(12, innerWidth-384-24-n*28); win.y=Math.min(innerHeight-140, Math.max(70, 84+n*28));
+    el.style.left=win.x+'px'; el.style.top=win.y+'px'; el.style.zIndex=++this.zTop;
+    const chips=['这页能干什么？','系统有哪些功能？','跳转到 投诉与意见','3D 入口','多少位长者？','记录到笔记'];
+    el.innerHTML = `<div class="xk-hd"><span>🌿</span><span class="t">小康 · 会话${i}</span><span class="ctx"></span><span class="sp"></span>`
+      + `<button title="保存聊天到笔记" onclick="XK.noteAsk(this)">📝</button>`
+      + `<button title="新建会话（支持多窗口）" onclick="XK.open()">➕</button>`
+      + `<button title="最小化" onclick="XK.min(this)">▾</button>`
+      + `<button title="关闭" onclick="XK.close(this)">✕</button></div>`
+      + `<div class="xk-msgs"></div>`
+      + `<div class="xk-chips">${chips.map(t=>`<button onclick="XK.chip(this,'${t}')">${t}</button>`).join('')}</div>`
+      + `<div class="xk-in"><input placeholder="输入问题，回车发送…" onkeydown="if(event.key==='Enter')XK.send(this)"><button onclick="XK.send(this.previousElementSibling)">➤</button></div>`;
+    el.__xk=win; win.el=el; document.body.appendChild(el);
+    this.wins.push(win); this.front(el); this.drag(win);
+    const cur=MODULES[S.mod];
+    el.querySelector('.ctx').textContent = cur ? ('📍 '+cur.title) : '';
+    win.lastMod=S.mod;
+    this.push(win,'ai','新会话已开启 🌿<br>你现在在<b>管理后台</b>，任何菜单界面都可以找我。'+(cur?`当前菜单：<b>${cur.icon} ${esc(cur.title)}</b>`:''));
+    this.push(win,'ai',this.helpHTML());
+  },
+  drag(win){
+    const hd=win.el.querySelector('.xk-hd');
+    hd.onpointerdown = e => {
+      if(e.target.closest('button')) return;
+      this.front(win.el);
+      const sx=e.clientX-win.x, sy=e.clientY-win.y;
+      const mv=ev=>{ win.x=Math.min(innerWidth-70,Math.max(4,ev.clientX-sx)); win.y=Math.min(innerHeight-50,Math.max(4,ev.clientY-sy));
+        win.el.style.left=win.x+'px'; win.el.style.top=win.y+'px'; };
+      const up=()=>{ removeEventListener('pointermove',mv); removeEventListener('pointerup',up); };
+      addEventListener('pointermove',mv); addEventListener('pointerup',up);
+    };
+    win.el.onpointerdown = ()=>this.front(win.el);
+  },
+  front(el){ el.style.zIndex=++this.zTop; this.wins.forEach(w=>w.el.classList.toggle('act', w.el===el)); },
+  min(btn){ const win=btn.closest('.xk-win').__xk; win.min=!win.min; win.el.classList.toggle('min',win.min); btn.textContent=win.min?'▴':'▾'; },
+  close(btn){ const el=btn.closest('.xk-win'); const win=el.__xk; this.wins=this.wins.filter(w=>w!==win); el.remove(); },
+
+  /* ---------- 消息流 ---------- */
+  push(win, who, html){
+    const m={who, html, ts:now()}; win.msgs.push(m);
+    const box=win.el.querySelector('.xk-msgs');
+    const d=document.createElement('div'); d.className='xk-m '+who;
+    d.innerHTML = who==='sys' ? `<span class="xk-b">${html}</span>`
+      : `<span class="av">${who==='ai'?'🌿':(S.user?esc(S.user.name[0]):'我')}</span><span class="xk-b">${html}</span>`;
+    box.appendChild(d); box.scrollTop=box.scrollHeight;
+    return d;
+  },
+  chip(btn, text){ const inp=btn.closest('.xk-win').querySelector('.xk-in input'); inp.value=text; this.send(inp); },
+  send(inp){
+    const win=inp.closest('.xk-win').__xk; const t=inp.value.trim(); if(!t) return; inp.value='';
+    this.push(win,'me',esc(t));
+    const ti=this.push(win,'ai','<span style="color:var(--sub-l)">小康正在回复</span>');
+    ti.classList.add('xk-typing');
+    setTimeout(()=>{ ti.classList.remove('xk-typing'); ti.querySelector('.xk-b').innerHTML=this.reply(win,t);
+      ti.closest('.xk-msgs').scrollTop=99999; }, 380+Math.random()*360);
+  },
+
+  /* ---------- 回复引擎（内置规则知识库） ---------- */
+  reply(win, q){
+    const m=MODULES[S.mod];
+    if(/^(你好|您好|嗨|hi|hello)|你是谁|能做什么|会什么|帮助|怎么用|功能列表/i.test(q)) return this.helpHTML();
+    /* 笔记：保存 / 查看 */
+    if(/笔记/.test(q) && /(保存|记录|记到|写入|存成|存到)/.test(q)) return this.doNote(win);
+    if(/笔记/.test(q) && /(查看|打开|列出|看看|列表|我的)/.test(q)){ this.showNotes(); return '已为你打开<b>笔记面板</b> 📚，可查看、复制或删除全部会话笔记。'; }
+    /* 3D / 大屏入口 */
+    if(/3d|三维|孪生|样板间|室内导航|全局查看|效果图/.test(q)) return '管理后台「数字孪生 / 3D 监控」页内置了三个 3D 入口，我可以直接帮你打开：'+this.d3HTML()+`<button class="btn sm" onclick="XK.go('twin',this)">🏙 先进入「数字孪生 / 3D 监控」菜单</button>`;
+    if(/大屏|数据屏|投屏/.test(q)) return '好的，大数据屏是独立的投放端：<div class="xk-btns"><button class="btn p sm" onclick="App.go(\'screen\')">📊 打开数字中心大屏</button></div>';
+    /* 跳转意图 */
+    if(/跳转|打开|前往|进入|跳到|去一下|切换到|导航到/.test(q)){
+      const hits=this.findMod(q);
+      if(hits.length){ let s='已定位到菜单，点击即可<b>快速跳转</b>：<div class="xk-btns">'+hits.map(h=>this.jumpBtn(h)).join('')+'</div>';
+        if(hits.length>1) s+='<span style="font-size:11px;color:var(--sub-l)">匹配到多个，选一个最接近的</span>';
+        else s+=this.summarize(hits[0].k); return s; }
+      return '没找到与「'+esc(q)+'」匹配的菜单 🙈<br>'+this.moduleHint();
+    }
+    /* 当前菜单讲解 */
+    if(/(这|本)(个|页|菜单|界面)?(页面|菜单|模块|界面|是)|当前|这里是|现在在|能干什么|有什么内容/.test(q)) return this.curPageHTML();
+    /* 模块总览 */
+    if(/有哪些|全部功能|所有(模块|菜单)|菜单(结构|列表)|能管什么/.test(q)) return this.listHTML();
+    /* 数据查询 */
+    if(/多少|统计|有几|数量|分布|排名|总(量|额|计)/.test(q)){ const r=this.dataQA(q); if(r) return r; }
+    /* 提到某模块 → 给跳转+摘要 */
+    const hits=this.findMod(q);
+    if(hits.length) return '您是想找「<b>'+esc(MODULES[hits[0].k].title)+'</b>」吗？<div class="xk-btns">'+hits.map(h=>this.jumpBtn(h)).join('')+'</div>'+this.summarize(hits[0].k);
+    /* 兜底 */
+    return '这个问题我暂时答不上来 😅（原型演示为内置知识库，未接大模型）。不过我可以：<br>· 讲解<b>当前菜单</b>'+(m?'「'+esc(m.title)+'」':'')+'<br>· <b>快速跳转</b>到任意功能（如「打开 数字孪生」）<br>· 查<b>数据分布</b>（如「有多少位长者？」）<br>· 把聊天<b>记录到笔记</b>，随时查看';
+  },
+
+  helpHTML(){
+    return '我是<b>小康</b> 🌿，康养平台的智能交流助手。试试这些玩法：<br>'
+      + '① <b>聊菜单</b>：「这个页面是干什么的？」<br>② <b>快跳转</b>：「打开 投诉与意见」<br>③ <b>查数据</b>：「告警分布怎么样？」<br>④ <b>记笔记</b>：「记录到笔记」→「查看我的笔记」<br>⑤ <b>多窗口</b>：点标题栏 ➕ 再开一个会话，随意拖动'
+      + '<br><span style="font-size:11px;color:var(--sub-l)">支持多开 · 任意管理界面可用 · 笔记存本机浏览器</span>';
+  },
+  moduleHint(){
+    const keys=visibleModules().slice(0,8);
+    return '换个说法试试，比如：'+keys.map(k=>`<span class="xk-sug" onclick="XK.go('${k}',this)">${esc(MODULES[k].title)}</span>`).join(' ')+' …（共 '+visibleModules().length+' 个模块）';
+  },
+
+  /* ---------- 菜单匹配 ---------- */
+  findMod(q){
+    const QL=q.toLowerCase(), out=[];
+    visibleModules().forEach(k=>{
+      const m=MODULES[k]; let s=0;
+      const t=(m.title||'').replace(/[（(].*$/,'').trim();
+      if(QL.includes(t.toLowerCase())) s=12;
+      if(!s) t.split(/[\/、  ]/).filter(x=>x.length>=2).forEach(x=>{ if(q.includes(x)) s=Math.max(s,7); });
+      if(!s){ const a=this.ALIAS.find(a=>a.k===k && MODULES[a.k]); if(a) a.w.forEach(w=>{ if(QL.includes(w.toLowerCase())) s=Math.max(s,8); }); }
+      if(s) out.push({k,s});
+    });
+    out.sort((a,b)=>b.s-a.s);
+    return out.slice(0,3);
+  },
+  jumpBtn(h){ const m=MODULES[h.k]; return `<button class="btn ${h.s>=10?'p':''} sm" onclick="XK.go('${h.k}',this)">➡️ ${m.icon} ${esc(m.title)}</button>`; },
+  go(key, btn){
+    const win = btn && btn.closest ? btn.closest('.xk-win') && btn.closest('.xk-win').__xk : this.wins[this.wins.length-1];
+    App.go('admin', key);
+    if(win) this.push(win,'sys','已为你打开 <b>'+esc(MODULES[key].title)+'</b>');
+  },
+
+  /* ---------- 讲解与摘要 ---------- */
+  curPageHTML(){
+    const m=MODULES[S.mod]; if(!m) return '当前不在具体功能菜单页，打开任意左侧菜单后再问我。';
+    let s=`📍 <b>${m.icon} ${esc(m.title)}</b><br>分组：${esc(m.grp)}<br>简介：${esc(m.desc||'—')}<br>`;
+    if(m.tabs){ s+='本模块包含子页：'+m.tabs.map(t=>{ const p=t.split('|'); const k=p[1]||p[0]; return esc(p.length>1?p[0]:(MODULES[k]&&MODULES[k].title)||k); }).join(' / ')+'<br>'; }
+    else if(m.custom){ s+='这是<b>定制可视化页</b>（非普通表格），聚合了图表、三维模型与联动操作，支持图层开关与点选。<br>'; }
+    else{
+      const nl=(m.cols||[]).filter(c=>!c.notbl).length;
+      s+=`共 <b>${nl}</b> 个列表字段、<b>${(m.rows||[]).length}</b> 条演示数据，支持<b>检索 / 筛选 / 分页 / 新增 / 编辑 / 批量删除 / 导出 CSV</b>`;
+      s+=(m.flow?`，并带流程流转（${FLOWS[m.flow].map(a=>a.t).join(' → ')}）`:'')+'。<br>'+this.dist(m);
+    }
+    if(!m.tabs && !m.custom){
+      s+='<div class="xk-btns" style="flex-direction:row"><button class="btn sm" onclick="Crud.open(\''+S.mod+'\')">＋ 新增一条</button><button class="btn sm" onclick="App.exportCsv(\''+S.mod+'\')">⬇ 导出 CSV</button></div>';
+    }
+    return s;
+  },
+  summarize(key){
+    const m=MODULES[key]; if(!m || key===S.mod) return '';
+    let s=`<div style="margin-top:6px;font-size:12px;color:var(--sub)">「${esc(m.title)}」：${esc((m.desc||'').slice(0,60))}`;
+    if(m.rows&&m.cols) s+='，当前 '+m.rows.length+' 条数据。'+this.dist(m);
+    return s+'</div>';
+  },
+  dist(m){
+    const c=(m.cols||[]).find(x=>x.tag&&['status','result','cook','inspect'].includes(x.k))||(m.cols||[]).find(x=>x.tag);
+    if(!c||!m.rows||!m.rows.length) return '';
+    const cnt={}; m.rows.forEach(r=>{ const v=r[c.k]||'—'; cnt[v]=(cnt[v]||0)+1; });
+    const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,4);
+    return `「${esc(c.t)}」分布：`+top.map(x=>`${esc(x[0])} <b>${x[1]}</b>`).join(' · ');
+  },
+  listHTML(){
+    const keys=visibleModules(), g={};
+    keys.forEach(k=>{ const m=MODULES[k]; (g[m.grp]=g[m.grp]||[]).push(k); });
+    let s='当前角色（'+esc(S.user.role)+'）可见 <b>'+keys.length+'</b> 个模块，点名称即可跳转：<br>';
+    Object.entries(g).forEach(([gn,ks])=>{
+      s+='<div style="margin:5px 0 2px"><b style="color:var(--green-d)">'+esc(gn)+'</b>　'
+        +ks.map(k=>`<span class="xk-sug" onclick="XK.go('${k}',this)">${MODULES[k].icon}${esc(MODULES[k].title)}</span>`).join(' ')+'</div>';
+    });
+    return s;
+  },
+  dataQA(q){
+    const hits=this.findMod(q); if(!hits.length) return null;
+    const k=hits[0].k, m=MODULES[k], rows=(m.rows||[]);
+    let s=`📊 <b>${m.icon} ${esc(m.title)}</b>：共 <b>${rows.length}</b> 条演示数据。<br>`+this.dist(m)+'<br>';
+    if(k==='order'){ const amt=rows.reduce((a,r)=>a+(+r.amount||0),0); s+='消费总金额约 <b>¥'+amt.toLocaleString()+'</b>。<br>'; }
+    if(q.includes('长者')||q.includes('老人')||k==='archive'){ const lv={}; rows.forEach(r=>lv[r.level]=(lv[r.level]||0)+1); if(Object.keys(lv).length) s+='照护等级：'+Object.entries(lv).map(x=>x[0]+' <b>'+x[1]+'</b>').join(' · ')+'。<br>'; }
+    s+='<div class="xk-btns">'+this.jumpBtn({k,s:12})+'</div>';
+    return s;
+  },
+  d3HTML(){
+    return '<div class="xk-btns">'
+      +'<button class="btn p sm" onclick="open3D(\'assets/3d/campus-twin.html\',\'智慧康养园区 · 全局三维孪生\')">🌐 园区三维孪生（全局查看）</button>'
+      +'<button class="btn sm" onclick="open3D(\'assets/3d/living-room-3d.html\',\'康养居室 · 室内精装 3D 样板间\')">🛋 客厅 3D 样板间</button>'
+      +'<button class="btn sm" onclick="open3D(\'assets/3d/indoor-navigation.html\',\'园区室内导航 · 1F-3F 实景路线指引\')">🧭 3D 室内导航实景</button></div>';
+  },
+
+  /* ---------- 聊天 → 笔记 ---------- */
+  noteAsk(btn){ const win=btn.closest('.xk-win').__xk; const r=this.doNote(win); this.push(win,'ai',r); },
+  doNote(win){
+    const lines=win.msgs.filter(m=>m.who!=='sys').map(m=>`[${m.ts}] ${m.who==='ai'?'小康':(S.user?S.user.name:'我')}：${this.strip(m.html)}`).filter(x=>x.length>16);
+    if(!lines.length) return '当前会话还没有实质内容，先聊两句再保存吧 🙂';
+    const first=win.msgs.find(m=>m.who==='me'), m=MODULES[S.mod];
+    const title=(first?this.strip(first.html):(m?m.title:'会话')).slice(0,26);
+    const note={ id:Date.now(), t:now(), mod:m?m.title:'—', title, lines };
+    this.notes.unshift(note); this.saveNotes();
+    logAct('小康助手','保存会话笔记「'+title+'」','低');
+    return `📝 已把本次会话（<b>${lines.length}</b> 条消息）记入笔记：<b>「${esc(title)}」</b><div class="xk-btns"><button class="btn p sm" onclick="XK.showNotes()">📚 查看我的笔记</button></div>`;
+  },
+  showNotes(){
+    const body=this.notes.length ? this.notes.map(n=>`<details class="xk-note"><summary>${esc(n.title)} <span style="font-weight:400;font-size:11px;color:var(--sub)">· ${esc(n.mod)} · ${esc(n.t)} · ${n.lines.length} 条</span></summary>`
+      +n.lines.map(l=>`<div class="ln">${esc(l)}</div>`).join('')
+      +`<div style="margin-top:8px;display:flex;gap:8px"><button class="btn sm" onclick="XK.copyNote(${n.id})">📋 复制全文</button><button class="btn sm dg" onclick="XK.delNote(${n.id})">🗑 删除</button></div></details>`).join('')
+      : '<div class="empty" style="padding:30px">暂无笔记，先在会话里说「记录到笔记」吧</div>';
+    Modal.open('📚 小康 · 会话笔记（'+this.notes.length+'）',
+      '<div style="font-size:12px;color:var(--sub);margin-bottom:10px">按会话保存，支持展开查看 · 复制 · 删除；笔记存放在本机浏览器 localStorage，刷新不丢失。</div>'+body,
+      '<button class="btn" onclick="Modal.close()">关闭</button>');
+  },
+  copyNote(id){
+    const n=this.notes.find(x=>x.id===id); if(!n) return;
+    const txt=n.title+'\n'+n.lines.join('\n');
+    const fb=()=>{ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('笔记已复制到剪贴板','ok'); };
+    if(navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>toast('笔记已复制到剪贴板','ok')).catch(fb); else fb();
+    logAct('小康助手','复制笔记「'+n.title+'」','低');
+  },
+  delNote(id){ this.notes=this.notes.filter(x=>x.id!==id); this.saveNotes(); this.showNotes(); toast('笔记已删除'); },
+  saveNotes(){ try{ localStorage.setItem(this.NKEY, JSON.stringify(this.notes)); }catch(e){} },
+  loadNotes(){ try{ this.notes=JSON.parse(localStorage.getItem(this.NKEY)||'[]'); }catch(e){ this.notes=[]; } },
+  strip(h){ const d=document.createElement('div'); d.innerHTML=String(h).replace(/<button[\s\S]*?<\/button>/g,''); return (d.textContent||'').replace(/\s+/g,' ').trim(); }
+};
+
+/* ---------- 挂载并包装 route（主脚本之后执行，路由每次变化同步小康状态） ---------- */
+(function(){
+  const _xkRoute = route;
+  route = function(){ _xkRoute.apply(this, arguments); try{ XK.sync(); }catch(e){} };
+  if(document.readyState==='loading') addEventListener('DOMContentLoaded', ()=>XK.mount()); else XK.mount();
+  if(S.user) XK.sync();
+})();
 </script>
 </body>
 </html>

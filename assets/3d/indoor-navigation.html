@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0e1116">
+<title>室内导航 · 1F-3F · v1.2.0</title>
+<!--
+  版本标识：v1.2.0 · 构建 2026-09-28 11:31 (+0800) · 起始提交 5b18167 · 模型指纹 80f2c1cc · 单文件零依赖（无外链、无网络请求）
+  特性：区域色块填充 + 墙线 | 30° 电动扶梯剪刀式跨层 | 不可通行区标记 | window.mallNav API
+  源码仓库：https://gitee.com/mobuhan/indoor-navigation （index.html 与本文件一致）
+-->
+<style>
+:root{
+  --bg:#0e1116;--panel:#161c25;--panel2:#212a36;--line:#2c3644;
+  --txt:#e8edf4;--dim:#8e99aa;--accent:#4d8dff;--a:#ff4d4f;--b:#2fd07a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Roboto,sans-serif;
+  user-select:none;-webkit-user-select:none;touch-action:none}
+canvas{position:fixed;inset:0;display:block}
+
+#bar{position:fixed;left:0;right:0;top:0;z-index:10;display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  padding:calc(8px + env(safe-area-inset-top)) 9px 8px;
+  background:linear-gradient(#0e1116f5,#0e111600);pointer-events:none}
+#bar>*{pointer-events:auto}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:3px;gap:3px}
+.seg button{all:unset;cursor:pointer;color:var(--dim);font-size:13px;font-weight:600;
+  padding:7px 12px;border-radius:8px;transition:.15s;white-space:nowrap}
+.seg button.on{background:var(--panel2);color:#fff;box-shadow:inset 0 0 0 1px #ffffff1a}
+.seg.f button.on{background:var(--accent);color:#fff;box-shadow:none}
+.seg.mini button{padding:7px 9px;font-size:12px}
+#cur{margin-left:auto;background:var(--panel);border:1px solid var(--line);border-radius:11px;
+  padding:7px 11px;font-size:12px;color:var(--dim);white-space:nowrap}
+#cur b{color:#fff}
+#ver{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:7px 10px;
+  font-size:11px;color:#6f7d92;white-space:nowrap;font-variant-numeric:tabular-nums}
+#tools{display:none;gap:7px}
+#tools.on{display:flex}
+
+#legend{position:fixed;left:9px;bottom:calc(9px + env(safe-area-inset-bottom));z-index:10;
+  background:#161c25e8;border:1px solid var(--line);border-radius:12px;padding:8px 10px;
+  font-size:11px;color:var(--dim);line-height:1.9;transition:.2s}
+#legend .t{color:#fff;font-weight:600;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px}
+#legend .t s{margin-left:auto;text-decoration:none;color:var(--dim);font-size:10px;transition:.2s}
+#legend.min .row{display:none}
+#legend.min .t s{transform:rotate(180deg)}
+#legend .row{cursor:pointer;display:flex;align-items:center}
+#legend .row.off{opacity:.3}
+#legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px}
+
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(11px + env(safe-area-inset-bottom));
+  z-index:11;background:var(--panel);border:1px solid var(--line);border-radius:999px;
+  padding:8px 15px;font-size:12px;box-shadow:0 6px 22px #0009;transition:.2s;
+  max-width:62vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hint.ok{background:#182a1f;border-color:#2f5a3d}
+
+#card{position:fixed;right:9px;top:calc(54px + env(safe-area-inset-top));z-index:12;width:226px;
+  max-height:calc(100vh - 200px);overflow:auto;background:#161c25f5;border:1px solid var(--line);
+  border-radius:14px;padding:12px;box-shadow:0 12px 34px #000b;
+  transform:translateX(118%);transition:.28s cubic-bezier(.2,.8,.2,1)}
+#card.show{transform:none}
+#card h4{margin:0 0 9px;font-size:13px;display:flex;align-items:center;gap:6px}
+#card h4 s{width:7px;height:7px;border-radius:50%;background:var(--accent);text-decoration:none}
+.kv{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--dim);margin:3px 0}
+.kv b{color:#fff;font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+#steps{margin:9px 0 0;padding:0;list-style:none;font-size:12px}
+#steps li{display:flex;gap:7px;align-items:baseline;padding:5px 0;border-top:1px dashed #ffffff14}
+#steps li u{text-decoration:none;color:var(--accent);font-weight:700;min-width:14px}
+#steps li em{font-style:normal;color:var(--dim);flex:1}
+#steps li.v em{color:#a9c8ff}
+#btns{display:flex;gap:7px;margin-top:11px}
+.btn{all:unset;cursor:pointer;text-align:center;flex:1;padding:9px 6px;border-radius:10px;font-size:12.5px;font-weight:600}
+.btn.p{background:var(--accent);color:#fff}.btn.p:active{transform:scale(.97)}
+.btn.g{background:var(--panel2);color:var(--dim);box-shadow:inset 0 0 0 1px var(--line)}
+#prog{height:4px;border-radius:4px;background:#ffffff14;margin-top:10px;overflow:hidden;display:none}
+#prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#7dd3fc)}
+
+#toast{position:fixed;left:50%;top:calc(58px + env(safe-area-inset-top));transform:translate(-50%,-12px);
+  z-index:20;background:#2a1b1d;border:1px solid #5c2c31;color:#ffd7d9;font-size:12.5px;
+  padding:9px 15px;border-radius:11px;opacity:0;transition:.22s;pointer-events:none;max-width:82vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.ok{background:#16281d;border-color:#2e5b3f;color:#c8f7d6}
+
+#scale{position:fixed;right:9px;bottom:calc(9px + env(safe-area-inset-bottom));z-index:9;
+  font-size:10px;color:var(--dim);text-align:center;pointer-events:none}
+#scale i{display:block;height:5px;border:1px solid var(--dim);border-top:0;margin:0 auto}
+
+@media (max-width:560px){
+  #card{left:8px;right:8px;top:auto;width:auto;bottom:calc(44px + env(safe-area-inset-bottom));
+    max-height:40vh;transform:translateY(130%)}
+  #card.show{transform:none}
+  #hint{bottom:auto;top:calc(52px + env(safe-area-inset-top));left:8px;right:8px;transform:none;
+    max-width:none;text-align:center;border-radius:10px;font-size:11.5px;padding:7px 10px}
+  #toast{top:calc(86px + env(safe-area-inset-top))}
+  #legend{padding:5px 8px;font-size:10px;line-height:1.7}
+  #legend .t{font-size:10.5px}
+  #scale{display:none}
+}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="bar">
+  <div class="seg f" id="fseg"></div>
+  <div class="seg" id="dseg"><button data-m="2">2D</button><button data-m="3" class="on">3D</button></div>
+  <div id="tools" class="on">
+    <div class="seg mini" id="rotBtns">
+      <button data-r="l" title="向左旋转">⟲</button>
+      <button data-r="u" title="抬高视角">▲</button>
+      <button data-r="d" title="压低视角">▼</button>
+      <button data-r="r" title="向右旋转">⟳</button>
+    </div>
+    <div class="seg mini"><button id="bReset">复位</button></div>
+  </div>
+  <div id="cur"><b id="cfl">1F</b><span id="cnp"></span></div>
+  <div id="ver" title="">v—</div>
+</div>
+
+<div id="legend"></div>
+<div id="hint">点击两个位置，生成起点 A → 终点 B</div>
+
+<div id="card">
+  <h4><s></s>导航方案</h4>
+  <div class="kv">起点<b id="sA">—</b></div>
+  <div class="kv">终点<b id="sB">—</b></div>
+  <div class="kv">距离<b id="rDist">—</b></div>
+  <div class="kv">预计<b id="rTime">—</b></div>
+  <div class="kv">跨层<b id="rFlr">—</b></div>
+  <ul id="steps"></ul>
+  <div id="prog"><i></i></div>
+  <div id="btns">
+    <button class="btn p" id="bGo">▶ 模拟导航</button>
+    <button class="btn g" id="bClr">清除</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="scale"><i id="sbar"></i><div id="stxt">20 m</div></div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   室内地图导航 Demo —— 单文件 / 零依赖 / 纯 Canvas
+   · 1F / 2F / 3F 三层，默认 1F + 3D
+   · 色块 = 商铺，名称默认显示（含非当前层的淡色标注）
+   · 斜纹区域 = 不可通行：中庭洞口、扶梯井、电梯井、疏散楼梯、设备机房
+   · 电动扶梯按真实 30° 倾角建模（提升 FH、水平投影 FH/tan30°），剪刀式上下行分井
+   · 3D 自由轨道：单指拖 = yaw + pitch，可停在任意角度；双指平移缩放
+   · 点选两点 → 网格 A* → 导航线沿扶梯斜面跨层；模拟导航小人沿线行走
+   ========================================================================== */
+
+/* ---------- 1. 模型 ---------- */
+const MPP = 0.14;            // 1 地图单位 ≈ 0.14 m
+const FH  = 62;              // 3D 层高（世界单位）= 8.7 m 结构层高（含梁与吊顶）
+const SLAB_T = 7;            // 楼板厚度
+const ZONE_H = 12;           // 商铺体块高度
+const CX = 360, CY = 210;    // 建筑平面中心
+
+// 建筑外轮廓（三层共用，与参考图一致：左长翼 + 上中部 + 右上凸块 + 右下）
+const SHAPE = [[0,140],[235,140],[235,55],[455,55],[455,0],[645,0],[645,115],[720,115],
+               [720,300],[565,300],[565,365],[435,365],[435,420],[0,420]];
+const R = (x0,y0,x1,y1)=>[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];
+
+/* ---------- 1a. 中庭与扶梯井：楼板上的“开口”，不可站立、且各层掏空 ---------- */
+const ATRIUM = [R(95,195,420,255), [[598,120],[660,120],[668,152],[644,184],[600,176]]];
+/* 电动扶梯几何：提升高度 FH=62 单位（8.7 m），要维持 30° 倾角，
+   水平投影 = FH / tan30° = 107 单位（15.0 m）。
+   井道开口 = 斜跑的平面投影，两端各留 4 单位落客平台（可站立、上下梯处）。 */
+const ESC_RUN = Math.round(FH/Math.tan(Math.PI/6));   // 107
+const ESC_ANG = Math.atan2(FH, ESC_RUN);               // ≈30°
+/* 剪刀式布置：A 井（y 45-135）负责 1F⇄2F，B 井（y 195-285）负责 2F⇄3F。
+   g = 所跨楼层间隙（0:1F→2F，1:2F→3F），up = 运行方向。
+   这样 1F→3F 会先坐 A 井上行、过厅换 B 井上行，不会沿同一井道折返。 */
+const ESCS = [
+  {x0:458,x1:480, cx:469, yb:42, yt:149, g:0, up:true,  n:'电动扶梯 E1 · 1F→2F ↑',s:'E1 ↑'},
+  {x0:488,x1:510, cx:499, yb:42, yt:149, g:0, up:false, n:'电动扶梯 E2 · 2F→1F ↓',s:'E2 ↓'},
+  {x0:458,x1:480, cx:469, yb:185,yt:292, g:1, up:true,  n:'电动扶梯 E3 · 2F→3F ↑',s:'E3 ↑'},
+  {x0:488,x1:510, cx:499, yb:185,yt:292, g:1, up:false, n:'电动扶梯 E4 · 3F→2F ↓',s:'E4 ↓'},
+];
+const WELLS = [R(458,42,510,149), R(458,185,510,292)];   // 斜跑的平面投影
+const HOLES = ATRIUM.concat(WELLS);                    // 全部不可行走
+/* 楼板真实开洞：A 井（1F→2F）只在 2F 楼板开口，B 井（2F→3F）只在 3F 楼板开口，
+   起点层是落在实体楼板上的落客平台，不掏空。 */
+const slabHoles = fi => ATRIUM.concat(fi===1?[WELLS[0]]:fi===2?[WELLS[1]]:[]);
+
+/* ---------- 1b. 不可通行区域（结构 / 设备 / 疏散楼梯）---------- */
+const LIFTS = [{x0:520,y0:155,x1:538,y1:180,cx:529,cy:150,n:'客梯 LT1'},
+               {x0:542,y0:155,x1:560,y1:180,cx:551,cy:150,n:'客梯 LT2'}];
+const STAIRS = [{p:R(562,236,592,268), n:'疏散楼梯'}, {p:R(562,62,592,94), n:'疏散楼梯'}];
+const NOGO = [
+  ...LIFTS.map(l=>({p:R(l.x0,l.y0,l.x1,l.y1), t:'电梯井'})),
+  ...STAIRS.map(s=>({p:s.p, t:s.n})),
+  {p:R(516,200,560,250), t:'设备机房'},
+  {p:R(0,258,86,296),    t:'后勤仓储'},
+];
+
+/* ---------- 1c. 商铺分区（色块 = 商铺，名称默认显示）---------- */
+const Z = (c,n,p)=>({c,n,p});
+const FLOORS = [
+ { id:'F1', label:'1F', idx:0,
+   zones:[
+     Z('teal','优衣库 UNIQLO',      R(0,142,232,190)),
+     Z('pink','星巴克甄选',          R(2,196,90,254)),
+     Z('teal','H&M',                R(0,300,232,360)),
+     Z('green','室内绿化 · 休息谷',  R(0,366,232,416)),
+     Z('teal','Apple 授权店',       R(238,58,452,108)),
+     Z('pink','周大福珠宝',          R(238,118,452,186)),
+     Z('coral','特卖市集',           R(238,262,452,300)),
+     Z('pink','丝芙兰 SEPHORA',     R(238,306,452,360)),
+     Z('pink','名创优品',            R(238,368,340,416)),
+     Z('pink','屈臣氏',              R(350,368,432,416)),
+     Z('lav','茶颜悦色',             R(456,2,642,34)),
+     Z('lav','太二酸菜鱼',           R(598,40,642,112)),
+     Z('pink','万宁 MANNINGS',      R(668,118,716,186)),
+     Z('teal','无印良品 MUJI',      R(598,196,716,296)),
+     Z('pink','孩子王',              R(440,304,560,360))],
+   pois:[{k:'wc',x:430,y:225,n:'卫生间'},{k:'exit',x:60,y:166,n:'北出入口'},
+         {k:'exit',x:120,y:392,n:'西出入口'},{k:'exit',x:600,y:332,n:'东出入口'},
+         {k:'info',x:300,y:280,n:'服务台'}]},
+
+ { id:'F2', label:'2F', idx:1,
+   zones:[
+     Z('teal','ZARA',               R(0,142,232,190)),
+     Z('pink','喜茶 HEYTEA',        R(2,196,90,254)),
+     Z('teal','URBAN REVIVO',      R(0,300,232,360)),
+     Z('sage','观景连廊平台',        R(0,366,232,416)),
+     Z('teal','万象影城 CGV',       R(238,58,452,108)),
+     Z('pink','CHOCO1ATE',          R(238,118,452,186)),
+     Z('pink','西贝莜面村',          R(238,262,452,300)),
+     Z('lav','探鱼烤鱼',             R(238,306,452,360)),
+     Z('pink','KKV 潮玩',           R(238,368,340,416)),
+     Z('coral','快闪中庭',           R(350,368,432,416)),
+     Z('lav','星巴克咖啡',           R(456,2,642,34)),
+     Z('lav','南京大牌档',           R(598,40,642,112)),
+     Z('pink','TGP 生活馆',         R(668,118,716,186)),
+     Z('teal','Nike Rise 运动馆',   R(598,196,716,296)),
+     Z('pink','童泰母婴',            R(440,304,560,360))],
+   pois:[{k:'wc',x:430,y:225,n:'卫生间'},{k:'info',x:300,y:280,n:'服务台'},
+         {k:'shop',x:300,y:82,n:'影院售票'},{k:'lift',x:529,y:144,n:'客梯'}]},
+
+ { id:'F3', label:'3F', idx:2,
+   zones:[
+     Z('teal','Hush Puppies 服饰',  R(0,142,232,190)),
+     Z('green','屋顶花园',           R(2,196,90,254)),
+     Z('teal','GAP Kids',           R(0,300,232,360)),
+     Z('green','屋顶草坪 · 露营区',  R(0,366,232,416)),
+     Z('teal','海底捞火锅',           R(238,58,452,108)),
+     Z('lav','巴奴毛肚火锅',          R(238,118,452,186)),
+     Z('lav','眉州东坡',             R(238,262,452,300)),
+     Z('sage','空中连廊',            R(238,306,452,360)),
+     Z('pink','西西弗书店',           R(238,368,340,416)),
+     Z('coral','亲子乐园',            R(350,368,432,416)),
+     Z('lav','美食广场 A 区',         R(456,2,642,34)),
+     Z('lav','美食广场 B 区',         R(598,40,642,112)),
+     Z('pink','奈雪的茶',            R(668,118,716,186)),
+     Z('teal','外婆家',              R(598,196,716,296)),
+     Z('pink','太丰卤味',            R(440,304,560,360))],
+   pois:[{k:'wc',x:430,y:225,n:'卫生间'},{k:'info',x:300,y:280,n:'服务台'},
+         {k:'shop',x:300,y:82,n:'火锅等位'},{k:'lift',x:529,y:144,n:'客梯'}]}
+];
+const byIdx = i => FLOORS[i];
+
+const C = {teal:'#96d2cd',lav:'#bcabe8',sage:'#a8d894',pink:'#f5b0cb',green:'#94cd62',
+           coral:'#f4a08b',slab:'#eef1f5',core:'#c8d1dc',hole:'#f8fafc',
+           nogo:'#b9c3d0',nogo2:'#8d99ab',esc:'#7f8ea3',lift:'#c3cbd8',
+           path:'#ff5a4d',link:'#3f7bff',a:'#ff4d4f',b:'#2fd07a'};
+const hidden = new Set();
+
+/* ---------- 2. 平面几何 ---------- */
+function inPoly(x,y,poly){
+  let s=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+    if(((yi>y)!==(yj>y)) && x < (xj-xi)*(y-yi)/(yj-yi)+xi) s=!s;
+  }
+  return s;
+}
+const bb = poly=>{
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const p of poly){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1]);}
+  return [x0,y0,x1,y1];
+};
+const inBB=(x,y,b)=>x>=b[0]&&y>=b[1]&&x<=b[2]&&y<=b[3];
+const HOLES_BB = HOLES.map(bb), ATRIUM_BB = ATRIUM.map(bb), WELLS_BB = WELLS.map(bb);
+const NOGO_BB = NOGO.map(n=>({...n, b:bb(n.p)}));
+const inHole=(x,y)=>HOLES_BB.some(b=>inBB(x,y,b)) && HOLES.some(h=>inPoly(x,y,h));
+const inAtrium=(x,y)=>ATRIUM_BB.some(b=>inBB(x,y,b)) && ATRIUM.some(h=>inPoly(x,y,h));
+const inWell=(x,y)=>WELLS_BB.some(b=>inBB(x,y,b)) && WELLS.some(h=>inPoly(x,y,h));
+const inNogo=(x,y)=>NOGO_BB.some(n=>inBB(x,y,n.b)&&inPoly(x,y,n.p));
+const nogoAt=(x,y)=>NOGO_BB.find(n=>inBB(x,y,n.b)&&inPoly(x,y,n.p));
+function zoneAt(x,y,fi){
+  return FLOORS[fi].zones.find(z=>{
+    const b=z.bb||(z.bb=bb(z.p));
+    return inBB(x,y,b)&&inPoly(x,y,z.p);
+  })||null;
+}
+/* 同一楼层绝大部分区域可通行：轮廓内即可走，仅扣除中庭洞口、
+   扶梯井开口、电梯井道、疏散楼梯与设备机房。 */
+function walkable(x,y){ return inPoly(x,y,SHAPE) && !inHole(x,y) && !inNogo(x,y); }
+
+/* ---------- 3. 导航网格 + A* ---------- */
+const CELL=10, GX0=0, GX1=720, GY0=0, GY1=420;
+const ESC_COST = 110, LIFT_COST = 430;   // 扶梯更快，电梯留给无障碍/大件
+const floors=[];
+function buildGrid(){
+  const key=(x,y)=>x+'_'+y;
+  for(let fi=0;fi<3;fi++){
+    const map=new Map(), list=[];
+    for(let x=GX0;x<=GX1;x+=CELL) for(let y=GY0;y<=GY1;y+=CELL){
+      if(!walkable(x,y)) continue;
+      const n={gx:x,gy:y,fi,links:[]}; map.set(key(x,y),n); list.push(n);
+    }
+    floors.push({map,list});
+  }
+  const N8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  for(let fi=0;fi<3;fi++) for(const n of floors[fi].list){
+    for(const [dx,dy] of N8){
+      const m=floors[fi].map.get(key(n.gx+dx*CELL,n.gy+dy*CELL));
+      if(!m) continue;
+      if(dx&&dy && !(floors[fi].map.has(key(n.gx+dx*CELL,n.gy))&&floors[fi].map.has(key(n.gx,n.gy+dy*CELL)))) continue;
+      const pen = inZoneAt(m.gx,m.gy,fi)?1.3:1;       // 优先走公共通道
+      n.links.push({to:m,c:CELL*(dx&&dy?1.42:1)*pen});
+    }
+  }
+  const near=(fi,x,y)=>{
+    const kx=Math.round(x/CELL)*CELL, ky=Math.round(y/CELL)*CELL;
+    let best=null,bd=1e9;
+    for(let dy=-6;dy<=6;dy++) for(let dx=-6;dx<=6;dx++){
+      const n=floors[fi].map.get(key(kx+dx*CELL,ky+dy*CELL));
+      if(!n) continue;
+      const d=(n.gx-x)**2+(n.gy-y)**2; if(d<bd){bd=d;best=n;}
+    }
+    return best;
+  };
+  for(let fi=0;fi<2;fi++){
+    /* 电动扶梯：上下落客平台固定（yb 在下层、yt 在上层），
+       上行梯只允许 fi→fi+1，下行梯只允许 fi+1→fi，与真实运营方向一致。 */
+    for(const e of ESCS){
+      if(e.g!==fi) continue;
+      const lo=near(fi,  e.cx, e.yb-10), hi=near(fi+1, e.cx, e.yt+10);
+      if(!lo||!hi) continue;
+      if(e.up) lo.links.push({to:hi,c:ESC_COST,v:{type:'esc',from:fi,to:fi+1,esc:e}});
+      else     hi.links.push({to:lo,c:ESC_COST,v:{type:'esc',from:fi+1,to:fi,esc:e}});
+    }
+    for(const l of LIFTS){                           // 客梯：通高井道，双向
+      const a=near(fi,l.cx,l.cy), b=near(fi+1,l.cx,l.cy);
+      if(a&&b){a.links.push({to:b,c:LIFT_COST,v:{type:'lift',from:fi,to:fi+1,lift:l}});
+               b.links.push({to:a,c:LIFT_COST,v:{type:'lift',from:fi+1,to:fi,lift:l}});}
+    }
+  }
+}
+function inZoneAt(x,y,fi){
+  return FLOORS[fi].zones.some(z=>{
+    const b=z.bb||(z.bb=bb(z.p));
+    return inBB(x,y,b)&&inPoly(x,y,z.p);
+  });
+}
+buildGrid();
+
+function snapNode(x,y,fi){
+  let best=null,bd=1e9;
+  for(const m of floors[fi].list){ const d=(m.gx-x)**2+(m.gy-y)**2; if(d<bd){bd=d;best=m;} }
+  return best;
+}
+function Heap(){this.a=[];}
+Heap.prototype.push=function(v){const a=this.a;a.push(v);let i=a.length-1;
+  while(i>0){const p=(i-1)>>1;if(a[p].f<=a[i].f)break;const t=a[p];a[p]=a[i];a[i]=t;i=p;}};
+Heap.prototype.pop=function(){const a=this.a,top=a[0],last=a.pop();
+  if(a.length){a[0]=last;let i=0;for(;;){const l=2*i+1,r=l+1;let m=i;
+    if(l<a.length&&a[l].f<a[m].f)m=l;if(r<a.length&&a[r].f<a[m].f)m=r;
+    if(m===i)break;const t=a[m];a[m]=a[i];a[i]=t;i=m;}}return top;};
+function astar(s,t){
+  const g=new Map([[s,0]]),prev=new Map(),done=new Set(),h=new Heap();
+  const est=n=>Math.hypot(n.gx-t.gx,n.gy-t.gy)+Math.abs(n.fi-t.fi)*ESC_COST;
+  h.push({n:s,f:est(s)});
+  while(h.a.length){
+    const cur=h.pop().n;
+    if(cur===t)break;
+    if(done.has(cur))continue; done.add(cur);
+    for(const L of cur.links){
+      if(done.has(L.to))continue;
+      const ng=g.get(cur)+L.c;
+      if(ng<(g.get(L.to)??Infinity)){g.set(L.to,ng);prev.set(L.to,cur);h.push({n:L.to,f:ng+est(L.to)});}
+    }
+  }
+  if(s!==t&&!prev.has(t))return null;
+  const out=[t];let c=t;
+  while(prev.has(c)){c=prev.get(c);out.push(c);}
+  return out.reverse();
+}
+function simplify(p,tol){
+  if(p.length<3)return p;
+  const keep=new Array(p.length).fill(false);keep[0]=keep[p.length-1]=true;
+  (function rec(a,b){
+    const [x1,y1]=p[a],[x2,y2]=p[b],L=Math.hypot(x2-x1,y2-y1)||1;
+    let md=-1,mi=-1;
+    for(let i=a+1;i<b;i++){
+      const d=Math.abs((y2-y1)*p[i][0]-(x2-x1)*p[i][1]+x2*y1-y2*x1)/L;
+      if(d>md){md=d;mi=i;}
+    }
+    if(md>tol&&mi>0){keep[mi]=true;rec(a,mi);rec(mi,b);}
+  })(0,p.length-1);
+  return p.filter((_,i)=>keep[i]);
+}
+function makeRoute(a,b){
+  const na=snapNode(a.x,a.y,a.fi), nb=snapNode(b.x,b.y,b.fi);
+  if(!na||!nb)return null;
+  const path=astar(na,nb); if(!path)return null;
+  /* 同层节点归为一段，段与段之间由竖向交通（扶梯 / 电梯）衔接。
+     分段后再逐段抽稀，避免跨层中间落点被 Douglas-Peucker 合并掉。 */
+  const segs=[], ways=[];
+  let cur=[[path[0].gx,path[0].gy,path[0].fi]];
+  for(let i=1;i<path.length;i++){
+    const n=path[i], p=path[i-1], link=p.links.find(l=>l.to===n);
+    if(link&&link.v){ segs.push(cur); ways.push(link.v); cur=[[n.gx,n.gy,n.fi]]; }
+    else cur.push([n.gx,n.gy,n.fi]);
+  }
+  segs.push(cur);
+  const line=[[a.x,a.y,a.fi]];
+  for(let s=0;s<segs.length;s++){
+    line.push(...simplify(segs[s],6));
+    if(s<ways.length) line.push(...verticalWaypoints(ways[s]));
+  }
+  line.push([b.x,b.y,b.fi]);
+  for(let i=line.length-1;i>0;i--)
+    if(Math.hypot(line[i][0]-line[i-1][0],line[i][1]-line[i-1][1])<1.5) line.splice(i,1);
+  let dist=0;
+  for(let i=1;i<line.length;i++) dist+=Math.hypot(line[i][0]-line[i-1][0],line[i][1]-line[i-1][1]);
+  const vtype = ways.some(w=>w.type==='lift') ? 'lift' : 'esc';
+  return {line,dist,flr:ways.length,vtype,ways,meters:dist*MPP,minutes:dist*MPP/72};
+}
+/* 跨层折点：扶梯沿 30° 斜面连续插值（fi 也随之变化），电梯沿井道竖直上升 */
+function verticalWaypoints(v){
+  const up = v.to>v.from;
+  if(v.type==='esc'){
+    const e=v.esc, yA=up?e.yb:e.yt, yB=up?e.yt:e.yb, out=[];
+    for(let i=1;i<4;i++){ const t=i/4; out.push([e.cx, yA+(yB-yA)*t, v.from+(v.to-v.from)*t]); }
+    return out;
+  }
+  const l=v.lift;
+  return [[l.cx,l.cy,v.from],[l.cx,l.cy,v.to]];
+}
+
+/* ---------- 4. 轨道相机（yaw 左右转 + pitch 上下转，可停在任意视角） ---------- */
+const view={fi:0, scale:1, ox:0, oy:0, yaw:0, pitch:0, mode:'2'};
+const HOME={yaw:-0.55, pitch:0.95};
+// 2D 与 3D 各自记住自己的相机，切换时互不干扰
+const cam2={scale:1,ox:0,oy:0,ready:false};
+const cam3={yaw:HOME.yaw,pitch:HOME.pitch,scale:1,ox:0,oy:0,ready:false};
+function saveCam(){ if(view.mode==='2'){cam2.scale=view.scale;cam2.ox=view.ox;cam2.oy=view.oy;cam2.ready=true;}
+  else{cam3.yaw=view.yaw;cam3.pitch=view.pitch;cam3.scale=view.scale;cam3.ox=view.ox;cam3.oy=view.oy;cam3.ready=true;} }
+function saveCam3(){ if(view.mode==='3'){cam3.yaw=view.yaw;cam3.pitch=view.pitch;
+  cam3.scale=view.scale;cam3.ox=view.ox;cam3.oy=view.oy;} }
+function loadCam(){ if(view.mode==='2'){view.yaw=0;view.pitch=0;
+    view.scale=cam2.scale;view.ox=cam2.ox;view.oy=cam2.oy;}
+  else{view.yaw=cam3.yaw;view.pitch=cam3.pitch;view.scale=cam3.scale;view.ox=cam3.ox;view.oy=cam3.oy;} }
+const CZ0=FH;                                         // 堆叠中心（2F 标高）
+let cb=1,sb=0,ca=1,sa=0;
+function updCam(){ ca=Math.cos(view.yaw);sa=Math.sin(view.yaw);cb=Math.cos(view.pitch);sb=Math.sin(view.pitch); }
+// 世界 → 相机：[横向, 纵向(向下为正), 深度(越大越靠近相机)]
+function rotV(x,y,z){
+  const x1=x*ca-y*sa, y1=x*sa+y*ca;
+  return [x1, y1*cb-z*sb, z*cb-y1*sb];
+}
+function proj(x,y,z){
+  const r=rotV(x-CX,y-CY,z-CZ0);
+  return [(r[0]+CX+view.ox)*view.scale, (r[1]+CY+view.oy)*view.scale, r[2]];
+}
+// 屏幕 → 指定楼层平面（z = fi*FH）
+function unproj(sx,sy,fi){
+  if(Math.abs(cb)<0.05) return null;
+  const X=sx/view.scale-view.ox-CX;
+  const Y=sy/view.scale-view.oy-CY;
+  const z=fi*FH-CZ0;
+  const y1=(Y+z*sb)/cb;
+  return [CX+X*ca+y1*sa, CY-X*sa+y1*ca];
+}
+
+/* ---------- 5. 绘制 ---------- */
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=innerWidth,H=innerHeight,DPR=1;
+function resize(){
+  DPR=Math.min(devicePixelRatio||1,2.5);
+  W=innerWidth;H=innerHeight;
+  cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  fitView(); draw();
+}
+addEventListener('resize',resize);
+
+function poly(pts,fc,st,lw){
+  ctx.beginPath();
+  for(let i=0;i<pts.length;i++) i?ctx.lineTo(pts[i][0],pts[i][1]):ctx.moveTo(pts[i][0],pts[i][1]);
+  ctx.closePath();
+  if(fc){ctx.fillStyle=fc;ctx.fill();}
+  if(st){ctx.strokeStyle=st;ctx.lineWidth=lw||1;ctx.stroke();}
+}
+function shade(hex,k){
+  const n=parseInt(hex.slice(1),16),f=v=>Math.max(0,Math.min(255,Math.round(v+k*255)));
+  return `rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})`;
+}
+// 面是否朝向相机（法向量与视线方向点积 > 0）
+function facing(n){ const r=rotV(n[0],n[1],n[2]); return r[2]>0; }
+function planNormal(a,b,ref,outward){
+  let nx=b[1]-a[1], ny=-(b[0]-a[0]);
+  const L=Math.hypot(nx,ny)||1; nx/=L; ny/=L;
+  const mx=(a[0]+b[0])/2-ref[0], my=(a[1]+b[1])/2-ref[1];
+  const away = (nx*mx+ny*my)>0;
+  if(away!==outward){nx=-nx;ny=-ny;}
+  return [nx,ny];
+}
+const centroid=p=>{let x=0,y=0;p.forEach(v=>{x+=v[0];y+=v[1];});return [x/p.length,y/p.length];};
+
+let A=null,B=null,route=null,walker=null,hover=null;
+
+/* ---------- 事件总线：外部通过 mallNav.on('route', cb) 监听 ---------- */
+const NAVH={};
+function emit(type,detail){
+  const arr=NAVH[type]; if(!arr||!arr.length) return;
+  for(const cb of arr.slice()){ try{ cb(detail||{}, type); }catch(err){ console.warn('[mallNav] 监听器异常:',type,err); } }
+}
+
+function draw(){
+  updCam();
+  ctx.clearRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#121821');g.addColorStop(1,'#0a0d12');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+
+  if(view.mode==='2'){ drawFloor(view.fi,false); }
+  else{
+    // 按深度排序：远的先画
+    const order=[0,1,2].map(fi=>({fi,d:rotV(0,0,fi*FH-CZ0+SLAB_T/2)[2]}))
+                     .sort((a,b)=>a.d-b.d).map(o=>o.fi);
+    for(const fi of order) drawFloor(fi, fi!==view.fi);
+  }
+  if(route) drawRoute();
+  if(hover&&!walker){
+    const z=view.fi*FH+SLAB_T+ZONE_H+2;
+    poly([proj(hover.x,hover.y,z),proj(hover.x+CELL,hover.y,z),
+          proj(hover.x+CELL,hover.y+CELL,z),proj(hover.x,hover.y+CELL,z)],'rgba(255,255,255,.22)');
+  }
+  if(A) drawPin(A,'起',C.a);
+  if(B) drawPin(B,'终',C.b);
+  if(walker) drawWalker();
+  drawScale();
+}
+
+function drawFloor(fi,dim){
+  const f=byIdx(fi), z0=fi*FH, zt=z0+SLAB_T;
+  ctx.save();
+
+  const top=SHAPE.map(p=>proj(p[0],p[1],zt));
+  const bot=SHAPE.map(p=>proj(p[0],p[1],z0));
+  const cOut=centroid(SHAPE);
+
+  const holes = slabHoles(fi);                         // 本层楼板的实际开洞
+  if(dim){                                            // 非当前层：轮廓 + 商铺名，保持可读
+    ctx.globalAlpha=.5;
+    poly(top,null,'#33405a',1);
+    poly(bot,null,'#222c3e',1);
+    for(const h of holes) poly(h.map(q=>proj(q[0],q[1],zt)),null,'#2a3547',1);
+    // 非当前层也给区域底色，俯视时三层都能分出区块
+    ctx.globalAlpha=.32;
+    if(!hidden.has('shop')) for(const zn of f.zones)
+      poly(zn.p.map(p=>proj(p[0],p[1],zt+ZONE_H)), C[zn.c], 'rgba(58,72,92,.6)', .8);
+    ctx.globalAlpha=.85;
+    if(!hidden.has('shop')&&!hidden.has('names')) for(const zn of f.zones){
+      const c=centroid(zn.p), t=zn.p.map(p=>proj(p[0],p[1],zt+ZONE_H));
+      if(!bigEnough(t, 62, 20)) continue;
+      ctx.globalAlpha=.4; label2d(zn.n, proj(c[0],c[1],zt+ZONE_H), .5, '#8f9bb0'); ctx.globalAlpha=.85;
+    }
+    ctx.globalAlpha=.3;
+    if(!hidden.has('esc')) for(const e of ESCS) if(e.g===fi) drawEsc(e, fi, z0, zt);
+    ctx.globalAlpha=1;
+    floorLabel(fi); ctx.restore(); return;
+  }
+  // 楼板底面
+  if(facing([0,0,-1])) poly(bot.slice().reverse(), shade(C.slab,-.3));
+  // 外墙
+  for(let i=0;i<SHAPE.length;i++){
+    const a=SHAPE[i], b=SHAPE[(i+1)%SHAPE.length];
+    const n=planNormal(a,b,cOut,true);
+    if(!facing([n[0],n[1],0])) continue;
+    const light = -.05 + n[1]*.12 + n[0]*-.06;
+    poly([top[i],top[(i+1)%SHAPE.length],bot[(i+1)%SHAPE.length],bot[i]], shade(C.slab,light),'rgba(150,160,175,.5)',.6);
+  }
+  // 洞口（中庭 / 扶梯井）：洞壁 + 顶面
+  for(const h of holes){
+    const ht=h.map(p=>proj(p[0],p[1],zt)), hb=h.map(p=>proj(p[0],p[1],z0));
+    const cH=centroid(h);
+    for(let i=0;i<h.length;i++){
+      const a=h[i], b=h[(i+1)%h.length];
+      const n=planNormal(a,b,cH,false);               // 法向指向洞内
+      if(!facing([n[0],n[1],0])) continue;
+      poly([ht[i],ht[(i+1)%h.length],hb[(i+1)%h.length],hb[i]], shade('#dfe6ee',-.16+n[0]*.08),'rgba(150,160,175,.5)',.6);
+    }
+  }
+  // 顶面
+  if(facing([0,0,1])) poly(top, C.slab, '#b7c1ce',1);
+  // 洞口在顶面上的“掏空”
+  if(facing([0,0,1])) for(const h of holes){
+    poly(h.map(p=>proj(p[0],p[1],zt+.5)), C.hole, '#c0c9d4',1);
+  }
+
+  /* 不可通行标记：中庭 / 扶梯井 / 电梯厅 / 疏散楼梯 / 设备机房 */
+  if(!hidden.has('nogo')){
+    if(facing([0,0,1])){
+      for(const h of ATRIUM) hatch(h.map(p=>proj(p[0],p[1],zt+.9)), C.nogo2, 'rgba(141,153,171,.55)', 9);
+      // 仅在本层楼板真正开洞的井道处标空洞；落客层画平台
+      for(const w of holes) if(WELLS.indexOf(w)>=0)
+        hatch(w.map(p=>proj(p[0],p[1],zt+.9)), '#9fb0c4', 'rgba(120,140,165,.6)', 6);
+    }
+    for(const n of NOGO_BB){
+      const t=n.p.map(p=>proj(p[0],p[1],zt+3.5)), b2=n.p.map(p=>proj(p[0],p[1],zt+.6));
+      const cz=centroid(n.p);
+      for(let i=0;i<n.p.length;i++){
+        const a=n.p[i], b=n.p[(i+1)%n.p.length];
+        const v=planNormal(a,b,cz,true);
+        if(!facing([v[0],v[1],0])) continue;
+        poly([t[i],t[(i+1)%n.p.length],b2[(i+1)%n.p.length],b2[i]], shade(C.nogo,-.12+v[0]*.08));
+      }
+      if(facing([0,0,1])){
+        poly(t, C.nogo, 'rgba(255,255,255,.55)',1);
+        hatch(t, C.nogo2, 'rgba(96,110,130,.75)', 6);
+        if(bigEnough(t, 40, 16)) label2d(n.t, proj(cz[0],cz[1],zt+4.5), .58, '#3d4757');
+      }
+    }
+  }
+
+  // 体块（商铺）
+  const zs=f.zones.map(zn=>{
+    const c=centroid(zn.p);
+    return {zn, d:rotV(c[0]-CX,c[1]-CY,zt+ZONE_H-CZ0)[2]};
+  }).sort((a,b)=>a.d-b.d);
+  const labels=[];
+  const EDGE='rgba(58,72,92,.85)';                      // 区域墙线（统一的深灰蓝，2D/3D 都读得出边界）
+  for(const {zn} of zs){
+    if(hidden.has('shop')) continue;
+    const base=zn.c, col=C[base];
+    const t=zn.p.map(p=>proj(p[0],p[1],zt+ZONE_H));
+    const b2=zn.p.map(p=>proj(p[0],p[1],zt+.6));
+    const cz=centroid(zn.p);
+    // 墙体：立面色块 + 线框
+    for(let i=0;i<zn.p.length;i++){
+      const a=zn.p[i], b=zn.p[(i+1)%zn.p.length];
+      const n=planNormal(a,b,cz,true);
+      if(!facing([n[0],n[1],0])) continue;
+      poly([t[i],t[(i+1)%zn.p.length],b2[(i+1)%zn.p.length],b2[i]],
+           shade(col,-.18+n[0]*.09+n[1]*-.05), EDGE, .9);
+    }
+    // 屋顶：色块填充（2D 与俯视时区分区域的主色）+ 双线墙线
+    if(facing([0,0,1])){
+      poly(t, col, EDGE, 1.4);
+      poly(b2, null, 'rgba(58,72,92,.35)', .8);         // 底部轮廓 = 墙脚线
+      // 2D（正俯视）看不到立面，用内缩双线表达墙厚
+      if(view.mode==='2'){
+        const cz2=centroid(zn.p);
+        const inset=zn.p.map(p=>{const dx=p[0]-cz2[0],dy=p[1]-cz2[1];
+          return [p[0]-dx*.055,p[1]-dy*.055];});
+        poly(inset.map(p=>proj(p[0],p[1],zt+ZONE_H+.3)), null, 'rgba(58,72,92,.55)', 1);
+      }
+    }
+    if(facing([0,0,1]) && !hidden.has('names') && bigEnough(t, 46, 15)){
+      labels.push({n:zn.n, c:proj(cz[0],cz[1],zt+ZONE_H+.4)});
+    }
+  }
+  // 商铺名称：默认显示，按深度顺序绘制
+  for(const L of labels) label2d(L.n, L.c, 1, '#26313f');
+
+  // 电动扶梯：30° 真实斜跑 + 上下落客平台
+  if(!hidden.has('esc')) for(const e of ESCS) drawEsc(e, fi, z0, zt);
+
+  // 通高客梯井道 + 轿厢
+  if(!hidden.has('lift')) for(const l of LIFTS) drawLift(l, fi, z0, zt);
+
+  // POI
+  if(!hidden.has('poi')){
+    const ps=f.pois.map(p=>{
+      const z=zt+ZONE_H+8;
+      const s=proj(p.x,p.y,z);
+      return {p,s,d:rotV(p.x-CX,p.y-CY,z-CZ0)[2]};
+    }).sort((a,b)=>a.d-b.d);
+    for(const {p,s} of ps) icon(p.k,s[0],s[1]);
+  }
+  floorLabel(fi);
+  ctx.restore();
+}
+
+/* 斜向填充 = 不可通行（图面上与商铺色块明确区分） */
+function hatch(pts, fill, line, gap){
+  ctx.save();
+  ctx.beginPath();
+  for(let i=0;i<pts.length;i++) i?ctx.lineTo(pts[i][0],pts[i][1]):ctx.moveTo(pts[i][0],pts[i][1]);
+  ctx.closePath();
+  ctx.fillStyle=fill; ctx.globalAlpha=.28; ctx.fill(); ctx.globalAlpha=1;
+  ctx.clip();
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(const p of pts){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);}
+  ctx.strokeStyle=line; ctx.lineWidth=1;
+  const span=(x1-x0)+(y1-y0);
+  ctx.beginPath();
+  for(let k=-span;k<span;k+=gap){
+    ctx.moveTo(x0+k, y1); ctx.lineTo(x0+k+(y1-y0), y0);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* 标签在屏幕上太小时省略，避免密集区糊成一团 */
+function bigEnough(pts, minW, minH){
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(const p of pts){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);}
+  return (x1-x0)>=minW && (y1-y0)>=minH;
+}
+/* 文字标签：字号随缩放，带描边保证任何视角都能读 */
+function label2d(text, p, k, col){
+  if(p[0]<-60||p[0]>W+60||p[1]<-30||p[1]>H+30) return;
+  const fs=Math.max(7.5, Math.min(13, 10.5*k*Math.max(.55,Math.min(1.5,view.scale))));
+  ctx.save();
+  ctx.font=`600 ${fs.toFixed(1)}px system-ui,"PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.lineJoin='round'; ctx.lineWidth=Math.max(2.2, fs*.34);
+  ctx.strokeStyle='rgba(255,255,255,.82)'; ctx.strokeText(text,p[0],p[1]);
+  ctx.fillStyle=col; ctx.fillText(text,p[0],p[1]);
+  ctx.restore();
+}
+
+/* 电动扶梯：桁架 + 踏面 + 台阶线 + 扶手带，倾角 atan(FH/ESC_RUN) ≈ 30° */
+function drawEsc(e, fi, z0, zt){
+  const zLo = z0 + SLAB_T + 3, zHi = zLo + FH;         // 下层平台面 → 上层平台面
+  /* 同一井道内斜跑方向固定（yb 在下、yt 在上），up 只决定扶手带的运行方向 */
+  const yA = e.yb, yB = e.yt;
+  if(fi===e.g){
+    const zz = [zLo,zHi];
+    const truss = [[e.x0-2,yA,zz[0]-6],[e.x1+2,yA,zz[0]-6],[e.x1+2,yB,zz[1]-6],[e.x0-2,yB,zz[1]-6]];
+    poly(truss.map(p=>proj(p[0],p[1],p[2])), '#6b7688', '#4b5563',1);
+    const deck = [[e.x0,yA,zz[0]],[e.x1,yA,zz[0]],[e.x1,yB,zz[1]],[e.x0,yB,zz[1]]];
+    poly(deck.map(p=>proj(p[0],p[1],p[2])), C.esc, '#5b6675',1);
+    // 台阶线：沿斜面等距分布（真实梯路）
+    ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.lineWidth=1;
+    ctx.beginPath();
+    const steps=13;
+    for(let i=1;i<steps;i++){
+      const t=i/steps, y=yA+(yB-yA)*t, z=zz[0]+(zz[1]-zz[0])*t;
+      const a=proj(e.x0,y,z), b=proj(e.x1,y,z);
+      ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]);
+    }
+    ctx.stroke();
+    // 两侧扶手带
+    ctx.strokeStyle='#39424f'; ctx.lineWidth=2.6; ctx.lineCap='round';
+    for(const x of [e.x0-1, e.x1+1]){
+      const a=proj(x,yA,zz[0]+9), b=proj(x,yB,zz[1]+9);
+      ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+    }
+    // 运行方向箭头：上行指向 yt/上层，下行指向 yb/下层
+    const mid=proj(e.cx, (yA+yB)/2, (zLo+zHi)/2+13);
+    const tip=e.up? proj(e.cx, yB, zHi+13) : proj(e.cx, yA, zLo+13);
+    ctx.strokeStyle=e.up?'#37d07a':'#f0a63a'; ctx.lineWidth=2.4; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(mid[0],mid[1]); ctx.lineTo(tip[0],tip[1]); ctx.stroke();
+    if(bigEnough([proj(e.x0,e.yb,zLo),proj(e.x1,e.yt,zHi)], 34, 22))
+      label2d(e.s, proj(e.cx, (e.yb+e.yt)/2, zLo+FH*.5+30), .7, '#2b3a52');
+  }
+  // 落客平台：紧贴井道开口外侧（下层端在 yb 以上，上层端在 yt 以下）
+  if(fi!==e.g && fi!==e.g+1) return;
+  const low = fi===e.g;
+  const land = R(e.x0-5, low? e.yb-15 : e.yt, e.x1+5, low? e.yb : e.yt+15)
+                 .map(p=>proj(p[0],p[1],zt+4));
+  poly(land, '#e7edf3', '#8d9aaa',1);
+  hatch(land, '#9fb0c4', 'rgba(120,140,165,.45)', 6);
+}
+
+/* 通高客梯：井道从本层楼板一直落到屋面，轿厢按当前层停靠 */
+function drawLift(l, fi, z0, zt){
+  const r=R(l.x0,l.y0,l.x1,l.y1);
+  const zTop = 2*FH + SLAB_T + 26;                     // 通高：越过 3F 屋面
+  const t=r.map(p=>proj(p[0],p[1],zTop)), b2=r.map(p=>proj(p[0],p[1],zt));
+  const cz=[l.cx,l.cy];
+  for(let i=0;i<4;i++){
+    const a=r[i], b=r[(i+1)%4];
+    const n=planNormal(a,b,cz,true);
+    if(!facing([n[0],n[1],0])) continue;
+    poly([t[i],t[(i+1)%4],b2[(i+1)%4],b2[i]], shade(C.lift,-.1+n[0]*.1),'rgba(255,255,255,.35)',.7);
+  }
+  if(facing([0,0,1])) poly(t,'#eef3f8','#8d9aaa',1);
+  // 轿厢位置：随当前层停靠
+  const zc = fi*FH + SLAB_T + 4;
+  const cab=R(l.x0+3,l.y0+3,l.x1-3,l.y1-3).map(p=>proj(p[0],p[1],zc+22));
+  if(facing([0,0,1])) poly(cab,'#9fb0c4','#5b6675',1);
+  if(fi===view.fi && bigEnough(t, 30, 14)) label2d(l.n, proj(l.cx, l.y0-9, zc+SLAB_T+30), .68, '#33415a');
+}
+function floorLabel(fi){
+  const f=byIdx(fi);
+  const p=proj(-30, 250, fi*FH+SLAB_T);
+  ctx.font='700 14px system-ui,sans-serif';ctx.textAlign='right';ctx.textBaseline='middle';
+  ctx.fillStyle=fi===view.fi?'#fff':'#5d6879';
+  ctx.fillText(f.label,p[0]-4,p[1]);
+}
+
+function icon(k,x,y){
+  if(x<-20||x>W+20||y<-20||y>H+20) return;
+  const s=17,u=s/17;
+  ctx.save();ctx.translate(x,y);
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(-s/2,-s/2,s,s,4.5); else ctx.rect(-s/2,-s/2,s,s);
+  ctx.fillStyle={wc:'#2f7fe0',esc:'#2fa84f',lift:'#7b61d8',shop:'#2f4bd8',exit:'#2fa84f',
+                 info:'#e08a2f',atag:'#8a94a6'}[k]||'#555';
+  ctx.fill();
+  ctx.strokeStyle='#fff';ctx.fillStyle='#fff';ctx.lineWidth=1.3;ctx.lineCap='round';ctx.lineJoin='round';
+  if(k==='wc'){
+    ctx.beginPath();ctx.arc(-3.6*u,-5*u,1.6*u,0,7);ctx.fill();
+    ctx.beginPath();ctx.moveTo(-3.6*u,-3*u);ctx.lineTo(-6*u,3.5*u);ctx.moveTo(-3.6*u,-3*u);ctx.lineTo(-1.2*u,3.5*u);
+    ctx.moveTo(-5.6*u,-.6*u);ctx.lineTo(-1.6*u,-.6*u);ctx.stroke();
+    ctx.beginPath();ctx.arc(3.6*u,-5*u,1.6*u,0,7);ctx.fill();
+    ctx.beginPath();ctx.moveTo(3.6*u,-3*u);ctx.lineTo(3.6*u,3.6*u);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(1.4*u,-2.4*u);ctx.lineTo(3.6*u,-1*u);ctx.lineTo(5.8*u,-2.4*u);ctx.stroke();
+  }else if(k==='esc'){
+    ctx.beginPath();ctx.arc(3*u,-5*u,1.7*u,0,7);ctx.fill();
+    ctx.beginPath();ctx.moveTo(3*u,-3*u);ctx.lineTo(1*u,1*u);ctx.lineTo(4*u,4.5*u);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-6*u,5.5*u);ctx.lineTo(6*u,5.5*u);ctx.moveTo(-4*u,5.5*u);ctx.lineTo(-4*u,2.5*u);
+    ctx.lineTo(-1*u,2.5*u);ctx.lineTo(-1*u,-.5*u);ctx.lineTo(2*u,-.5*u);ctx.stroke();
+  }else if(k==='lift'){
+    ctx.strokeRect(-6*u,-6*u,12*u,12*u);
+    ctx.beginPath();ctx.moveTo(0,-6*u);ctx.lineTo(0,6*u);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-5.2*u,.4*u);ctx.lineTo(-3.6*u,-1.8*u);ctx.lineTo(-2*u,.4*u);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(2*u,-.4*u);ctx.lineTo(3.6*u,1.8*u);ctx.lineTo(5.2*u,-.4*u);ctx.stroke();
+  }else if(k==='shop'){
+    ctx.beginPath();ctx.arc(0,2.4*u,4*u,0,7);ctx.fill();
+    ctx.beginPath();ctx.moveTo(0,-1.6*u);ctx.lineTo(0,-5.6*u);ctx.stroke();
+  }else if(k==='info'){
+    ctx.beginPath();ctx.arc(0,-3.4*u,1.7*u,0,7);ctx.fill();
+    ctx.beginPath();ctx.moveTo(0,-.6*u);ctx.lineTo(0,5*u);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-2.6*u,5*u);ctx.lineTo(2.6*u,5*u);ctx.stroke();
+  }else if(k==='exit'){
+    ctx.strokeRect(-6*u,-6*u,4.6*u,12*u);
+    ctx.beginPath();ctx.arc(1.4*u,-4.2*u,1.6*u,0,7);ctx.fill();
+    ctx.beginPath();ctx.moveTo(1.4*u,-2.4*u);ctx.lineTo(1.4*u,2*u);ctx.lineTo(5.4*u,4.6*u);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawRoute(){
+  const L=route.line;
+  ctx.save();ctx.lineJoin='round';ctx.lineCap='round';
+  for(let i=1;i<L.length;i++){
+    const p=L[i-1],q=L[i],cross=q[2]!==p[2];
+    const onFloor = view.mode==='3' || Math.round(p[2])===view.fi || Math.round(q[2])===view.fi;
+    ctx.globalAlpha=onFloor?1:.18;
+    ctx.strokeStyle=cross?C.link:C.path;
+    ctx.lineWidth=cross?3.4:4.4;
+    ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=onFloor?12:0;
+    ctx.setLineDash(cross?[8,6]:[]);
+    const zA=p[2]*FH+SLAB_T+ZONE_H*.55, zB=q[2]*FH+SLAB_T+ZONE_H*.55;
+    const a=proj(p[0],p[1],zA), b=proj(q[0],q[1],zB);
+    ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawPin(pt,label,col){
+  const z=pt.fi*FH+SLAB_T+ZONE_H;
+  const base=proj(pt.x,pt.y,z);
+  const top =proj(pt.x,pt.y,z+34);
+  const k=Math.max(.6,Math.min(1.3,view.scale));
+  ctx.save();
+  ctx.fillStyle='rgba(255,255,255,.18)';
+  ctx.beginPath();ctx.ellipse(base[0],base[1],7*k,3*k,0,0,7);ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(base[0],base[1]);ctx.lineTo(top[0],top[1]+10*k);ctx.stroke();ctx.setLineDash([]);
+  const r=9.5*k;
+  ctx.shadowColor=col;ctx.shadowBlur=14;
+  ctx.beginPath();ctx.arc(top[0],top[1],r,0,7);ctx.fillStyle=col;ctx.fill();ctx.shadowBlur=0;
+  ctx.beginPath();ctx.moveTo(top[0]-r*.62,top[1]+r*.42);ctx.lineTo(top[0],top[1]+r+3*k);ctx.lineTo(top[0]+r*.62,top[1]+r*.42);
+  ctx.closePath();ctx.fillStyle=col;ctx.fill();
+  ctx.fillStyle='#fff';ctx.font=`700 ${11*k|0}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(label,top[0],top[1]+.5);
+  ctx.font=`600 ${10.5*k|0}px system-ui`;ctx.fillStyle=col;
+  ctx.fillText(pt.name,top[0],top[1]-14*k);
+  ctx.restore();
+}
+function drawWalker(){
+  const z=walker.fi*FH+SLAB_T+ZONE_H;
+  const p=proj(walker.x,walker.y,z);
+  const k=Math.max(.65,Math.min(1.4,view.scale));
+  ctx.save();ctx.translate(p[0],p[1]);ctx.scale(k,k);
+  ctx.fillStyle='rgba(77,141,255,.25)';
+  ctx.beginPath();ctx.ellipse(0,1,9,3.4,0,0,7);ctx.fill();
+  const sw=Math.sin(walker.phase)*(walker.moving?1:.2);
+  ctx.lineCap='round';
+  ctx.strokeStyle='#0f2f5c';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(-3.6*sw,-1.5);ctx.moveTo(0,-8);ctx.lineTo(3.6*sw,-1.5);ctx.stroke();
+  ctx.strokeStyle='#3b82f6';ctx.lineWidth=4.2;
+  ctx.beginPath();ctx.moveTo(3.2*sw,-10);ctx.lineTo(0,-16);ctx.lineTo(-3.2*sw,-10);ctx.stroke();
+  ctx.strokeStyle='#1d4ed8';ctx.lineWidth=3.4;
+  ctx.beginPath();ctx.moveTo(0,-16);ctx.lineTo(0,-22);ctx.stroke();
+  ctx.fillStyle='#ffd9a8';ctx.beginPath();ctx.arc(0,-26,4.4,0,7);ctx.fill();
+  ctx.fillStyle='#0f2f5c';ctx.beginPath();ctx.arc(0,-27.4,4.4,Math.PI,0);ctx.fill();
+  ctx.restore();
+  if(walker.label){
+    ctx.font='600 11px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+    const tw=ctx.measureText(walker.label).width+14;
+    ctx.fillStyle='rgba(18,24,34,.92)';
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(p[0]-tw/2,p[1]-52*k,tw,18,9); else ctx.rect(p[0]-tw/2,p[1]-52*k,tw,18);
+    ctx.fill();
+    ctx.fillStyle='#c7e3ff';ctx.fillText(walker.label,p[0],p[1]-43*k);
+  }
+}
+function drawScale(){
+  const meters=88/view.scale*MPP;
+  const nice=[5,10,20,50,100].reduce((p,c)=>Math.abs(c-meters)<Math.abs(p-meters)?c:p,5);
+  document.getElementById('sbar').style.width=(nice/MPP*view.scale)+'px';
+  document.getElementById('stxt').textContent=nice+' m';
+}
+
+/* ---------- 6. 视角自适应 ---------- */
+function fitView(){
+  updCam();
+  const list = view.mode==='3' ? [0,1,2] : [view.fi];
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(const fi of list) for(const v of SHAPE){
+    for(const z of [fi*FH, fi*FH+SLAB_T+ZONE_H+40]){
+      const r=rotV(v[0]-CX,v[1]-CY,z-CZ0);
+      x0=Math.min(x0,r[0]);x1=Math.max(x1,r[0]);y0=Math.min(y0,r[1]);y1=Math.max(y1,r[1]);
+    }
+  }
+  const pad=18, top=56, bottom=innerWidth<560?H*.42:66;
+  view.scale=Math.max(.12,Math.min(3.4,Math.min((W-pad*2)/(x1-x0),(H-top-bottom)/(y1-y0))));
+  view.ox=W/2/view.scale-CX-(x0+x1)/2;
+  view.oy=(top+(H-top-bottom)/2)/view.scale-CY-(y0+y1)/2;
+}
+
+/* ---------- 7. 交互：拖拽旋转 / 平移 / 缩放 / 拾取 ---------- */
+const hint=document.getElementById('hint'),toast=document.getElementById('toast');
+function say(m,ok){toast.textContent=m;toast.className='show'+(ok?' ok':'');
+  clearTimeout(say.t);say.t=setTimeout(()=>toast.className='',2100);}
+function setHint(m,ok){hint.textContent=m;hint.classList.toggle('ok',!!ok);}
+function setCur(){
+  document.getElementById('cfl').textContent=byIdx(view.fi).label;
+  document.getElementById('cnp').textContent = walker&&walker.label==='已到达'?' · 已到达'
+    : walker?' · 导航中' : route? ' · '+route.meters.toFixed(0)+' m':'';
+}
+const fseg=document.getElementById('fseg');
+[2,1,0].forEach(i=>{
+  const b=document.createElement('button');
+  b.textContent=byIdx(i).label;b.dataset.f=i;b.onclick=()=>setFloor(i);
+  fseg.appendChild(b);
+});
+function setFloor(i,keepView){
+  i=Math.max(0,Math.min(FLOORS.length-1, i|0));
+  view.fi=i;
+  [...fseg.children].forEach(b=>b.classList.toggle('on',+b.dataset.f===i));
+  if(!keepView) fitView();
+  setCur();draw();
+  emit('floor',{floor:i,index:i,label:byIdx(i).label});
+}
+
+let ptrs=new Map(),drag=null,moved=0;
+function twoF(){ const [a,b]=[...ptrs.values()]; return {d:Math.hypot(a.x-b.x,a.y-b.y),
+             mx:(a.x+b.x)/2,my:(a.y+b.y)/2}; }
+cv.addEventListener('pointerdown',e=>{
+  try{ cv.setPointerCapture(e.pointerId); }catch(_){}   // 指针可能已失效，忽略
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  moved=0;
+  if(ptrs.size===2){
+    const t=twoF();
+    drag={type:'pinch',d:t.d,s:view.scale,mx:t.mx,my:t.my,ox:view.ox,oy:view.oy};
+  }else{
+    // 3D 下单指默认旋转；2D 或“平移”模式下单指平移
+    const rot = view.mode==='3' && !e.shiftKey && e.buttons!==2;   // 3D 单指=旋转，Shift/右键=平移
+    drag={type:rot?'rot':'pan',x:e.clientX,y:e.clientY};
+  }
+});
+cv.addEventListener('pointermove',e=>{
+  if(!ptrs.has(e.pointerId)){hoverAt(e.clientX,e.clientY);return;}
+  const prev=ptrs.get(e.pointerId);
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  const dx=e.clientX-prev.x, dy=e.clientY-prev.y;
+  moved+=Math.abs(dx)+Math.abs(dy);
+  if(drag&&drag.type==='pinch'&&ptrs.size>=2){
+    const t=twoF();
+    // 双指：以起始中点为锚缩放，并叠加中点位移（平移）
+    const ns=Math.max(.12,Math.min(3.6,drag.s*(t.d/drag.d)));
+    view.scale=ns;
+    view.ox = drag.ox + drag.mx*(1/drag.s - 1/ns) + (t.mx-drag.mx)/ns;
+    view.oy = drag.oy + drag.my*(1/drag.s - 1/ns) + (t.my-drag.my)/ns;
+    saveCam3(); draw(); return;
+  }
+  if(moved<3) return;
+  if(drag.type==='rot'){
+    view.yaw   -= dx*0.0085;
+    view.pitch  = Math.max(0,Math.min(1.45, view.pitch - dy*0.0075));
+    saveCam3();
+    draw();
+  }else{
+    view.ox+=dx/view.scale; view.oy+=dy/view.scale;
+    saveCam3();
+    draw();
+  }
+});
+function endPtr(e){
+  if(!ptrs.has(e.pointerId))return;
+  const tap=moved<=8, pinch=drag&&drag.type==='pinch';
+  ptrs.delete(e.pointerId);
+  if(ptrs.size){ const t=twoF();
+    drag={type:'pinch',d:t.d,s:view.scale,mx:t.mx,my:t.my,ox:view.ox,oy:view.oy}; return; }
+  drag=null;
+  if(tap&&!pinch) pick(e.clientX,e.clientY);   // 轻点：旋转模式下也能选点
+}
+addEventListener('pointerup',endPtr);
+addEventListener('pointercancel',endPtr);
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('wheel',e=>{
+  e.preventDefault();
+  if(e.ctrlKey||e.shiftKey){ view.yaw+=e.deltaY*0.003; draw(); return; }
+  const before=unproj(e.clientX,e.clientY,view.fi);
+  view.scale=Math.max(.12,Math.min(3.6,view.scale*Math.exp(-e.deltaY*.0015)));
+  if(before){
+    const after=proj(before[0],before[1],view.fi*FH);
+    view.ox+=(e.clientX-after[0])/view.scale; view.oy+=(e.clientY-after[1])/view.scale;
+  }
+  draw();
+},{passive:false});
+// 键盘方向键 = 精细旋转
+addEventListener('keydown',e=>{
+  const step=0.06;
+  if(e.key==='ArrowLeft'){view.yaw-=step;draw();e.preventDefault();}
+  if(e.key==='ArrowRight'){view.yaw+=step;draw();e.preventDefault();}
+  if(e.key==='ArrowUp'){view.pitch=Math.max(0,view.pitch-step);draw();e.preventDefault();}
+  if(e.key==='ArrowDown'){view.pitch=Math.min(1.5,view.pitch+step);draw();e.preventDefault();}
+  if(e.code==='Space'){e.preventDefault();document.getElementById('bGo').click();}
+  if(e.key==='1')setFloor(0);if(e.key==='2')setFloor(1);if(e.key==='3')setFloor(2);
+  if(e.key.toLowerCase()==='h')lg.classList.toggle('min');
+});
+
+function hitFloor(sx,sy){
+  const list = view.mode==='3' ? [2,1,0] : [view.fi];   // 上层遮挡下层
+  for(const fi of list){
+    const w=unproj(sx,sy,fi);
+    if(w&&walkable(w[0],w[1])) return {fi,x:w[0],y:w[1]};
+  }
+  return null;
+}
+function hoverAt(sx,sy){
+  const h=hitFloor(sx,sy);
+  cv.style.cursor=h?'crosshair':'default';
+  if(!h){if(hover){hover=null;draw();}return;}
+  const nx=Math.round(h.x/CELL)*CELL, ny=Math.round(h.y/CELL)*CELL;
+  if(!hover||hover.x!==nx||hover.y!==ny||hover.fi!==h.fi){hover={x:nx,y:ny,fi:h.fi};draw();}
+}
+function pick(sx,sy){
+  const h=hitFloor(sx,sy);
+  if(!h){
+    const w=unproj(sx,sy,view.fi);
+    const why = !w?'视角过平，请抬高一点'
+      : !inPoly(w[0],w[1],SHAPE)?'这里在建筑外'
+      : inAtrium(w[0],w[1])?'中庭洞口 · 不可通行'
+      : inWell(w[0],w[1])?'电动扶梯井道 · 不可通行'
+      : (nogoAt(w[0],w[1])||{t:'设备区'})+' · 不可通行';
+    say(why); emit('blocked',{reason:why,x:sx,y:sy}); return;}
+  if(h.fi!==view.fi) setFloor(h.fi,true);
+  const nx=Math.round(h.x/CELL)*CELL, ny=Math.round(h.y/CELL)*CELL;
+  const pt={x:nx,y:ny,fi:h.fi,name:nearestPOI(nx,ny,h.fi)||placeName(nx,ny,h.fi)};
+  autoPoint(pt); setCur();draw();
+}
+/* 交互选点：无起点或两点齐了 → 重开为起点；否则填终点 */
+function autoPoint(pt){
+  if(!A||B){ setStartPoint(pt); setHint('已选起点「'+pt.name+'」，再点一处作为终点'); return 'A'; }
+  setEndPoint(pt); compute(); return 'B';
+}
+function setStartPoint(pt){ A=pt; B=null; route=null; stopWalk();
+  document.getElementById('card').classList.remove('show'); emit('point',{role:'A',point:pt}); }
+function setEndPoint(pt){ B=pt; emit('point',{role:'B',point:pt}); }
+function nearestPOI(x,y,fi){
+  let best=null,bd=1e9;
+  for(const p of FLOORS[fi].pois){
+    const d=Math.hypot(p.x-x,p.y-y); if(d<bd){bd=d;best=p;}
+  }
+  return (best&&bd<26)?best.n:null;
+}
+function placeName(x,y,fi){
+  const ng=nogoAt(x,y);
+  if(ng) return FLOORS[fi].label+' '+ng.t+'（不可通行）';
+  if(inWell(x,y))  return FLOORS[fi].label+' 扶梯井（不可通行）';
+  if(inAtrium(x,y))return FLOORS[fi].label+' 中庭（不可通行）';
+  const z=zoneAt(x,y,fi);
+  return z? FLOORS[fi].label+' '+z.n : FLOORS[fi].label+' 公共通道';
+}
+function compute(){
+  const r=makeRoute(A,B);
+  if(!r){say('两点之间暂无可达路径，换个位置试试');route=null;
+    document.getElementById('card').classList.remove('show');
+    emit('route',{ok:false,from:A,to:B});return;}
+  route=r;stopWalk();
+  document.getElementById('sA').textContent=A.name;
+  document.getElementById('sB').textContent=B.name;
+  document.getElementById('rDist').textContent=r.meters.toFixed(0)+' m';
+  document.getElementById('rTime').textContent=Math.max(1,Math.round(r.minutes))+' 分钟';
+  document.getElementById('rFlr').textContent=r.flr? r.flr+' 次 · '+(r.vtype==='lift'?'电梯':'扶梯') : '0 次 · 同层';
+  const ul=document.getElementById('steps');ul.innerHTML='';
+  /* 按“整层”切段：斜跑上的连续楼层值（如 1.25）归属其起点所在层 */
+  const segs=[];let cur={fi:Math.round(r.line[0][2]),d:0},wi=0;
+  for(let i=1;i<r.line.length;i++){
+    const p=r.line[i-1],q=r.line[i];
+    if(Math.round(q[2])!==Math.round(p[2])){
+      if(cur.d>10) segs.push({type:'w',fi:cur.fi,d:cur.d});
+      const w=r.ways[wi++]||{}, up=q[2]>p[2];
+      segs.push({type:'v',from:byIdx(Math.round(p[2])).label,to:byIdx(Math.round(q[2])).label,
+                 up,kind:w.type,who:w.type==='lift'?(w.lift&&w.lift.n):(w.esc&&w.esc.n)});
+      cur={fi:Math.round(q[2]),d:0};
+    }else cur.d+=Math.hypot(q[0]-p[0],q[1]-p[1]);
+  }
+  if(cur.d>10) segs.push({type:'w',fi:cur.fi,d:cur.d});
+  if(!segs.length) segs.push({type:'w',fi:A.fi,d:r.dist});
+  let n=1;
+  for(const s of segs){
+    const li=document.createElement('li');
+    if(s.type==='w') li.innerHTML=`<u>${n++}</u><em>${byIdx(s.fi).label} 步行 ${(s.d*MPP).toFixed(0)} m</em>`;
+    else{li.className='v';li.innerHTML=`<u>${s.up?'⇧':'⇩'}</u><em>${s.up?'乘电动扶梯上行':'乘电动扶梯下行'} ${s.from} → ${s.to}${s.kind==='lift'?' · 改乘'+(s.who||'客梯'):''}</em>`;}
+    ul.appendChild(li);
+  }
+  if(!segs.some(s=>s.type==='v')){
+    const li=document.createElement('li');li.innerHTML='<u>✓</u><em>全程同层，无需换乘</em>';ul.appendChild(li);
+  }
+  document.getElementById('card').classList.add('show');
+  setHint('路径已生成 · 点「模拟导航」让小人行走',true);
+  setCur();
+  emit('route',{ok:true,...routeInfo()});
+}
+/* 路线摘要（供事件与 getState 复用） */
+function routeInfo(){
+  if(!route) return null;
+  const L=route.line, end=L[L.length-1];
+  return {distance:route.dist, meters:+route.meters.toFixed(1), minutes:+route.minutes.toFixed(1),
+          transfers:route.flr, vertical:route.vtype, points:L.length,
+          from:A?{x:A.x,y:A.y,fi:A.fi,name:A.name}:null,
+          to:B?{x:B.x,y:B.y,fi:B.fi,name:B.name}:null,
+          endFloor:Math.round(end[2])};
+}
+
+/* ---------- 8. 模拟导航 ---------- */
+let raf=null,ws=null,wSpeed=1;
+function stopWalk(){
+  walker=null;ws=null;walkTo._e=-1;
+  if(raf)cancelAnimationFrame(raf);raf=null;
+  document.getElementById('prog').style.display='none';
+  document.getElementById('bGo').textContent='▶ 模拟导航';
+}
+function startWalk(){
+  if(!route){say('请先选择起点和终点');return false;}
+  const L=route.line,seg=[];let total=0;
+  for(let i=1;i<L.length;i++){const d=Math.hypot(L[i][0]-L[i-1][0],L[i][1]-L[i-1][1]);seg.push(d);total+=d;}
+  if(!total){say('起点与终点重合');return false;}
+  ws={L,seg,total,t:0,last:performance.now(),speed:110*wSpeed,paused:false};
+  walker={x:L[0][0],y:L[0][1],fi:L[0][2],phase:0,moving:true,label:''};
+  walkTo._e=-1;
+  document.getElementById('prog').style.display='block';
+  document.getElementById('bGo').textContent='⏸ 暂停';
+  setHint('小人正在沿路径行走…',true);
+  emit('walk',{state:'start',progress:0,floor:Math.round(L[0][2]),x:walker.x,y:walker.y});
+  if(raf)cancelAnimationFrame(raf);
+  raf=requestAnimationFrame(tick);
+  return true;
+}
+/* 把小人放到路径累计距离 t（模型单位）处，并更新进度条与镜头跟随 */
+function walkTo(t){
+  if(!ws) return;
+  ws.t=Math.max(0,Math.min(ws.total,t));
+  let acc=0,i=0;
+  while(i<ws.seg.length-1&&acc+ws.seg[i]<ws.t){acc+=ws.seg[i];i++;}
+  const a=ws.L[i],b=ws.L[Math.min(i+1,ws.L.length-1)];
+  const k=ws.seg[i]?Math.max(0,Math.min(1,(ws.t-acc)/ws.seg[i])):0;
+  walker.x=a[0]+(b[0]-a[0])*k; walker.y=a[1]+(b[1]-a[1])*k;
+  const nfi=a[2]+(b[2]-a[2])*k;
+  if(view.mode==='2'&&Math.round(nfi)!==view.fi) setFloor(Math.round(nfi),true);
+  walker.fi=nfi; walker.moving=true;
+  walker.label=b[2]!==a[2]?(b[2]>a[2]?'↑ 上楼中':'↓ 下楼中'):'';
+  document.querySelector('#prog i').style.width=(ws.t/ws.total*100)+'%';
+  const p=proj(walker.x,walker.y,walker.fi*FH+SLAB_T+ZONE_H), want=[W/2,H*.55];
+  if(Math.hypot(p[0]-want[0],p[1]-want[1])>Math.min(W,H)*.26){
+    view.ox+=(want[0]-p[0])/view.scale; view.oy+=(want[1]-p[1])/view.scale;
+  }
+  const pr=ws.total?ws.t/ws.total:0;
+  if(walkTo._e<0 || pr-walkTo._e>=.099 || pr>=1){ walkTo._e=pr;
+    emit('walk',{state:'progress',progress:+pr.toFixed(3),floor:Math.round(nfi),
+                 x:+walker.x.toFixed(1),y:+walker.y.toFixed(1),
+                 name:placeName(walker.x,walker.y,Math.round(nfi))}); }
+  if(ws.t>=ws.total) arrive();
+}
+function tick(now){
+  if(!ws){if(raf){cancelAnimationFrame(raf);raf=null;}draw();return;}
+  const dt=Math.min(.05,(now-ws.last)/1000);ws.last=now;
+  if(!ws.paused) walkTo(ws.t+dt*ws.speed);
+  draw();
+  if(ws) raf=requestAnimationFrame(tick);
+}
+function arrive(){
+  if(!route) return;
+  walker.label='已到达';walker.moving=false;
+  walker.fi=route.line[route.line.length-1][2];
+  setFloor(Math.round(walker.fi),true);
+  document.getElementById('bGo').textContent='↺ 重新播放';
+  say('已到达终点：'+B.name,true);setHint('导航结束 · 可重新选点或重播',true);
+  setCur();
+  /* 先清状态再派发：监听器里可能立刻 route()+start() 开始下一段（巡更/多段动线），
+     若此时才置空 ws 会把新一段误杀。 */
+  const d={state:'arrive',progress:1,floor:Math.round(walker.fi),x:walker.x,y:walker.y,name:B?B.name:''};
+  ws=null;
+  emit('walk',d);
+}
+document.getElementById('bGo').onclick=()=>{
+  if(ws){ws.paused=!ws.paused;
+    document.getElementById('bGo').textContent=ws.paused?'▶ 继续':'⏸ 暂停';
+    setHint(ws.paused?'已暂停':'小人正在沿路径行走…',true);return;}
+  startWalk();
+};
+document.getElementById('bClr').onclick=()=>{
+  A=B=null;route=null;stopWalk();hover=null;
+  document.getElementById('card').classList.remove('show');
+  setHint('点击两个位置，生成起点 A → 终点 B');setCur();draw();
+};
+
+/* ---------- 9. 控件 ---------- */
+function applyMode(to){                    // '2' | '3'（内部与 API 共用）
+  to = String(to)==='2' ? '2' : '3';
+  if(to===view.mode) return false;
+  const btn=document.querySelector(`#dseg button[data-m="${to}"]`);
+  if(btn) [...btn.parentNode.children].forEach(x=>x.classList.toggle('on',x===btn));
+  saveCam();
+  view.mode=to;
+  loadCam();
+  document.getElementById('tools').classList.toggle('on',to==='3');
+  const fresh = to==='3' ? !cam3.ready : !cam2.ready;   // 首次进入该模式才自动取景
+  if(fresh) fitView();
+  draw();
+  setHint(to==='3'?'3D：单指拖动旋转 · 双指平移缩放 · Shift+拖动也可平移'
+                  :'2D：拖动平移 · 滚轮缩放 · 点击选点',true);
+  emit('mode',{mode:to});
+  return true;
+}
+function resetView(top){                    // 复位到默认机位
+  if(view.mode==='3'){view.yaw=HOME.yaw;view.pitch=HOME.pitch;cam3.yaw=HOME.yaw;cam3.pitch=HOME.pitch;}
+  fitView();draw();if(top!==false)say('已复位视角',true);
+  emit('camera',{mode:view.mode,yaw:view.yaw,pitch:view.pitch,scale:view.scale});
+}
+document.getElementById('dseg').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return; applyMode(b.dataset.m);
+};
+(function(){
+  const step={l:[-.12,0],r:[.12,0],u:[0,-.10],d:[0,.10]};
+  let hold=null;
+  const nudge=dir=>{
+    const [dy,dp]=step[dir];
+    view.yaw+=dy; view.pitch=Math.max(0,Math.min(1.45,view.pitch+dp));
+    saveCam3(); draw();
+  };
+  document.getElementById('rotBtns').addEventListener('pointerdown',e=>{
+    const b=e.target.closest('button'); if(!b||view.mode!=='3') return;
+    e.preventDefault(); nudge(b.dataset.r);
+    clearTimeout(hold); hold=setInterval(()=>nudge(b.dataset.r),180);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(t=>
+    document.getElementById('rotBtns').addEventListener(t,()=>clearInterval(hold)));
+  document.addEventListener('visibilitychange',()=>clearInterval(hold));
+})();
+document.getElementById('bReset').onclick=()=>resetView();
+cv.addEventListener('dblclick',()=>{fitView();draw();});
+
+const lg=document.getElementById('legend');
+lg.innerHTML='<div class="t">图层<s>▾</s></div>'+
+ [['shop','商铺色块'],['nogo','不可通行'],['esc','电动扶梯'],['lift','客梯'],['poi','POI 图标']]
+ .map(([k,n])=>`<div class="row" data-k="${k}"><i style="background:${
+   k==='nogo'?'repeating-linear-gradient(45deg,#b9c3d0 0 3px,#7d8a9c 3px 5px)':
+   k==='shop'?'linear-gradient(90deg,#96d2cd,#f5b0cb)':C[k]||'#7f8ea3'}"></i>${n}</div>`).join('')+
+ '<div class="row" data-k="names"><i style="background:#26313f"></i>商铺名称</div>';
+const LAYERS=['shop','nogo','esc','lift','poi','names'];
+function toggleLayer(k,off){
+  const r=lg.querySelector(`.row[data-k="${k}"]`); if(!r) return false;
+  const has=hidden.has(k), want = off===undefined ? !has : !!off;
+  if(want) hidden.add(k); else hidden.delete(k);
+  r.classList.toggle('off',want);
+  draw(); emit('layer',{layer:k,visible:!want});
+  return !want;
+}
+lg.onclick=e=>{
+  if(e.target.closest('.t')){lg.classList.toggle('min');return;}
+  const r=e.target.closest('.row');if(!r)return;
+  toggleLayer(r.dataset.k);
+};
+if(innerWidth<560) lg.classList.add('min');
+
+/* ---------- 11. 版本标识：任何一份下载副本都能自证来源与新旧 ---------- */
+const BUILD={version:'1.2.0', since:'5b18167', built:'2026-09-28 11:31 +0800',
+             repo:'https://gitee.com/mobuhan/indoor-navigation',
+             file:'indoor-navigation.html', deps:'0（单文件，无外链/无网络请求）'};
+/* 模型指纹：只哈希几何与铺位数据，与注释、排版无关，因此能自校验且不引用自身内容。
+   下载副本若被截断或改坏，integrity().ok 为 false，角标会提示不一致。 */
+const MODEL_HASH='80f2c1cc';
+function fnv(str){ let h=0x811c9dc5>>>0;
+  for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; }
+  return h.toString(16).padStart(8,'0'); }
+const modelDump = ()=>JSON.stringify([SHAPE,ATRIUM,WELLS,LIFTS,STAIRS.map(x=>x.p),
+  ESCS.map(e=>[e.x0,e.x1,e.yb,e.yt,e.g,e.up]), FLOORS.map(f=>f.zones.map(z=>z.c+z.n+z.p))]);
+function integrity(){
+  const h=fnv(modelDump());
+  return {model:h, expected:MODEL_HASH, ok:h===MODEL_HASH,
+          zones:FLOORS.reduce((n,f)=>n+f.zones.length,0), floors:FLOORS.length};
+}
+
+/* ---------- 12. 对外 JS API（window.mallNav） ----------
+   所有交互动作都有一份可调用的方法，页面内嵌 / iframe / 上层业务都能直接集成。
+   事件：mallNav.on(type, cb) → 返回取消监听的函数；type ∈
+   ready floor mode camera point route walk layer blocked message search
+   ------------------------------------------------------------ */
+const EV=['ready','floor','mode','camera','point','route','walk','layer','blocked','message','search'];
+function on(t,cb){ if(!EV.includes(t)||typeof cb!=='function'){console.warn('[mallNav] on(type,cb) 未知事件',t);return ()=>{};}
+  (NAVH[t]=NAVH[t]||[]).push(cb); return ()=>off(t,cb); }
+function off(t,cb){ const a=NAVH[t]; if(a){const i=a.indexOf(cb); if(i>=0)a.splice(i,1);} }
+
+/* 坐标与名称 → 导航点。参数可以是：
+   '优衣库' | {name:'Apple'} | {x,y,floor|fi} | [x,y,floor]  */
+function resolvePt(p, defFi){
+  if(p==null) return null;
+  if(Array.isArray(p)) p={x:p[0],y:p[1],floor:p.length>2?p[2]:defFi};
+  if(typeof p==='string') p={name:p};
+  if(typeof p!=='object') return null;
+  let {x,y,floor,fi,name}=p;
+  if(!isFinite(x)||!isFinite(y)){
+    const hit=search(name||'')[0];
+    if(!hit) return null;
+    x=hit.x; y=hit.y; floor=hit.floor;
+  }
+  const f = Math.max(0,Math.min(FLOORS.length-1, Math.round(floor!==undefined?floor:(fi!==undefined?fi:(defFi||0)))));
+  const n = snapWalk(x,y,f);
+  if(!n) return null;
+  return {x:n.x,y:n.y,fi:f,name:name||placeName(n.x,n.y,f)};
+}
+function snapWalk(x,y,fi){                 // 就近吸附到可行走的网格节点
+  if(walkable(x,y)) return {x:Math.round(x/CELL)*CELL,y:Math.round(y/CELL)*CELL};
+  const n=snapNode(x,y,fi);
+  return n? {x:n.gx,y:n.gy}:null;
+}
+/* 模糊检索：商铺 / POI / 扶梯 / 客梯 / 楼梯 / 不可通行区 */
+const norm = s=>String(s||'').toLowerCase().replace(/\s+/g,'');
+function search(q){
+  const s=norm(q), out=[];
+  const hit=n=>{ if(!s) return false; const t=norm(n); return t.includes(s)||s.includes(t); };
+  FLOORS.forEach((f,fi)=>{
+    for(const z of f.zones){ if(!hit(z.n)) continue;
+      const c=centroid(z.p), n=snapWalk(c[0],c[1],fi);
+      out.push({name:z.n, floor:fi, floorLabel:f.label, x:n?n.x:c[0], y:n?n.y:c[1],
+                type:'shop', color:C[z.c], walkable:!!n, inZone:z.n}); }
+    for(const p of f.pois) if(hit(p.n))
+      out.push({name:p.n, floor:fi, floorLabel:f.label, x:p.x, y:p.y, type:'poi',
+                walkable:walkable(p.x,p.y), icon:p.k});
+  });
+  for(const e of ESCS){ if(!hit(e.n)&&!hit(e.s)) continue;
+    const fi=e.up?e.g:e.g+1, x=e.cx, y=e.up?e.yb:e.yt, n=snapWalk(x,y,fi);
+    out.push({name:e.n, floor:fi, floorLabel:byIdx(fi).label, x:n?n.x:x, y:n?n.y:y,
+              type:'escalator', walkable:!!n, dir:e.up?'up':'down'}); }
+  for(const l of LIFTS) if(hit(l.n))
+    out.push({name:l.n, floor:0, floorLabel:'1F/2F/3F', x:l.cx, y:l.y0-6, type:'lift', walkable:true});
+  for(const n of NOGO) if(hit(n.t))
+    out.push({name:n.t, floor:0, floorLabel:'各层', x:centroid(n.p)[0], y:centroid(n.p)[1],
+              type:'blocked', walkable:false});
+  out.sort((a,b)=>(b.walkable-a.walkable)||(a.name.length-b.name.length));
+  return out;
+}
+/* 相机：把某点居中（可选缩放），2D/3D 通用 */
+function centerOn(x,y,fi,scale){
+  updCam();
+  if(isFinite(scale)&&scale>0) view.scale=Math.max(.12,Math.min(3.6,scale));
+  const r=rotV(x-CX,y-CY,fi*FH+SLAB_T+ZONE_H-CZ0);
+  view.ox=W/2/view.scale-(r[0]+CX);
+  view.oy=H*.5/view.scale-(r[1]+CY);
+  if(view.mode==='3') saveCam3(); else saveCam();
+  draw();
+  emit('camera',{mode:view.mode,yaw:view.yaw,pitch:view.pitch,scale:view.scale});
+}
+function setCam(o){
+  o=o||{};
+  if(view.mode!=='3') return {yaw:0,pitch:0,ignored:'2D 模式无姿态，rotate() 仅 3D 生效'};
+  if(o.dYaw) view.yaw+=+o.dYaw;
+  if(o.dPitch) view.pitch+=+o.dPitch;
+  if(isFinite(o.yaw)) view.yaw=+o.yaw;
+  if(isFinite(o.pitch)) view.pitch=Math.max(0,Math.min(1.45,+o.pitch));
+  cam3.yaw=view.yaw; cam3.pitch=view.pitch;
+  draw(); emit('camera',{mode:view.mode,yaw:view.yaw,pitch:view.pitch,scale:view.scale});
+  return {yaw:view.yaw,pitch:view.pitch};
+}
+function navState(){
+  return {floor:view.fi, floorLabel:byIdx(view.fi).label, mode:view.mode,
+          yaw:+view.yaw.toFixed(3), pitch:+view.pitch.toFixed(3), scale:+view.scale.toFixed(3),
+          start:A?{...A}:null, end:B?{...B}:null, route:routeInfo(),
+          walking:!!ws, paused:!!(ws&&ws.paused),
+          progress:ws?+(ws.total?ws.t/ws.total:0).toFixed(3):0,
+          speed:ws?ws.speed/110:1,
+          walker:walker?{x:+walker.x.toFixed(1),y:+walker.y.toFixed(1),floor:+walker.fi.toFixed(2)}:null,
+          layers:LAYERS.reduce((m,k)=>(m[k]=!hidden.has(k),m),{})};
+}
+function notice(m,ok){ say(m,ok); setHint(m,ok); emit('message',{text:m,ok:!!ok}); }
+let NAV_READY=false;
+
+window.mallNav = {
+  version:'1.2.0', build:BUILD,
+  info(){ return {...BUILD, ...integrity()}; },        // 版本 + 完整性，集成方可据此校验副本
+  /* — 就绪 — */
+  ready(cb){                                   // 就绪回调：已就绪则立即触发，可直接开始链式调用
+    if(typeof cb==='function') NAV_READY ? setTimeout(()=>cb(navState(),0),0) : this.on('ready',cb);
+    return this; },
+  /* — 视图 — */
+  setFloor(i,keepView){ setFloor(+i,!!keepView); return navState(); },
+  nextFloor(){ setFloor((view.fi+1)%FLOORS.length); return navState(); },
+  setViewMode(m){ applyMode(m); return navState(); },
+  rotate(o){ return setCam(o); },                        // {yaw,pitch,dYaw,dPitch}（弧度）
+  zoom(k,ax,ay){                                         // k：目标缩放倍数（0.12~3.6），可选以屏幕点 (ax,ay) 为锚点
+    updCam();
+    if(!isFinite(k)||k<=0) return view.scale;
+    const ns=Math.max(.12,Math.min(3.6,k));
+    const w = (ax===undefined)?null:unproj(ax,ay,view.fi);
+    view.scale=ns;
+    if(w){ const a=proj(w[0],w[1],view.fi*FH);
+      view.ox+=(ax-a[0])/view.scale; view.oy+=(ay-a[1])/view.scale; }
+    draw(); emit('camera',{mode:view.mode,yaw:view.yaw,pitch:view.pitch,scale:view.scale});
+    return view.scale;
+  },
+  fit(){ fitView(); draw(); return navState(); },
+  resetView(){ resetView(); return navState(); },
+  /* — 选点与路线 — */
+  setStart(p){ const pt=resolvePt(p,view.fi); if(!pt){notice('起点无法定位，请换一个位置');return null;}
+    setStartPoint(pt); setHint('已选起点「'+pt.name+'」'); setCur(); draw(); return {...pt}; },
+  setEnd(p){ const pt=resolvePt(p,view.fi); if(!pt){notice('终点无法定位，请换一个位置');return null;}
+    setEndPoint(pt); compute(); return {...pt}; },
+  route(a,b){                                            // route('星巴克','Apple Store') 或传坐标
+    const s=resolvePt(a,view.fi); if(!s){notice('起点无法定位');return null;}
+    const t=resolvePt(b,view.fi); if(!t){notice('终点无法定位');return null;}
+    setStartPoint(s); setEndPoint(t); compute();
+    return routeInfo();
+  },
+  reroute(){ compute(); return routeInfo(); },
+  clear(){ A=B=null;route=null;stopWalk();hover=null;
+    document.getElementById('card').classList.remove('show');
+    setHint('点击两个位置，生成起点 A → 终点 B');setCur();draw();
+    emit('route',{ok:false}); return true; },
+  /* — 模拟导航 — */
+  start(){ return startWalk(); },
+  pause(){ if(ws){ws.paused=true;document.getElementById('bGo').textContent='▶ 继续';
+    setHint('已暂停');emit('walk',{state:'pause',progress:ws.t/ws.total});return true;} return false; },
+  resume(){ if(ws){ws.paused=false;document.getElementById('bGo').textContent='⏸ 暂停';
+    ws.last=performance.now();setHint('小人正在沿路径行走…',true);
+    emit('walk',{state:'resume',progress:ws.t/ws.total});return true;}
+    return startWalk(); },
+  stop(){ stopWalk(); if(route){document.getElementById('bGo').textContent='▶ 模拟导航';}
+    emit('walk',{state:'stop',progress:0}); return true; },
+  seek(t){                                               // 0~1 进度，直接摆放小人并保持暂停
+    if(!route){notice('请先生成路线');return null;}
+    const L=route.line,seg=[];let total=0;
+    for(let i=1;i<L.length;i++){const d=Math.hypot(L[i][0]-L[i-1][0],L[i][1]-L[i-1][1]);seg.push(d);total+=d;}
+    ws={L,seg,total,t:0,last:performance.now(),speed:110*wSpeed,paused:true};
+    walker={x:L[0][0],y:L[0][1],fi:L[0][2],phase:0,moving:false,label:''};
+    walkTo._e=-1;
+    document.getElementById('prog').style.display='block';
+    document.getElementById('bGo').textContent='▶ 继续';
+    if(raf){cancelAnimationFrame(raf);raf=null;}
+    walkTo(total*Math.max(0,Math.min(1,+t||0)));
+    const pr=+(Math.max(0,Math.min(1,+t||0))).toFixed(3);
+    if(walker) walker.moving=false;
+    draw(); return pr;
+  },
+  setSpeed(k){                                           // 倍速，对下一次 start() 同样生效
+    wSpeed = Math.max(.1,Math.min(8,+k||1));
+    if(ws) ws.speed=110*wSpeed;
+    return wSpeed; },
+  /* — 检索 / 定位 — */
+  find(q){ const r=search(q); emit('search',{query:q,results:r.slice(0,8)}); return r; },
+  locate(q,opts){                                        // 切层 + 居中（可缩放）+ 提示
+    opts=opts||{};
+    const r=typeof q==='object'?q:search(q)[0];
+    if(!r){notice('没有找到「'+q+'」');return null;}
+    if(opts.mode) applyMode(opts.mode);
+    if(isFinite(opts.floor)) setFloor(opts.floor,true); else setFloor(r.floor,true);
+    centerOn(r.x,r.y,r.floor,opts.zoom);
+    setHint('已定位：'+r.floorLabel+' · '+r.name,true);
+    emit('point',{role:'locate',point:{x:r.x,y:r.y,fi:r.floor,name:r.name}});
+    return r;
+  },
+  goto(q, from){                                         // 一步到位：定起终点并出路线
+    const t=resolvePt(q,view.fi); if(!t){notice('终点无法定位');return null;}
+    const s=resolvePt(from,view.fi)||A||{x:t.x,y:t.y,floor:t.floor};
+    return this.route(s,t);
+  },
+  placeAt(x,y,fi){ return placeName(+x,+y,Math.max(0,Math.min(2,fi|0))); },
+  isWalkable(x,y,fi){ return walkable(+x,+y); },
+  /* — 图层 — */
+  toggleLayer(k,onOrOff){ return toggleLayer(k,onOrOff); },
+  setLayers(o){ Object.keys(o||{}).forEach(k=>toggleLayer(k,!o[k])); return navState().layers; },
+  /* — 坐标换算 — */
+  toScreen(x,y,fi){ const p=proj(+x,+y,(fi|0)*FH+SLAB_T); return {sx:p[0],sy:p[1],depth:p[2]}; },
+  toWorld(sx,sy,fi){ const w=unproj(+sx,+sy,fi|0); return w?{x:w[0],y:w[1]}:null; },
+  /* — 状态与事件 — */
+  state(){ return navState(); },
+  on, off,
+  events:EV.slice(),
+  data:{ mpp:MPP, floorHeight:FH, units:'模型单位（1 单位 = '+(MPP*100).toFixed(0)+' cm）',
+         floors:FLOORS.map((f,fi)=>({index:fi,label:f.label,zones:f.zones.map(z=>z.n),pois:f.pois.map(p=>p.n)})) }
+};
+/* iframe 集成：宿主页面可用 postMessage 调用，形如
+   {type:'mallNav:call', id:1, method:'route', args:['星巴克','Apple Store']} */
+addEventListener('message',e=>{
+  const d=e.data;
+  if(!d||d.type!=='mallNav:call') return;
+  const fn=window.mallNav[d.method];
+  let ok=true,res=null,err='';
+  try{ if(typeof fn!=='function') throw new Error('未知方法 '+d.method);
+       res = fn.apply(window.mallNav,d.args||[]); }
+  catch(ex){ ok=false; err=ex.message; }
+  (e.source||parent).postMessage({type:'mallNav:result',id:d.id,ok,data:ok?res:err},
+    e.origin&&e.origin!=='null'?e.origin:'*');
+});
+
+/* 顶栏角标：一眼看出这份副本是哪个版本、什么时候构建的 */
+(function stampVersion(){
+  const el=document.getElementById('ver'); if(!el) return;
+  el.textContent='v'+BUILD.version+' · '+BUILD.built.slice(5,10);
+  const ig=integrity();
+  el.title = ['版本 '+BUILD.version,'构建 '+BUILD.built,'本版本自提交 '+BUILD.since,
+              '模型指纹 '+ig.model+' · '+(ig.ok?'完整':'与发布版不一致'), ig.floors+' 层 / '+ig.zones+' 个铺位',
+              '依赖 '+BUILD.deps,'源码 '+BUILD.repo,
+              '接口 window.mallNav（详见 API.md / INTEGRATION.md）'].join('\n');
+})();
+
+/* ---------- 13. 启动：默认 1F + 3D ---------- */
+resize();
+view.mode='3'; view.yaw=HOME.yaw; view.pitch=HOME.pitch;
+cam3.yaw=HOME.yaw; cam3.pitch=HOME.pitch;
+[...document.getElementById('dseg').children].forEach(x=>x.classList.toggle('on',x.dataset.m==='3'));
+setFloor(0,true);
+A={x:60,y:166,fi:0,name:placeName(60,166,0)};
+B={x:620,y:70,fi:2,name:placeName(620,70,2)};
+compute();
+fitView();
+draw();
+setHint('3D：单指拖动旋转 · 双指平移缩放 · 点两下生成导航',true);
+NAV_READY=true; emit('ready',navState());        // API 就绪，可开始链式调用
+</script>
+</body>
+</html>

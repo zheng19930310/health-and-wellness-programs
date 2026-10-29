@@ -5,18 +5,31 @@
 const MB_TABS = {
   app: {
     elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['👤','我的','mine']]
+    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['👤','我的','mine']],
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']]
   },
   mp: {
     elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['👤','我的','mine']]
+    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['👤','我的','mine']],
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']]
   }
 };
 
 const MB = {
-  elder:'徐世昌', child:'徐乐', cart:[], chat:[], aiLog:null, postIdx:0,
+  elder:'徐世昌', child:'徐乐', special:'蒋明远', cart:[], chat:[], aiLog:null, postIdx:0,
   A(){ const r = MODULES.archive.rows.find(a=>a.name===MB.elder);
        return r || { name:MB.elder, room:'A-305', zone:'康养区 A 栋', level:'半自理', pkg:'健康管理套餐', guardian:'徐乐' }; },
+  SA(){ const r = MODULES.archive.rows.find(a=>a.name===MB.special);
+       return r || { name:MB.special, room:'A-105', zone:'康养区 A 栋', level:'半自理', pkg:'生活照护套餐', guardian:'蒋涛', gphone:'135****1180', age:80 }; },
+  wx(){ const h=new Date().getHours(); const t=[['🌙','晴','18℃','夜间偏凉，注意保暖'],['🌅','多云','22℃','空气良好，适合晨间活动'],['☀️','晴','26℃','光照充足，记得多喝水'],['🌆','晴转多云','23℃','体感舒适，适宜散步']]; const i=h<6?0:h<11?1:h<18?2:3; return {ico:t[i][0],text:t[i][1],temp:t[i][2],tip:t[i][3]}; },
+  BH(){ const rs = MODULES.health.rows.filter(h=>h.name===MB.special); return rs[0] || { hr:74, spo2:98, bp:'126/80', sleep:6.8, step:3200, date:today(), bat:'86%', tip:'该喝温水了' }; },
+  BLOCS(){ return [
+    {id:1,ico:'🍚',name:'康养餐厅',time:'11:30 午餐',act:'低盐营养餐供应',hint:'到餐厅自动确认今日订餐'},
+    {id:2,ico:'💆',name:'康复理疗室',time:'14:00 理疗',act:'中医理疗体验',hint:'到达自动开始理疗签到'},
+    {id:3,ico:'🎪',name:'文化活动室',time:'15:30 活动',act:'合唱团社区联排',hint:'到达自动签到并计入活动'},
+    {id:4,ico:'🌳',name:'银杏大道',time:'16:30 散步',act:'健走打卡',hint:'GPS 围栏自动计步打卡'},
+    {id:5,ico:'🏥',name:'医务室',time:'按需',act:'体征测量',hint:'到达自动上传手环体征'}
+  ]; },
   MEM(){ const r = MODULES.member.rows.find(m=>m.name===MB.elder);
        return r || { lv:'金卡会员', balance:3680, point:1240, spend:42800, no:'HY20250312001', status:'正常' }; },
   H(){ const rs = MODULES.health.rows.filter(h=>h.name===MB.elder); return rs[0] || { hr:78, spo2:97, bp:'136/84', sleep:7.2, step:4210, risk:'低', date:today(), doctor:'陈叙白' }; },
@@ -33,6 +46,7 @@ const MB = {
     return `<div class="st"><span>${p(d.getHours())}:${p(d.getMinutes())}</span><span class="rt">🔔 5G ▮▮▮ 86%</span></div>`; },
   wxbar(role){ return `<div class="wxbar"><div class="t">‹ 康养服务${role==='child'?'（子女版）':''}</div><div class="caps"><span>⋯</span><span style="border-left:1px solid #e4e9f0;height:16px"></span><span>◉</span></div></div>`; },
   head(kind, role){
+    if(role==='special'){ const sa=MB.SA(); return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${esc(sa.name)} · 智能手环</h3><div class="sm">大字 · 语音 · 到站自动打卡 · 一键呼救</div></div><div class="av">⌚</div></div></div>`; }
     const a = MB.A();
     if(role==='child') return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(S.user?S.user.name:MB.child)}</h3><div class="sm">${kind==='mp'?'小程序 · 微信授权已绑定':'APP · 已绑定长者 '+a.name} · 关注 ${a.name}（${a.room}）</div></div><div class="av">👪</div></div></div>`;
     return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(a.name)}</h3><div class="sm">${esc(a.zone)} · ${esc(a.room)} · ${esc(a.level)} · ${esc(a.pkg||'健康管理套餐')}</div></div><div class="av">🧓</div></div></div>`;
@@ -41,6 +55,8 @@ const MB = {
   tabb(kind, role, tabs, idx){
     return `<div class="tabb">`+tabs.map((t,i)=> t[2]==='sos'
       ? `<button class="sos" onclick="Mob.sos()"><span class="e">🆘</span>SOS</button>`
+      : t[2]==='broadcast'
+      ? `<button onclick="Mob.broadcast()"><span class="e">${t[0]}</span>${t[1]}</button>`
       : `<button class="${i===idx?'on':''}" onclick="Mob.go('${kind}',${i})"><span class="e">${t[0]}</span>${t[1]}</button>`).join('')+`</div>`;
   },
   sheet(html, style){ MB.close(); const host = $(S.view==='mp'?'mpScr':'appScr'); if(!host) return;
@@ -54,7 +70,7 @@ const MB = {
     const role = S.mobileRole[kind] || 'elder';
     const tabs = MB_TABS[kind][role];
     let idx = S[kind+'Tab']||0; if(idx>=tabs.length) idx=0;
-    const key = tabs[idx][2]==='sos' ? 'home' : tabs[idx][2];
+    const key = (tabs[idx][2]==='sos'||tabs[idx][2]==='broadcast') ? 'home' : tabs[idx][2];
     host.innerHTML = (kind==='app'?MB.status():MB.wxbar(role)) + MB.head(kind,role)
       + `<div class="app-body">${MB.screen(kind,role,key)}</div>` + MB.tabb(kind,role,tabs,idx);
     const seg = $(kind+'Role');
@@ -75,6 +91,7 @@ const MB = {
 
   /* ---------- 屏幕 ---------- */
   screen(kind, role, key){
+    if(role==='special') return ({ home:MB.sBand, band:MB.sBand, checkin:MB.sCheckin, mine:MB.sMine })[key](kind);
     if(role==='child') return ({ home:MB.cHome, family:MB.cFamily, book:MB.cBook, pay:MB.cPay, mine:MB.cMine })[key](kind);
     return ({ home:MB.eHome, health:MB.eHealth, circle:MB.eCircle, svc:MB.eSvc, mine:MB.eMine })[key](kind);
   },
@@ -232,13 +249,67 @@ const MB = {
       <div class="mc"><div class="mc-h"><b>家庭成员协作</b><span>3 位亲属</span></div>
         <ul class="mlist">${MODULES.family.rows.slice(0,3).map(x=>`<li><div class="ic">${x.status==='已绑定'?'👪':'⏳'}</div><div class="tx"><b>${esc(x.cname)} · ${esc(x.rel)}</b><p>${esc(x.ename)} · ${esc(x.auth)} · 最近探望 ${esc(x.visit)}</p></div><div class="rt"><span class="tag ${x.status==='已绑定'?'green':'warn'}">${esc(x.status)}</span></div></li>`).join('')}</ul></div>
       <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
+  },
+
+  /* ===== 特殊长者 · 智能手环端 ===== */
+  sBand(kind){
+    const a=MB.SA(), h=MB.BH(), d=new Date(), p=n=>String(n).padStart(2,'0');
+    const wk=['日','一','二','三','四','五','六'][d.getDay()];
+    const log = S.bandLog||[];
+    const dots = MB.BLOCS().map(L=>{const ok=log.some(x=>x.id===L.id);return `<div style="flex:1;text-align:center"><div style="width:44px;height:44px;margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;background:${ok?'linear-gradient(135deg,#1668dc,#00b578)':'#eef2f7'};color:${ok?'#fff':'#9aa7b6'}">${L.ico}</div><div style="font-size:10.5px;margin-top:4px;color:var(--sub)">${esc(L.name)}</div></div>`;}).join('');
+    const next = MB.BLOCS().find(L=>!log.some(x=>x.id===L.id));
+    const done = MB.BLOCS().filter(L=>log.some(x=>x.id===L.id)).length;
+    return `<div class="mc" style="text-align:center;background:linear-gradient(160deg,#0f2038,#0a1524);color:#fff">
+      <div style="font-size:13px;opacity:.82">${d.getMonth()+1} 月 ${d.getDate()} 日 · 周${wk} · ${esc(a.zone)}</div>
+      <div class="big" style="font-size:66px;line-height:1.1;letter-spacing:2px;margin:2px 0">${p(d.getHours())}:${p(d.getMinutes())}</div>
+      <div style="font-size:12.5px;opacity:.85">🔋 ${esc(h.bat||'86%')} · 📶 手环已连接 · 🟢 定位正常</div></div>
+    <div class="mc"><div class="mc-h"><b>今日自动打卡</b><span>${done} / ${MB.BLOCS().length}</span></div>
+      <div style="display:flex;gap:6px">${dots}</div>
+      ${next?`<p class="tiny" style="margin-top:10px">下一站：<b>${next.ico} ${esc(next.name)}</b>（${esc(next.time)}）— 到达将自动打卡</p>`:'<p class="tiny" style="margin-top:10px">今日打卡已全部完成 ✅</p>'}</div>
+    <div class="mc" style="border:2px solid var(--green)"><div class="mc-h"><b>📳 手环提醒</b><span>语音已播报</span></div>
+      <ul class="mlist"><li><div class="ic g">🔔</div><div class="tx"><b style="font-size:16px">${esc(h.tip||'该喝温水了')}</b><p>震动 + 语音提示 · 无需操作</p></div></li></ul></div>
+    <div style="display:flex;gap:12px;margin:4px 0 12px">
+      <button class="btn dg" style="flex:1;height:78px;font-size:20px;border-radius:18px;line-height:1.4" onclick="Mob.sos()">🆘<br>呼救</button>
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+        <button class="btn p" style="flex:1;font-size:15px" onclick="Mob.bandCall()">👧 呼叫家人</button>
+        <button class="btn" style="flex:1;font-size:15px" onclick="Mob.bandVibrate()">📳 震动了没</button>
+      </div></div>
+    <div class="mc"><div class="mc-h"><b>实时体征（手环）</b><span>${esc(h.date||today())}</span></div>
+      <div class="hcards" style="grid-template-columns:repeat(3,1fr)"><div class="hc1"><label>心率</label><b>${esc(h.hr)}<i style="font-size:11px"> bpm</i></b></div>
+      <div class="hc2"><label>血压</label><b style="font-size:16px">${esc(h.bp)}</b></div><div class="hc3"><label>血氧</label><b>${esc(h.spo2)}<i style="font-size:11px"> %</i></b></div></div></div>
+    <div class="mbtns"><button class="btn g blk" onclick="Mob.go('${kind}',1)">📍 查看今日打卡 ›</button></div>`;
+  },
+  sCheckin(kind){
+    const log = S.bandLog||[];
+    const locs = MB.BLOCS().map(L=>{const done=log.some(x=>x.id===L.id);const rec=log.find(x=>x.id===L.id);
+      return `<div class="mc" style="display:flex;align-items:center;gap:12px;${done?'border:1.5px solid var(--green)':''}">
+        <div style="width:48px;height:48px;border-radius:14px;background:${done?'linear-gradient(135deg,#1668dc,#00b578)':'var(--blue-l)'};color:${done?'#fff':'#1668dc'};display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 auto">${L.ico}</div>
+        <div style="flex:1;min-width:0"><b style="font-size:15px">${esc(L.name)}</b><p class="tiny" style="margin:2px 0 0">${esc(L.time)} · 活动：${esc(L.act)}</p><p class="tiny" style="color:var(--sub-l)">${esc(L.hint)}</p></div>
+        <div style="text-align:right;flex:0 0 auto">${done?`<span class="tag green">已打卡</span><div class="tiny">${esc(rec.t||'')}</div>`:`<button class="btn sm p" onclick="Mob.arrive(${L.id})">模拟到达</button>`}</div></div>`;}).join('');
+    return `<div class="mhero"><b>🛰 到位置动打卡</b><p>长者走到以下特殊位置时，手环通过蓝牙 / GPS 围栏自动打卡、震动确认，并自动参加对应活动，全程无需任何操作。</p></div>
+      ${locs}
+      <div class="mc"><div class="mc-h"><b>今日打卡记录</b><span>${log.length} 条 · 已同步后台健康档案</span></div>
+        <ul class="mlist">${log.length?log.slice().reverse().map(x=>`<li><div class="ic g">${x.ico||'📍'}</div><div class="tx"><b>${esc(x.name)}</b><p>${esc(x.act||'')} · 手环自动签到</p></div><div class="rt">${esc(x.t||'')}</div></li>`).join(''):'<li><div class="tx"><p style="text-align:center;color:var(--sub-l)">暂无记录，点击上方“模拟到达”体验</p></div></li>'}</ul></div>
+      <div class="mbtns"><button class="btn g" onclick="Mob.arriveAll()">一键演示全部到达</button><button class="btn" onclick="S.bandLog=[];renderMobile(S.view)">清空记录</button></div>`;
+  },
+  sMine(kind){
+    const a=MB.SA();
+    return `<div class="mc" style="display:flex;align-items:center;gap:12px"><div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#1668dc,#00b578);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px">⌚</div>
+      <div style="flex:1"><b style="font-size:17px">${esc(a.name)}</b><div class="tiny">${esc(a.zone)} ${esc(a.room)} · ${esc(a.age||80)} 岁 · 特殊长者</div></div><span class="tag green">在院</span></div>
+    <div class="mc"><div class="mc-h"><b>我的智能手环</b><span>仅 5 项功能 · 零文字</span></div>
+      <ul class="mlist">${[['🕒','显示时间','超大数字，整点震动报时'],['📳','震动提醒','吃药 / 活动 / 吃饭前震动 + 语音'],['🆘','一键呼救','长按 3 秒直连值班与家属'],['🛰','自动打卡','到特殊位置自动签到，无需操作'],['🔊','语音播报','一键报时、报当前位置、报天气']].map(x=>`<li><div class="ic">${x[0]}</div><div class="tx"><b style="font-size:15px">${x[1]}</b><p>${x[2]}</p></div></li>`).join('')}</ul></div>
+    <div class="mc"><div class="mc-h"><b>设备与照护</b><span>IoT 已登记</span></div>
+      <ul class="mlist"><li><div class="ic g">🔋</div><div class="tx"><b>电量 / 连接</b><p>${esc(MB.BH().bat||'86%')} · 蓝牙 + GPS 双定位</p></div><div class="rt"><span class="tag green">在线</span></div></li>
+      <li><div class="ic">👧</div><div class="tx"><b>紧急联系人</b><p>${esc(a.guardian||'蒋涛')} · ${esc(a.gphone||'135****1180')}</p></div><div class="rt"><span class="link" onclick="Mob.bandCall()">呼叫</span></div></li>
+      <li><div class="ic w">🗣</div><div class="tx"><b>语音播报 / 大字体</b><p>已开启 · 不识长者友好模式</p></div><div class="rt"><button class="btn sm g" onclick="this.classList.toggle('g');toast('设置已更新（演示）','ok')">开</button></div></li></ul></div>
+    <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
   }
 };
 
 /* ---------- 交互动作（写入模块数据，与后台实时联动） ---------- */
 const Mob = {
   go(kind, i){ S[kind+'Tab'] = i; renderMobile(kind); },
-  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':'子女端'}`,'ok'); },
+  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':r==='child'?'子女端':'特殊长者手环端'}`,'ok'); },
 
   signup(id){ const a=MODULES.activity.rows.find(x=>x._id===id); if(!a) return;
     const left=(+a.quota||0)-(+a.signed||0);
@@ -309,7 +380,7 @@ const Mob = {
   aiOpen(){ MB.chat = MB.chat.length?MB.chat:[{me:0,t:'徐爷爷上午好呀☀ 今天园区 18℃，适合去银杏大道走走，要我帮您约李爷爷一起吗？'}];
     MB.sheet(`<h4>🤖 AI 陪伴「小康」 <span class="link" onclick="Mob.aiClose()">结束会话</span></h4>
       <div class="chat" id="aiBox" style="flex:1;overflow:auto;min-height:280px">${MB.chat.map(Mob.bubble).join('')}</div>
-      <div class="qk" style="margin-top:10px">${['今天吃什么好？','给我讲段评书','提醒我吃药','我有点想家'].map(q=>`<button onclick="Mob.aiAsk('${q}')">${q}</button>`).join('')}</div>`, 'height:82%;display:flex;flex-direction:column'); },
+      <div class="qk" style="margin-top:10px">${['今天吃什么好？','给我讲段评书','提醒我吃药','我有点想家'].map(q=>`<button onclick="Mob.aiAsk('${q}')">${q}</button>`).join('')}</div>`, 'height:76%;display:flex;flex-direction:column'); },
   bubble(m){ return `<div class="m ${m.me?'me':''}"><div class="av">${m.me?'🧓':'🤖'}</div><div class="bb">${esc(m.t)}</div></div>`; },
   aiAsk(q){ MB.chat.push({me:1,t:q}); const h=new Date().getHours();
     const rp = /吃|餐/.test(q)?`今天午餐推荐清蒸鲈鱼配杂粮饭，低盐又高蛋白，您的血压最近控制得不错。需要我直接下单吗？`
@@ -364,7 +435,40 @@ const Mob = {
     persist(); renderMobile(S.view); logAct('子女代付', o.goods+' ¥'+o.amount, '中'); toast(`已为父亲代付 ¥${o.amount}，积分 +${Math.round(o.amount/10)}`,'ok'); },
   topay(v){ v=v||500; const m=MB.MEM(); m.balance=(+m.balance||0)+v;
     MODULES.order.rows.unshift({ _id:++UID, no:'CZ'+String(Date.now()).slice(-10), name:MB.elder, goods:'储值充值 ¥'+v, amount:v, pay:'微信支付', payer:MB.child, point:0, date:now(), status:'已支付', staff:'', invoice:'已开具', remark:'子女端充值' });
-    persist(); renderMobile(S.view); logAct('储值充值', '¥'+v, '中'); toast(`充值成功 ¥${v}，父亲余额现为 ¥${(+m.balance).toLocaleString()}`,'ok'); }
+    persist(); renderMobile(S.view); logAct('储值充值', '¥'+v, '中'); toast(`充值成功 ¥${v}，父亲余额现为 ¥${(+m.balance).toLocaleString()}`,'ok'); },
+
+  /* ===== 特殊长者手环：到达自动打卡与联动 ===== */
+  arrive(id){ S.bandLog=S.bandLog||[]; const L=MB.BLOCS().find(x=>x.id===id); if(!L) return;
+    if(S.bandLog.some(x=>x.id===id)){ toast('该位置今日已自动打卡','warn'); return; }
+    Mob._blog(L); persist(); renderMobile(S.view); logAct('手环自动打卡', L.name+' / '+S.view.toUpperCase(), '低');
+    const act=MODULES.activity.rows.find(a=>a.title===L.act);
+    toast(`📳 手环震动：已自动打卡「${L.name}」${act?'，并参加活动《'+L.act+'》':''}`,'ok'); },
+  _blog(L){ S.bandLog=S.bandLog||[]; S.bandLog.push({id:L.id,name:L.name,ico:L.ico,act:L.act,t:now().slice(11,16)});
+    const act=MODULES.activity.rows.find(a=>a.title===L.act); if(act) act.checkin=(+act.checkin||0)+1;
+    const h=MB.BH();
+    MODULES.health.rows.unshift({ _id:++UID, name:MB.special, date:today(), hr:h.hr, spo2:h.spo2, bp:h.bp, sleep:h.sleep||0, step:(+h.step||0)+(L.id===4?600:0), risk:'低', type:'护理记录', note:'手环自动打卡：到达「'+L.name+'」'+(act?'，自动签到活动《'+L.act+'》':'，完成定位与体征确认')+'，手环已震动确认', doctor:'何雨欣', auth:'已授权' }); },
+  arriveAll(){ S.bandLog=S.bandLog||[]; MB.BLOCS().forEach(L=>{ if(!S.bandLog.some(x=>x.id===L.id)) Mob._blog(L); }); persist(); renderMobile(S.view); logAct('手环自动打卡（批量演示）', MB.special, '低'); toast('📳 已模拟长者依次到达全部特殊位置并自动打卡','ok'); },
+  bandVibrate(){ toast('📳 手环已震动并语音播报（演示）','ok'); logAct('手环震动测试', MB.special, '低'); },
+  bandCall(){ toast('📞 已语音呼叫家人（'+(MB.SA().gphone||'135****1180')+'）','warn'); pushAlert('特殊长者手环呼叫', `${MB.special} 通过智能手环发起亲情呼叫，已通知家属与值班管家`); logAct('手环亲情呼叫', MB.special, '中'); },
+broadcast(){ const a=MB.SA(), d=new Date(), p=n=>String(n).padStart(2,'0');
+    const wk=['日','一','二','三','四','五','六'][d.getDay()]; const h=d.getHours();
+    const seg=h<6?'凌晨':h<11?'上午':h<13?'中午':h<18?'下午':'晚上';
+    const t=`${d.getMonth()+1} 月 ${d.getDate()} 日 周${wk} ${seg} ${p(d.getHours())} 点 ${p(d.getMinutes())} 分`;
+    const last=(S.bandLog||[]).slice(-1)[0];
+    const loc=last?`${esc(last.name)}（${esc(a.zone)}）`:`${esc(a.zone)} ${esc(a.room)} 附近`;
+    const wx=MB.wx();
+    const msg=`现在是${t}。您当前位置：${loc}。今天天气：${wx.text}，气温${wx.temp}，${wx.tip}。`;
+    if(navigator.vibrate){ try{ navigator.vibrate([120,60,120]); }catch(e){} }
+    try{ if(window.speechSynthesis){ const u=new SpeechSynthesisUtterance(msg); u.lang='zh-CN'; u.rate=.92; speechSynthesis.cancel(); speechSynthesis.speak(u); } }catch(e){}
+    MB.sheet(`<h4>🔊 手环语音播报</h4>
+      <div style="font-size:16px;line-height:2.1;color:var(--ink)">
+        <div>🕒 ${esc(t)}</div>
+        <div>📍 当前位置：${loc}</div>
+        <div>${wx.ico} 今日天气：${esc(wx.text)} ${esc(wx.temp)} · ${esc(wx.tip)}</div>
+      </div>
+      <p class="tiny" style="margin-top:10px">已震动 + 语音播报（不识长者友好，无需操作）</p>
+      <div class="mbtns"><button class="btn g blk" onclick="Mob.broadcast()">🔊 再播一次</button><button class="btn" onclick="speechSynthesis&&speechSynthesis.cancel();MB.close()">关闭</button></div>`, 'text-align:left');
+    toast('🔊 已播报时间、位置与天气','ok'); logAct('手环语音播报', MB.special, '低'); }
 };
 
 function renderMobile(kind){ MB.render(kind); }

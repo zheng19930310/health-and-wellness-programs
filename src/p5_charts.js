@@ -147,11 +147,12 @@ const CUSTOM = {
       <button class="btn" onclick="App.go('screen')">全屏模式</button></div></div>
       <div class="bar2"><div class="card"><div class="card-h"><h3>园区三维模型（孪生视图）</h3><span class="tiny">分块加载 · 支持点选与图层开关</span></div>
       <div class="card-b"><div class="park" id="twinPark" style="height:460px"></div>
-      <div class="sw-box" style="margin-top:12px">${[['建筑图层','3 大分区 · 12 栋'],['设备图层',MODULES.device.rows.length+' 台已映射'],['人员图层','在住 118 · 员工 42'],['告警图层',MODULES.devalarm.rows.filter(a=>a.status!=='已闭环').length+' 条未闭环'],['时间回溯','支持 7 日回放'],['推演模拟','客流/能耗预测']].map(x=>`<div class="ck"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('')}</div></div></div>
+      <div class="sw-box" style="margin-top:12px">${[['建筑图层','3 大分区 · 12 栋'],['设备图层',MODULES.device.rows.length+' 台已映射'],['人员图层','在住 118 · 员工 42'],['告警图层',MODULES.devalarm.rows.filter(a=>a.status!=='已闭环').length+' 条未闭环'],['时间回溯','支持 7 日回放'],['推演模拟','客流/能耗预测']].map(x=>`<div class="ck"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('')}</div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn p" onclick="open3D('assets/3d/campus-twin.html','智慧康养园区 · 全局三维孪生')">🌐 全局查看 · 园区三维孪生</button><button class="btn" onclick="open3D('assets/3d/living-room-3d.html','康养居室 · 室内精装 3D 样板间')">🛋 室内 3D · 客厅样板间</button></div></div></div>
       <div><div class="card"><div class="card-h"><h3>3D 导航与路线指引</h3></div><div class="card-b">
         <div class="field"><label>目的地检索</label><input class="inp" id="navTo" value="康复理疗室 2（康养区 B 栋）"></div>
         <div id="navPath" style="display:flex;flex-direction:column;gap:9px"></div>
-        <div style="height:12px"></div><button class="btn g blk" onclick="navRoute()">🧭 生成导航路线并推送长者端</button></div></div>
+        <div style="height:12px"></div><button class="btn g blk" onclick="navRoute()">🧭 生成导航路线并推送长者端</button><button class="btn blk" style="margin-top:10px" onclick="open3D('assets/3d/indoor-navigation.html','园区室内导航 · 1F-3F 实景路线指引')">🧭 打开 3D 室内导航实景</button></div></div>
       <div class="card"><div class="card-h"><h3>视频联动墙</h3><span class="tiny">告警自动弹窗</span></div><div class="card-b"><div class="grid3" style="gap:10px" id="vidWall"></div></div></div>
       </div></div>`;
     parkHTML('twinPark');
