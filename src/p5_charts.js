@@ -225,7 +225,7 @@ const CUSTOM = {
  * ============================================================ */
 function emRules(){
   Modal.open('📜 紧急监管 · 三级响应规则', `<div class="tbwrap"><table class="tb"><thead><tr><th>级别</th><th>触发场景</th><th>第一接警</th><th>主处置</th><th>升级</th></tr></thead><tbody>`+
-    EM_RULES.map(r=>`<tr><td><span class="tag ${r.color}">${esc(r.lvl)}</span></td><td>${esc(r.scenes)}</td><td>${esc(r.first)}</td><td>${esc(r.main)}</td><td>${esc(r.esc)}</td></tr>`).join('')+
+    EM_RULES.map(r=>`<tr><td data-k="级别"><span class="tag ${r.color}">${esc(r.lvl)}</span></td><td data-k="触发场景">${esc(r.scenes)}</td><td data-k="第一接警">${esc(r.first)}</td><td data-k="主处置">${esc(r.main)}</td><td data-k="升级时限">${esc(r.esc)}</td></tr>`).join('')+
     `</tbody></table></div><div class="tiny" style="margin-top:10px">一级（紧急）由安保中控室第一接警，医护部 + 护理/管家主处置，3 分钟未确认升级院长/值班领导，必要时拨 120；二级 15 分钟未处理升级部门主管；三级由 IoT 后台自动派单，按工单时效升级。</div>`,
     `<button class="btn" onclick="Modal.close()">关闭</button>`);
 }
@@ -390,10 +390,10 @@ const EME = {
     const rows = this.list.filter(x=>x.scene===s.k);
     Modal.open(`${s.ico} ${esc(s.name)} · 记录信息（${rows.length} 条）`,
       `<div class="tbwrap"><table class="tb"><thead><tr><th>时间</th><th>位置 / 对象</th><th>采集数值</th><th>状态</th><th>处置人</th></tr></thead><tbody>`+
-      (rows.length?rows.map(r=>`<tr><td class="mono">${esc(r.time)}</td><td>${esc(r.obj)}</td><td>${esc(r.val)}</td><td><span class="tag ${r.status==='已闭环'?'green':r.status==='误报'?'ink':r.status==='处置中'?'warn':'red'}">${esc(r.status)}</span></td><td>${esc(r.owner)}</td></tr>`).join('')
+      (rows.length?rows.map(r=>`<tr><td data-k="时间" class="mono">${esc(r.time)}</td><td data-k="位置 / 对象">${esc(r.obj)}</td><td data-k="采集数值">${esc(r.val)}</td><td data-k="状态"><span class="tag ${r.status==='已闭环'?'green':r.status==='误报'?'ink':r.status==='处置中'?'warn':'red'}">${esc(r.status)}</span></td><td data-k="处置人">${esc(r.owner)}</td></tr>`).join('')
         : `<tr><td colspan="5" class="tiny">该场景当前无告警记录，状态安全</td></tr>`)+`</tbody></table></div>
       <div class="tiny" style="margin-top:8px">监测点位：${s.place.map(p=>esc(p)).join(' / ')}　·　响应级别：${s.lvl===1?'一级（紧急）':s.lvl===2?'二级（警告）':'三级（提示）'}</div>`,
-      `<button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="Modal.close();S.flt.iot={};App.go('admin','iot')">查看设备告警日志 →</button>`);
+      `<button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="Modal.close();S.flt.iot={};App.go('admin','iot')">查看设备告警日志 →</button>`, false, 'em-foot');
   },
   /* ---------- 雷达扫描 ---------- */
   radar(){

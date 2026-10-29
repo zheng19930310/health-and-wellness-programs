@@ -21,7 +21,10 @@ function toast(msg, type){ const d=document.createElement('div'); d.className='t
 
 /* ---------- 弹层 ---------- */
 const Modal = {
-  open(title, body, foot, wide){ $('mTitle').innerHTML=title; $('mBody').innerHTML=body; $('mFoot').innerHTML=foot||'<button class="btn" onclick="Modal.close()">关闭</button>'; $('modal').className='modal'+(wide?' hdr':''); $('mask').classList.add('on'); },
+  open(title, body, foot, wide, footCls){ $('mTitle').innerHTML=title; $('mBody').innerHTML=body; $('mFoot').innerHTML=foot||'<button class="btn" onclick="Modal.close()">关闭</button>'; $('mFoot').className='m-f'+(footCls?' '+footCls:''); $('modal').className='modal'+(wide?' hdr':''); $('modal').dataset.wide = wide?'1':'0';
+    /* APP / 小程序端：弹层收进手机屏宽度 */
+    $('mask').classList.toggle('mob', S.view==='app'||S.view==='mp');
+    $('mask').classList.add('on'); },
   close(){ $('mask').classList.remove('on'); },
   onOk(){ const f=$('mBody').querySelector('form'); if(f) f.requestSubmit ? f.dispatchEvent(new Event('submit',{cancelable:true})) : null; }
 };
