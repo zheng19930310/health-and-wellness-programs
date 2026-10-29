@@ -323,7 +323,7 @@ const MB = {
           <p>${esc(it.obj)} · ${esc(it.val)}</p>
           <p class="tiny">${esc(it.time.slice(5))} · ${esc(it.owner||'待接单')} · ${esc(it.status)}</p></div>
         <div class="rt">${done?`<span class="tag green">${esc(it.status)}</span>`
-          :`<button class="btn sm p" onclick="EME.handle(${it.id})">处理</button>`}</div></li>`; }).join('')
+          :`<button class="btn sm p" onclick="Mob.emHandle(${it.id})">处理</button>`}</div></li>`; }).join('')
       || `<li><div class="tx"><p style="text-align:center;color:var(--sub-l)">当前无告警，园区安全运行中</p></div></li>`;
   },
   gHome(kind){
@@ -336,10 +336,10 @@ const MB = {
       <div class="mbtns"><button class="btn g blk" onclick="Mob.go('${kind}',1)">🚨 进入告警处置 ›</button></div></div>
     <div class="mc"><div class="mc-h"><b>场景安全状态</b><span>${EM_SCENES.length} 类 · 🟢 安全 / 🔴 紧急</span></div>
       <div class="em-g">${EM_SCENES.map(s=>{ const st=EME.scenes[s.k]||{n:0,open:0};
-        return `<div class="em-c${st.open?' al':''}" onclick="EME.scene('${s.k}')"><div class="e">${s.ico}</div><b>${esc(s.name)}</b><i>${st.open?'紧急':'安全'} · ${st.n} 条</i></div>`; }).join('')}</div></div>
+        return `<div class="em-c${st.open?' al':''}" onclick="Mob.emScene('${s.k}')"><div class="e">${s.ico}</div><b>${esc(s.name)}</b><i>${st.open?'紧急':'安全'} · ${st.n} 条</i></div>`; }).join('')}</div></div>
     <div class="mc"><div class="mc-h"><b>备勤人员 · 快速通话</b><span>点击直拨</span></div>
       <ul class="mlist">${EM_STANDBY.slice(0,3).map(s=>`<li><div class="ic g">🛡</div><div class="tx"><b>${esc(s.name)}</b><p>${esc(s.role)}</p></div>
-        <div class="rt"><span class="link" onclick="emCall('${esc(s.name)}','${esc(s.role)}','${esc(s.phone)}')">📞 通话</span></div></li>`).join('')}</ul></div>`;
+        <div class="rt"><span class="link" onclick="Mob.emCall('${esc(s.name)}','${esc(s.role)}','${esc(s.phone)}')">📞 通话</span></div></li>`).join('')}</ul></div>`;
   },
   gAlert(kind){
     const k = MB.gKpi();
@@ -352,7 +352,7 @@ const MB = {
   },
   gStandby(kind){
     const row = (x, tag) => `<li><div class="ic ${tag}">🛡</div><div class="tx"><b>${esc(x.name)} <span class="em-lv v3">${esc(x.role.split(' · ')[0])}</span></b><p>${esc(x.phone)} · 总机转接</p></div>
-      <div class="rt"><button class="btn sm g" onclick="emCall('${esc(x.name)}','${esc(x.role)}','${esc(x.phone)}')">📞</button></div></li>`;
+      <div class="rt"><button class="btn sm g" onclick="Mob.emCall('${esc(x.name)}','${esc(x.role)}','${esc(x.phone)}')">📞</button></div></li>`;
     return `<div class="mhero"><b>🛡 执勤 / 备勤调度</b><p>执勤 ${EM_DUTY.length} 人 24h 在岗 · 备勤 ${EM_STANDBY.length} 人随叫随到</p></div>
       <div class="mc"><div class="mc-h"><b>当班执勤</b><span>安保中控室</span></div><ul class="mlist">${EM_DUTY.map(x=>row(x,'g')).join('')}</ul></div>
       <div class="mc"><div class="mc-h"><b>备勤人员</b><span>升级处置链</span></div><ul class="mlist">${EM_STANDBY.map(x=>row(x,'w')).join('')}</ul></div>
@@ -374,6 +374,51 @@ const MB = {
 const Mob = {
   go(kind, i){ S[kind+'Tab'] = i; renderMobile(kind); },
   role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':r==='child'?'子女端':r==='guard'?'紧急监管端':'特殊长者手环端'}`,'ok'); },
+
+  /* ---- 紧急监管端 · 移动端弹框（手机屏内的 .sheet 底部弹层，参考长者端样式） ---- */
+  emHandle(id){ const it = EME.list.find(x=>x.id===id); if(!it) return;
+    const pool = it.lvl===1?EM_DUTY.slice(0,3).concat(EM_STANDBY.slice(0,2)):it.lvl===2?EM_DUTY.slice(1):EM_STANDBY.slice(3);
+    const rule = EM_RULES[it.lvl-1];
+    MB.sheet(`<h4>${it.ico} 告警处置 · ${esc(it.kind)}（${it.lvl===1?'一级 紧急':it.lvl===2?'二级 警告':'三级 提示'}） <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform">
+        <div class="field"><label>触发位置 / 对象</label><input class="inp" value="${esc(it.obj)}" readonly></div>
+        <div class="field"><label>采集数值</label><input class="inp" value="${esc(it.val)}" readonly></div>
+        <div class="field"><label>上报时间</label><input class="inp" value="${esc(it.time)}" readonly></div>
+        <div class="field"><label>指派处置人</label><select class="sel" id="emOwner">${pool.map(o=>`<option>${esc(o.name)} · ${esc(o.role)}</option>`).join('')}</select></div>
+        <div class="field"><label>处置措施</label><textarea class="txta" id="emAct" style="height:72px;padding:8px 12px">${it.lvl===1?'对讲机通知就近护理员 30 秒内到场，医护同步待命，已推送子女端':'安排值班人员现场确认并登记工单'}</textarea></div>
+        <div class="tiny">响应要求：${esc(rule.first)} 接警 → ${esc(rule.main)} 主处置 → <b style="color:#e5484d">${esc(rule.esc)}</b></div>
+      </div>
+      <div class="mbtns" style="margin-top:12px"><button class="btn" onclick="MB.close()">取消</button><button class="btn g" onclick="Mob.emTake(${id})">确认接单</button></div>`);
+  },
+  emTake(id){ const it = EME.list.find(x=>x.id===id); if(!it) return;
+    const o=$('emOwner'), a=$('emAct');
+    it.owner = o?o.value.split(' · ')[0]:it.owner; it.status='处置中'; it.result=(a?a.value:'').slice(0,60);
+    MB.close(); toast(`已接单：${it.kind} → ${it.owner} 处置中`,'ok'); logAct('紧急监管 · 接单处置', it.kind+' / '+it.obj, '高');
+    EME.syncScene(); persist(); renderMobile(S.view);
+  },
+  emScene(k){ const s = typeof k==='number'?EM_SCENES[k]:EM_SCENES.find(x=>x.k===k)||EM_SCENES[0];
+    const rows = EME.list.filter(x=>x.scene===s.k);
+    MB.sheet(`<h4>${s.ico} ${esc(s.name)} · 记录信息（${rows.length} 条） <span class="link" onclick="MB.close()">关闭</span></h4>
+      <ul class="mlist">${rows.length?rows.map(r=>`<li><div class="ic ${r.status==='已闭环'?'g':r.status==='误报'?'w':'r'}">${r.ico}</div>
+        <div class="tx"><b>${esc(r.obj)}</b><p>${esc(r.val)}</p><p class="tiny">${esc(r.time.slice(5))} · ${esc(r.owner||'—')} · ${esc(r.status)}</p></div></li>`).join('')
+        : `<li><div class="tx"><p style="text-align:center;color:var(--sub-l)">该场景当前无告警记录，状态安全</p></div></li>`}</ul>
+      <div class="tiny" style="margin-top:10px">监测点位：${s.place.map(p=>esc(p)).join(' / ')}　·　响应级别：${s.lvl===1?'一级（紧急）':s.lvl===2?'二级（警告）':'三级（提示）'}</div>`);
+  },
+  emCall(name, role, phone){
+    MB.sheet(`<h4>📞 快速通话 <span class="link" onclick="Mob.emHangup()">挂断</span></h4>
+      <div class="em-pw" style="border:0;padding:6px 0 12px"><div class="av" style="width:46px;height:46px;font-size:22px">🛡</div>
+        <div style="flex:1"><b style="font-size:15px">${esc(name)}</b><div class="tiny">${esc(role)} · ${esc(phone)}</div></div>
+        <span class="tag green" id="emCallSt">呼叫中…</span></div>
+      <div class="tiny">通话经由安保中控室总机转接（演示）　·　<span id="emCallTm">00:00</span></div>
+      <div class="mbtns" style="margin-top:12px"><button class="btn dg blk" onclick="Mob.emHangup()">📞 挂断</button></div>`);
+    clearInterval(window.__emCall); let s=0;
+    const tick=()=>{ const n=$('emCallTm'); if(!n){ clearInterval(window.__emCall); return; }
+      s++; n.textContent = String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+      if(s===3){ const st=$('emCallSt'); if(st){ st.textContent='已接通'; st.className='tag blue'; } toast(`已接通 ${name}（${role}）`,'ok'); } };
+    tick(); window.__emCall = setInterval(tick, 1000);
+    logAct('紧急监管 · 快速通话', name+' / '+role, '中');
+  },
+  emHangup(){ clearInterval(window.__emCall); MB.close(); },
 
   signup(id){ const a=MODULES.activity.rows.find(x=>x._id===id); if(!a) return;
     const left=(+a.quota||0)-(+a.signed||0);
