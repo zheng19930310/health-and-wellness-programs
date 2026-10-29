@@ -253,10 +253,8 @@ const XK = {
     return s;
   },
   d3HTML(){
-    return '<div class="xk-btns">'
-      +'<button class="btn p sm" onclick="open3D(\'assets/3d/campus-twin.html\',\'智慧康养园区 · 全局三维孪生\')">🌐 园区三维孪生（全局查看）</button>'
-      +'<button class="btn sm" onclick="open3D(\'assets/3d/living-room-3d.html\',\'康养居室 · 室内精装 3D 样板间\')">🛋 客厅 3D 样板间</button>'
-      +'<button class="btn sm" onclick="open3D(\'assets/3d/indoor-navigation.html\',\'园区室内导航 · 1F-3F 实景路线指引\')">🧭 3D 室内导航实景</button></div>';
+    return `<div class="xk-btns">`+(typeof D3_VIEWS!=='undefined'?D3_VIEWS.map(v=>
+      `<button class="btn ${v.cls||'p'} sm" onclick="open3D('${v.url}','${v.title}')">${v.ico} ${v.t}</button>`).join(''):'')+`</div>`;
   },
 
   /* ---------- 聊天 → 笔记 ---------- */

@@ -2802,11 +2802,11 @@ const CUSTOM = {
       <div class="bar2"><div class="card"><div class="card-h"><h3>园区三维模型（孪生视图）</h3><span class="tiny">分块加载 · 支持点选与图层开关</span></div>
       <div class="card-b"><div class="park" id="twinPark" style="height:460px"></div>
       <div class="sw-box" style="margin-top:12px">${[['建筑图层','3 大分区 · 12 栋'],['设备图层',MODULES.device.rows.length+' 台已映射'],['人员图层','在住 118 · 员工 42'],['告警图层',MODULES.devalarm.rows.filter(a=>a.status!=='已闭环').length+' 条未闭环'],['时间回溯','支持 7 日回放'],['推演模拟','客流/能耗预测']].map(x=>`<div class="ck"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('')}</div>
-      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn p" onclick="open3D('assets/3d/campus-twin.html','智慧康养园区 · 全局三维孪生')">🌐 全局查看 · 园区三维孪生</button><button class="btn" onclick="open3D('assets/3d/living-room-3d.html','康养居室 · 室内精装 3D 样板间')">🛋 室内 3D · 客厅样板间</button></div></div></div>
+      <div style="margin-top:12px">${d3Btns()}</div></div></div>
       <div><div class="card"><div class="card-h"><h3>3D 导航与路线指引</h3></div><div class="card-b">
         <div class="field"><label>目的地检索</label><input class="inp" id="navTo" value="康复理疗室 2（康养区 B 栋）"></div>
         <div id="navPath" style="display:flex;flex-direction:column;gap:9px"></div>
-        <div style="height:12px"></div><button class="btn g blk" onclick="navRoute()">🧭 生成导航路线并推送长者端</button><button class="btn blk" style="margin-top:10px" onclick="open3D('assets/3d/indoor-navigation.html','园区室内导航 · 1F-3F 实景路线指引')">🧭 打开 3D 室内导航实景</button></div></div>
+        <div style="height:12px"></div><button class="btn g blk" onclick="navRoute()">🧭 生成导航路线并推送长者端</button></div></div>
       <div class="card"><div class="card-h"><h3>视频联动墙</h3><span class="tiny">告警自动弹窗</span></div><div class="card-b"><div class="grid3" style="gap:10px" id="vidWall"></div></div></div>
       </div></div>`;
     parkHTML('twinPark');
@@ -3101,6 +3101,16 @@ const EME = {
     this.raf=requestAnimationFrame(loop);
   }
 };
+/* 三个 3D 全屏入口（驾驶舱 twin/3D 导航视图、3D 监控菜单、小康助手共用，保证完全同步） */
+const D3_VIEWS = [
+  { ico:'🌐', t:'全局查看 · 园区三维孪生', url:'assets/3d/campus-twin.html', title:'智慧康养园区 · 全局三维孪生', cls:'p' },
+  { ico:'🛋', t:'室内 3D · 客厅样板间', url:'assets/3d/living-room-3d.html', title:'康养居室 · 室内精装 3D 样板间', cls:'' },
+  { ico:'🧭', t:'打开 3D 室内导航实景', url:'assets/3d/indoor-navigation.html', title:'园区室内导航 · 1F-3F 实景路线指引', cls:'' }
+];
+function d3Btns(){
+  return `<div style="display:flex;gap:10px;flex-wrap:wrap">`+D3_VIEWS.map(v=>
+    `<button class="btn ${v.cls}" onclick="open3D('${v.url}','${v.title}')">${v.ico} ${v.t}</button>`).join('')+`</div>`;
+}
 function dashView(v){
   const host = $('dashBody'); if(!host) return;
   if(v==='biz'){
@@ -3118,7 +3128,9 @@ function dashView(v){
       <div class="card-b"><div class="park" id="dPark" style="height:400px"></div></div></div>
       <div class="card"><div class="card-h"><h3>孪生图层与设备状态</h3></div><div class="card-b">
       <div class="sw-box">${[['建筑','12 栋 · 3 分区'],['设备',MODULES.device.rows.length+' 台 · 在线 '+MODULES.device.rows.filter(d=>d.online==='在线').length],['人员','在住 118 · 员工 42'],['告警',MODULES.devalarm.rows.filter(a=>a.status!=='已闭环').length+' 条未闭环'],['能耗','今日 '+ (1240+Math.floor(Math.random()*200))+' kWh']].map(x=>`<div class="ck"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('')}</div>
-      <div style="height:14px"></div><div id="d4" class="chart sm"></div></div></div></div>`;
+      <div style="height:14px"></div><div id="d4" class="chart sm"></div></div></div></div>
+    <div class="card" style="margin-top:16px"><div class="card-h"><h3>三维入口</h3><span class="tiny">与「数字孪生 / 3D 监控」菜单完全一致 · 全屏查看</span></div>
+      <div class="card-b">${d3Btns()}</div></div>`;
     parkHTML('dPark');
     ec('d4', { tooltip:{trigger:'item'}, legend:{bottom:0,itemWidth:9,itemHeight:9,textStyle:{fontSize:11}}, series:[{type:'pie',radius:['40%','66%'],center:['50%','44%'],avoidLabelOverlap:true,itemStyle:{borderRadius:6,borderColor:'#fff',borderWidth:2},label:{show:false},data:[
       {name:'智能手环',value:MODULES.device.rows.filter(d=>d.cate.includes('手环')).length},{name:'环控设备',value:MODULES.device.rows.filter(d=>['温湿度传感器','照明','加湿器','空调/新风'].includes(d.cate)).length},
@@ -3127,7 +3139,9 @@ function dashView(v){
   } else {
     host.innerHTML = `<div class="bar2"><div class="card"><div class="card-h"><h3>3D 空间漫游与监控联动</h3><span class="tiny">点选设备 → 视频 → 告警定位</span></div>
       <div class="card-b"><div class="park" id="dPark2" style="height:420px"></div></div></div>
-      <div class="card"><div class="card-h"><h3>告警定位与处置</h3></div><div class="card-b"><ul class="lst" id="dAl2"></ul><div style="height:12px"></div><div id="d5" class="chart sm"></div></div></div></div>`;
+      <div class="card"><div class="card-h"><h3>告警定位与处置</h3></div><div class="card-b"><ul class="lst" id="dAl2"></ul><div style="height:12px"></div><div id="d5" class="chart sm"></div></div></div></div>
+      <div class="card" style="margin-top:16px"><div class="card-h"><h3>3D 实景入口</h3><span class="tiny">与「数字孪生 / 3D 监控」菜单完全一致 · 全屏查看</span></div>
+      <div class="card-b">${d3Btns()}</div></div>`;
     parkHTML('dPark2');
     const al = MODULES.devalarm.rows.slice(0,6);
     $('dAl2').innerHTML = al.map(a=>`<li><span class="ic ${a.level.includes('I')?'r':a.level.includes('II')?'w':'g'}">🚨</span><div><b>${esc(a.kind)} · ${esc(a.level)}</b><p>${esc(a.obj)} · ${esc(a.value)}</p></div><span class="tm">${esc(a.status)}</span></li>`).join('');
@@ -4079,10 +4093,8 @@ const XK = {
     return s;
   },
   d3HTML(){
-    return '<div class="xk-btns">'
-      +'<button class="btn p sm" onclick="open3D(\'assets/3d/campus-twin.html\',\'智慧康养园区 · 全局三维孪生\')">🌐 园区三维孪生（全局查看）</button>'
-      +'<button class="btn sm" onclick="open3D(\'assets/3d/living-room-3d.html\',\'康养居室 · 室内精装 3D 样板间\')">🛋 客厅 3D 样板间</button>'
-      +'<button class="btn sm" onclick="open3D(\'assets/3d/indoor-navigation.html\',\'园区室内导航 · 1F-3F 实景路线指引\')">🧭 3D 室内导航实景</button></div>';
+    return `<div class="xk-btns">`+(typeof D3_VIEWS!=='undefined'?D3_VIEWS.map(v=>
+      `<button class="btn ${v.cls||'p'} sm" onclick="open3D('${v.url}','${v.title}')">${v.ico} ${v.t}</button>`).join(''):'')+`</div>`;
   },
 
   /* ---------- 聊天 → 笔记 ---------- */
