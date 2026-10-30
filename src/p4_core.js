@@ -8,7 +8,7 @@ const today = () => now().slice(0,10);
 const clone = o => JSON.parse(JSON.stringify(o));
 
 /* ---------- 全局状态 ---------- */
-const S = { user:null, view:'login', mod:'dashboard', tab:{}, page:{}, kw:{}, flt:{}, sel:{}, mobileRole:{app:'elder', mp:'elder'}, mpTab:0, appTab:0, folded:false };
+const S = { user:null, view:'login', mod:'dashboard', tab:{}, page:{}, kw:{}, flt:{}, sel:{}, mobileRole:{app:'elder', mp:'elder'}, mpTab:0, appTab:0, appMine:false, mpMine:false, folded:false };
 try{ S.folded = localStorage.getItem('ky_proto_v1_fold')==='1'; }catch(e){}
 const SEED = {};
 function snapshot(){ GRP_ORDER.forEach(()=>{}); Object.keys(MODULES).forEach(k=>{ if(MODULES[k].rows && MODULES[k].rows.length) SEED[k]=clone(MODULES[k].rows); }); }

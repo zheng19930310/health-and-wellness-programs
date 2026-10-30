@@ -436,6 +436,15 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .app-hd h3{font-size:17px;letter-spacing:.5px}
 .app-hd .sm{font-size:12px;color:rgba(255,255,255,.75);margin-top:2px}
 .app-hd .av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;border:1.5px solid rgba(255,255,255,.4)}
+.app-hd .avbtn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.app-hd .avbtn .av{transition:transform .16s,box-shadow .16s,background .16s}
+.app-hd .avbtn:hover .av{transform:scale(1.07);background:rgba(255,255,255,.32)}
+.app-hd .avbtn .cap{font-size:10px;line-height:1;color:rgba(255,255,255,.72);letter-spacing:.5px}
+.app-hd .avbtn.on .av{background:rgba(255,255,255,.38);border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.5)}
+.app-hd .avbtn.on .cap{color:#fff;font-weight:700}
+.mine-bar{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.9);border:1px solid #e2eaf4;border-radius:12px;padding:7px 10px;margin-bottom:12px;font-size:11px;color:#5b6b7f}
+.mine-bar b{font-size:13px;color:#0b1220}
+.mine-bar .btn{margin-left:auto;flex:0 0 auto}
 .app-body{flex:1;overflow-y:auto;padding:14px 14px 16px;position:relative;z-index:2}
 .app-body::-webkit-scrollbar{width:0}
 .tabb{flex:0 0 auto;position:relative;z-index:5;height:62px;background:#fff;border-top:1px solid #e9eef5;display:flex;padding-bottom:12px}
@@ -990,7 +999,7 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
       <p>完整移动服务入口，按角色分为长者端与子女端。适老化大字体、高对比、语音优先，覆盖健康、生活服务、安全求助、消费与社交。</p>
       <div class="seg" id="appRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button><button data-r="special">手环端</button><button data-r="guard">紧急监管端</button></div>
       <div class="f">
-        <i>✅ 首页 / 健康 / 服务 / 温暖 / 我的 多 Tab</i>
+        <i>✅ 首页 / 健康 / 服务 / 温暖 多 Tab，头部头像栏直达「我的」</i>
         <i>✅ 健康数据可视化 + 运动打卡</i>
         <i>✅ 活动报名、订餐、AI 陪伴（可交互）</i>
         <i>✅ SOS 一键呼救 → 后台告警联动</i>
@@ -1013,7 +1022,7 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
       <p>轻量服务入口，无需下载。以卡片 + 宫格组织高频服务，与 Web 后台共享账号与权限体系，扫码即可体验活动报名、预约与康养圈。</p>
       <div class="seg" id="mpRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button><button data-r="special">手环端</button><button data-r="guard">紧急监管端</button></div>
       <div class="f">
-        <i>✅ 微信胶囊导航 + 底部 Tab 结构</i>
+        <i>✅ 微信胶囊导航 + 底部 Tab 结构（头像栏进入「我的」）</i>
         <i>✅ 扫码签到 / 人脸核销入口</i>
         <i>✅ 康养圈动态、点赞、留言</i>
         <i>✅ 请假与预约表单（可提交）</i>
@@ -2663,7 +2672,7 @@ const today = () => now().slice(0,10);
 const clone = o => JSON.parse(JSON.stringify(o));
 
 /* ---------- 全局状态 ---------- */
-const S = { user:null, view:'login', mod:'dashboard', tab:{}, page:{}, kw:{}, flt:{}, sel:{}, mobileRole:{app:'elder', mp:'elder'}, mpTab:0, appTab:0, folded:false };
+const S = { user:null, view:'login', mod:'dashboard', tab:{}, page:{}, kw:{}, flt:{}, sel:{}, mobileRole:{app:'elder', mp:'elder'}, mpTab:0, appTab:0, appMine:false, mpMine:false, folded:false };
 try{ S.folded = localStorage.getItem('ky_proto_v1_fold')==='1'; }catch(e){}
 const SEED = {};
 function snapshot(){ GRP_ORDER.forEach(()=>{}); Object.keys(MODULES).forEach(k=>{ if(MODULES[k].rows && MODULES[k].rows.length) SEED[k]=clone(MODULES[k].rows); }); }
@@ -4610,18 +4619,19 @@ Object.assign(CUSTOM, {
 /* ============================================================
  *  Layer 5 : APP 端 / 小程序端 高保真原型（可交互，与后台共享同一份数据）
  * ============================================================ */
+/* 「我的」不再占据底部导航位，改为绑定头部头像栏入口（MB.av / Mob.mine） */
 const MB_TABS = {
   app: {
-    elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['📖','温暖','warm'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['🕯','传承','legacy'],['👤','我的','mine']],
-    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
-    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
+    elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['📖','温暖','warm']],
+    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['🕯','传承','legacy']],
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast']],
+    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby']]
   },
   mp: {
-    elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['📖','温暖','warm'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['🕯','传承','legacy'],['👤','我的','mine']],
-    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
-    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
+    elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['📖','温暖','warm']],
+    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['🕯','传承','legacy']],
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast']],
+    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby']]
   }
 };
 
@@ -4655,12 +4665,15 @@ const MB = {
   status(){ const d=new Date(), p=n=>String(n).padStart(2,'0');
     return `<div class="st"><span>${p(d.getHours())}:${p(d.getMinutes())}</span><span class="rt">🔔 5G ▮▮▮ 86%</span></div>`; },
   wxbar(role){ return `<div class="wxbar"><div class="t">‹ 康养服务${role==='child'?'（子女版）':''}</div><div class="caps"><span>⋯</span><span style="border-left:1px solid #e4e9f0;height:16px"></span><span>◉</span></div></div>`; },
+  /* 头像栏：点击即打开「我的」（再点一次返回原来的页签） */
+  av(kind, ico){ return `<div class="avbtn${S[kind+'Mine']?' on':''}" title="点击进入我的" onclick="Mob.mine('${kind}')"><div class="av">${ico}</div><div class="cap">我的</div></div>`; },
+  mineBar(kind){ return `<div class="mine-bar"><b>👤 我的 · 个人中心</b><span>点头像或下方导航即可返回</span><button class="btn sm" onclick="Mob.mine('${kind}')">✕ 返回</button></div>`; },
   head(kind, role){
-    if(role==='guard'){ const g = typeof EME!=='undefined'?(EME.seed(), EME.openCnt()):0; return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>🚨 紧急监管端 · 安保中控室</h3><div class="sm">实时接收全园区预警报警 · 待处理 ${g} 条</div></div><div class="av">🛡</div></div></div>`; }
-    if(role==='special'){ const sa=MB.SA(); return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${esc(sa.name)} · 智能手环</h3><div class="sm">大字 · 语音 · 到站自动打卡 · 一键呼救</div></div><div class="av">⌚</div></div></div>`; }
+    if(role==='guard'){ const g = typeof EME!=='undefined'?(EME.seed(), EME.openCnt()):0; return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>🚨 紧急监管端 · 安保中控室</h3><div class="sm">实时接收全园区预警报警 · 待处理 ${g} 条</div></div>${MB.av(kind,'🛡')}</div></div>`; }
+    if(role==='special'){ const sa=MB.SA(); return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${esc(sa.name)} · 智能手环</h3><div class="sm">大字 · 语音 · 到站自动打卡 · 一键呼救</div></div>${MB.av(kind,'⌚')}</div></div>`; }
     const a = MB.A();
-    if(role==='child') return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(S.user?S.user.name:MB.child)}</h3><div class="sm">${kind==='mp'?'小程序 · 微信授权已绑定':'APP · 已绑定长者 '+a.name} · 关注 ${a.name}（${a.room}）</div></div><div class="av">👪</div></div></div>`;
-    return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(a.name)}</h3><div class="sm">${esc(a.zone)} · ${esc(a.room)} · ${esc(a.level)} · ${esc(a.pkg||'健康管理套餐')}</div></div><div class="av">🧓</div></div></div>`;
+    if(role==='child') return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(S.user?S.user.name:MB.child)}</h3><div class="sm">${kind==='mp'?'小程序 · 微信授权已绑定':'APP · 已绑定长者 '+a.name} · 关注 ${a.name}（${a.room}）</div></div>${MB.av(kind,'👪')}</div></div>`;
+    return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(a.name)}</h3><div class="sm">${esc(a.zone)} · ${esc(a.room)} · ${esc(a.level)} · ${esc(a.pkg||'健康管理套餐')}</div></div>${MB.av(kind,'🧓')}</div></div>`;
   },
   greet(){ const h=new Date().getHours(); return h<6?'夜深了':h<11?'早上好':h<14?'中午好':h<18?'下午好':'晚上好'; },
   tabb(kind, role, tabs, idx){
@@ -4680,10 +4693,11 @@ const MB = {
     const host = $(kind==='app'?'appScr':'mpScr'); if(!host) return;
     const role = S.mobileRole[kind] || 'elder';
     const tabs = MB_TABS[kind][role];
-    let idx = S[kind+'Tab']||0; if(idx>=tabs.length) idx=0;
-    const key = (tabs[idx][2]==='sos'||tabs[idx][2]==='broadcast') ? 'home' : tabs[idx][2];
+    const mine = !!S[kind+'Mine'];
+    let idx = S[kind+'Tab']||0; if(!(idx>=0 && idx<tabs.length)) idx=0;
+    const key = mine ? 'mine' : ((tabs[idx][2]==='sos'||tabs[idx][2]==='broadcast') ? 'home' : tabs[idx][2]);
     host.innerHTML = (kind==='app'?MB.status():MB.wxbar(role)) + MB.head(kind,role)
-      + `<div class="app-body">${MB.screen(kind,role,key)}</div>` + MB.tabb(kind,role,tabs,idx);
+      + `<div class="app-body">${mine?MB.mineBar(kind):''}${MB.screen(kind,role,key)}</div>` + MB.tabb(kind,role,tabs, mine?-1:idx);
     const seg = $(kind+'Role');
     if(seg){ [...seg.children].forEach(b=>b.classList.toggle('on', b.dataset.r===role));
       seg.onclick = e => { const b=e.target.closest('button'); if(!b) return; Mob.role(kind, b.dataset.r); }; }
@@ -5046,8 +5060,12 @@ const MB = {
 
 /* ---------- 交互动作（写入模块数据，与后台实时联动） ---------- */
 const Mob = {
-  go(kind, i){ S[kind+'Tab'] = i; renderMobile(kind); },
-  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':r==='child'?'子女端':r==='guard'?'紧急监管端':'特殊长者手环端'}`,'ok'); },
+  go(kind, i){ S[kind+'Mine'] = false; S[kind+'Tab'] = i; renderMobile(kind); },
+  /* 点头像开「我的」，在「我的」里再点一次头像 / 点✕返回 / 点底部导航均回到原页签 */
+  mine(kind){ const k = kind+'Mine';
+    if(S[k]){ S[k] = false; MB.close(); renderMobile(kind); toast('已退出「我的」','ok'); return; }
+    S[k] = true; MB.close(); renderMobile(kind); toast('已打开「我的」· 点头像或底部导航可返回','ok'); },
+  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; S[kind+'Mine']=false; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':r==='child'?'子女端':r==='guard'?'紧急监管端':'特殊长者手环端'}`,'ok'); },
 
   /* ---- 紧急监管端 · 移动端弹框（手机屏内的 .sheet 底部弹层，参考长者端样式） ---- */
   emHandle(id){ const it = EME.list.find(x=>x.id===id); if(!it) return;

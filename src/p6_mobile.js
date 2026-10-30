@@ -2,18 +2,19 @@
 /* ============================================================
  *  Layer 5 : APP 端 / 小程序端 高保真原型（可交互，与后台共享同一份数据）
  * ============================================================ */
+/* 「我的」不再占据底部导航位，改为绑定头部头像栏入口（MB.av / Mob.mine） */
 const MB_TABS = {
   app: {
-    elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['📖','温暖','warm'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['🕯','传承','legacy'],['👤','我的','mine']],
-    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
-    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
+    elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['📖','温暖','warm']],
+    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['🕯','传承','legacy']],
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast']],
+    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby']]
   },
   mp: {
-    elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['📖','温暖','warm'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['🕯','传承','legacy'],['👤','我的','mine']],
-    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
-    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
+    elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['📖','温暖','warm']],
+    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['🕯','传承','legacy']],
+    special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast']],
+    guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby']]
   }
 };
 
@@ -47,12 +48,15 @@ const MB = {
   status(){ const d=new Date(), p=n=>String(n).padStart(2,'0');
     return `<div class="st"><span>${p(d.getHours())}:${p(d.getMinutes())}</span><span class="rt">🔔 5G ▮▮▮ 86%</span></div>`; },
   wxbar(role){ return `<div class="wxbar"><div class="t">‹ 康养服务${role==='child'?'（子女版）':''}</div><div class="caps"><span>⋯</span><span style="border-left:1px solid #e4e9f0;height:16px"></span><span>◉</span></div></div>`; },
+  /* 头像栏：点击即打开「我的」（再点一次返回原来的页签） */
+  av(kind, ico){ return `<div class="avbtn${S[kind+'Mine']?' on':''}" title="点击进入我的" onclick="Mob.mine('${kind}')"><div class="av">${ico}</div><div class="cap">我的</div></div>`; },
+  mineBar(kind){ return `<div class="mine-bar"><b>👤 我的 · 个人中心</b><span>点头像或下方导航即可返回</span><button class="btn sm" onclick="Mob.mine('${kind}')">✕ 返回</button></div>`; },
   head(kind, role){
-    if(role==='guard'){ const g = typeof EME!=='undefined'?(EME.seed(), EME.openCnt()):0; return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>🚨 紧急监管端 · 安保中控室</h3><div class="sm">实时接收全园区预警报警 · 待处理 ${g} 条</div></div><div class="av">🛡</div></div></div>`; }
-    if(role==='special'){ const sa=MB.SA(); return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${esc(sa.name)} · 智能手环</h3><div class="sm">大字 · 语音 · 到站自动打卡 · 一键呼救</div></div><div class="av">⌚</div></div></div>`; }
+    if(role==='guard'){ const g = typeof EME!=='undefined'?(EME.seed(), EME.openCnt()):0; return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>🚨 紧急监管端 · 安保中控室</h3><div class="sm">实时接收全园区预警报警 · 待处理 ${g} 条</div></div>${MB.av(kind,'🛡')}</div></div>`; }
+    if(role==='special'){ const sa=MB.SA(); return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${esc(sa.name)} · 智能手环</h3><div class="sm">大字 · 语音 · 到站自动打卡 · 一键呼救</div></div>${MB.av(kind,'⌚')}</div></div>`; }
     const a = MB.A();
-    if(role==='child') return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(S.user?S.user.name:MB.child)}</h3><div class="sm">${kind==='mp'?'小程序 · 微信授权已绑定':'APP · 已绑定长者 '+a.name} · 关注 ${a.name}（${a.room}）</div></div><div class="av">👪</div></div></div>`;
-    return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(a.name)}</h3><div class="sm">${esc(a.zone)} · ${esc(a.room)} · ${esc(a.level)} · ${esc(a.pkg||'健康管理套餐')}</div></div><div class="av">🧓</div></div></div>`;
+    if(role==='child') return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(S.user?S.user.name:MB.child)}</h3><div class="sm">${kind==='mp'?'小程序 · 微信授权已绑定':'APP · 已绑定长者 '+a.name} · 关注 ${a.name}（${a.room}）</div></div>${MB.av(kind,'👪')}</div></div>`;
+    return `<div class="app-hd"><div class="row"><div style="flex:1"><h3>${MB.greet()}，${esc(a.name)}</h3><div class="sm">${esc(a.zone)} · ${esc(a.room)} · ${esc(a.level)} · ${esc(a.pkg||'健康管理套餐')}</div></div>${MB.av(kind,'🧓')}</div></div>`;
   },
   greet(){ const h=new Date().getHours(); return h<6?'夜深了':h<11?'早上好':h<14?'中午好':h<18?'下午好':'晚上好'; },
   tabb(kind, role, tabs, idx){
@@ -72,10 +76,11 @@ const MB = {
     const host = $(kind==='app'?'appScr':'mpScr'); if(!host) return;
     const role = S.mobileRole[kind] || 'elder';
     const tabs = MB_TABS[kind][role];
-    let idx = S[kind+'Tab']||0; if(idx>=tabs.length) idx=0;
-    const key = (tabs[idx][2]==='sos'||tabs[idx][2]==='broadcast') ? 'home' : tabs[idx][2];
+    const mine = !!S[kind+'Mine'];
+    let idx = S[kind+'Tab']||0; if(!(idx>=0 && idx<tabs.length)) idx=0;
+    const key = mine ? 'mine' : ((tabs[idx][2]==='sos'||tabs[idx][2]==='broadcast') ? 'home' : tabs[idx][2]);
     host.innerHTML = (kind==='app'?MB.status():MB.wxbar(role)) + MB.head(kind,role)
-      + `<div class="app-body">${MB.screen(kind,role,key)}</div>` + MB.tabb(kind,role,tabs,idx);
+      + `<div class="app-body">${mine?MB.mineBar(kind):''}${MB.screen(kind,role,key)}</div>` + MB.tabb(kind,role,tabs, mine?-1:idx);
     const seg = $(kind+'Role');
     if(seg){ [...seg.children].forEach(b=>b.classList.toggle('on', b.dataset.r===role));
       seg.onclick = e => { const b=e.target.closest('button'); if(!b) return; Mob.role(kind, b.dataset.r); }; }
@@ -438,8 +443,12 @@ const MB = {
 
 /* ---------- 交互动作（写入模块数据，与后台实时联动） ---------- */
 const Mob = {
-  go(kind, i){ S[kind+'Tab'] = i; renderMobile(kind); },
-  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':r==='child'?'子女端':r==='guard'?'紧急监管端':'特殊长者手环端'}`,'ok'); },
+  go(kind, i){ S[kind+'Mine'] = false; S[kind+'Tab'] = i; renderMobile(kind); },
+  /* 点头像开「我的」，在「我的」里再点一次头像 / 点✕返回 / 点底部导航均回到原页签 */
+  mine(kind){ const k = kind+'Mine';
+    if(S[k]){ S[k] = false; MB.close(); renderMobile(kind); toast('已退出「我的」','ok'); return; }
+    S[k] = true; MB.close(); renderMobile(kind); toast('已打开「我的」· 点头像或底部导航可返回','ok'); },
+  role(kind, r){ S.mobileRole[kind]=r; S[kind+'Tab']=0; S[kind+'Mine']=false; renderMobile(kind); toast(`${kind==='app'?'APP':'小程序'}已切换为${r==='elder'?'长者端':r==='child'?'子女端':r==='guard'?'紧急监管端':'特殊长者手环端'}`,'ok'); },
 
   /* ---- 紧急监管端 · 移动端弹框（手机屏内的 .sheet 底部弹层，参考长者端样式） ---- */
   emHandle(id){ const it = EME.list.find(x=>x.id===id); if(!it) return;
