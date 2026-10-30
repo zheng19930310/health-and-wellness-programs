@@ -4,14 +4,14 @@
  * ============================================================ */
 const MB_TABS = {
   app: {
-    elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['👤','我的','mine']],
+    elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['📖','温暖','warm'],['👤','我的','mine']],
+    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['🕯','传承','legacy'],['👤','我的','mine']],
     special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
     guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
   },
   mp: {
-    elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['👤','我的','mine']],
+    elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['📖','温暖','warm'],['👤','我的','mine']],
+    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['🕯','传承','legacy'],['👤','我的','mine']],
     special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
     guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
   }
@@ -82,6 +82,7 @@ const MB = {
     MB.after(key);
   },
   after(key){
+    if(key==='warm'){ if(typeof Warm!=='undefined') Warm.afterDiary(); return; }
     if(key!=='health') return;
     const hs = MB.HIST().slice(0,7).reverse();
     ec('mHr', { grid:{left:6,right:6,top:18,bottom:20,containLabel:true},
@@ -96,8 +97,8 @@ const MB = {
   screen(kind, role, key){
     if(role==='guard') return ({ home:MB.gHome, alert:MB.gAlert, standby:MB.gStandby, mine:MB.gMine })[key](kind);
     if(role==='special') return ({ home:MB.sBand, band:MB.sBand, checkin:MB.sCheckin, mine:MB.sMine })[key](kind);
-    if(role==='child') return ({ home:MB.cHome, family:MB.cFamily, book:MB.cBook, pay:MB.cPay, mine:MB.cMine })[key](kind);
-    return ({ home:MB.eHome, health:MB.eHealth, circle:MB.eCircle, svc:MB.eSvc, mine:MB.eMine })[key](kind);
+    if(role==='child') return ({ home:MB.cHome, family:MB.cFamily, book:MB.cBook, pay:MB.cPay, legacy:MB.cLegacy, mine:MB.cMine })[key](kind);
+    return ({ home:MB.eHome, health:MB.eHealth, circle:MB.eCircle, svc:MB.eSvc, warm:MB.eWarm, mine:MB.eMine })[key](kind);
   },
 
   /* ===== 长者端 ===== */
@@ -253,6 +254,71 @@ const MB = {
       <div class="mc"><div class="mc-h"><b>家庭成员协作</b><span>3 位亲属</span></div>
         <ul class="mlist">${MODULES.family.rows.slice(0,3).map(x=>`<li><div class="ic">${x.status==='已绑定'?'👪':'⏳'}</div><div class="tx"><b>${esc(x.cname)} · ${esc(x.rel)}</b><p>${esc(x.ename)} · ${esc(x.auth)} · 最近探望 ${esc(x.visit)}</p></div><div class="rt"><span class="tag ${x.status==='已绑定'?'green':'warn'}">${esc(x.status)}</span></div></li>`).join('')}</ul></div>
       <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
+  },
+
+  /* ===== 长者端 · 温暖与传承（相册 / 日记 / 传记） ===== */
+  eWarm(kind){
+    const who = MB.elder;
+    const albs = Warm.albums(who,'',false), dis = Warm.diaries(who,''), bios = Warm.bios(who);
+    const phN = albs.reduce((s,a)=>s+Warm.photos(a).length,0);
+    const done = bios.filter(b=>b.status==='已成稿'||b.status==='已交付').length;
+    const acts = [['📔','新建相册',"Warm.newAlbum('"+who+"')"],['🖊','写篇日记',"Mob.wKind('笔记')"],['🎙','说段录音',"Mob.wKind('录音')"],['🎨','画两笔',"Mob.wKind('画画')"],
+      ['📷','拍张照',"Mob.wKind('拍照')"],['🖨','打印相册','Mob.wPrintList()'],['🤖','生成传记',"Warm.genForm('"+who+"')"],['🗑','回收站','Mob.wTrash()']];
+    const albHTML = albs.length? `<div class="wb-grid">${albs.map(a=>`<div class="wb-al" onclick="Mob.wAlbum(${a._id})">
+        <div class="im">${esc(a.cover||'📷')}<i>${Warm.photos(a).length} 张</i></div><b>${esc(a.name)}</b>
+        <p>${esc(a.cate)} · ${esc(a.priv)}${a.share==='已生成链接'?' · 🔗 已分享':''}${a.printCnt?' · 🖨 '+a.printCnt:''}</p></div>`).join('')}</div>`
+      : '<div class="tiny" style="padding:6px 0">还没有相册，点上方「新建相册」开始留存第一批老照片。</div>';
+    const disHTML = dis.length? `<ul class="mlist">${dis.slice(0,8).map(d=>`<li onclick="Mob.wDiary(${d._id})"><div class="ic ${d.kind==='录音'?'':d.kind==='画画'?'g':d.kind==='拍照'?'w':''}">${({'笔记':'🖊','录音':'🎙','画画':'🎨','拍照':'📷'})[d.kind]||'📔'}</div>
+        <div class="tx"><b>${esc(d.title)}</b><p>${esc(d.date)} ${esc(d.time||'')} · ${esc(d.mood||'平静')} · ${esc(d.auth||'家人可见')}</p></div>
+        <div class="rt">${d.bio==='已引用'?'<span class="tag green">素材</span>':'<span class="tag ink">未引用</span>'}</div></li>`).join('')}</ul>`
+      : '<div class="tiny" style="padding:6px 0">还没有日记，用下面的笔记 / 录音 / 画画 / 拍照记下今天。</div>';
+    const bioHTML = bios.length? bios.map(b=>`<div class="wb-bio"><b>${esc(b.title)}</b>
+        <div class="ab-tags">${tagHTML({tag:{'草稿':'ink','生成中':'blue','已成稿':'green','已交付':'purple'}}, b.status)}<span class="tag blue">${(b.chapters||[]).length} 章</span><span class="tag purple">${esc(b.style)}</span></div>
+        <div class="prog"><i style="width:${b.progress||0}%"></i></div>
+        <p>${esc((b.chapters&&b.chapters[1]&&b.chapters[1].c||b.note||'').slice(0,52))}…</p>
+        <div class="mbtns" style="margin-top:8px"><button class="btn sm p" onclick="Mob.wBio(${b._id})">✍️ 自由编写</button>
+          <button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 打印成书</button>
+          ${b.status!=='生成中'?`<button class="btn sm g" onclick="Warm.deliver(${b._id})">📮 交付</button>`:''}</div></div>`).join('')
+      : '<div class="tiny" style="padding:6px 0">积累相册与日记后，可让 AI 辅助串一本属于自己的传记，全部内容由本人自由改写。</div>';
+    return `<div class="wb-hero"><b>📖 温暖与传承</b><p>把照片、声音、字迹都留下来 —— 这些也会成为 AI 传记的素材，随时可以取消引用。</p>
+        <div class="row"><div><b>${albs.length}</b><span>本相册</span></div><div><b>${phN}</b><span>张照片</span></div><div><b>${dis.length}</b><span>篇日记</span></div><div><b>${done}</b><span>部成稿</span></div></div></div>
+      <div class="wb-acts">${acts.map(x=>`<div onclick="${x[2]}"><span class="e">${x[0]}</span><span>${x[1]}</span></div>`).join('')}</div>
+      <div class="mc"><div class="mc-h"><b>我的相册</b><span class="link" onclick="Warm.newAlbum('${who}')">＋ 新建 ›</span></div>${albHTML}
+        <div class="mbtns" style="margin-top:10px"><button class="btn sm" onclick="Mob.wPrintList()">🖨 打印成纸质</button><button class="btn sm" onclick="Mob.wPrintList()">🔗 分享一本</button></div></div>
+      <div class="mc"><div class="mc-h"><b>记一条 · 笔记 / 录音 / 画画 / 拍照</b><span>四种都能留</span></div>${Warm.diaryPanel(S.dyKind||'笔记', who, true)}</div>
+      <div class="mc"><div class="mc-h"><b>我留下的记录</b><span>${dis.length} 条 · 点开可回看与引用</span></div>${disHTML}</div>
+      <div class="mc"><div class="mc-h"><b>我的传记（传承）</b><span class="link" onclick="Warm.genForm('${who}')">🤖 AI 辅生成 ›</span></div>${bioHTML}</div>`;
+  },
+
+  /* ===== 子女端 · 传承（接收与守护） ===== */
+  cLegacy(kind){
+    const who = MB.elder;
+    const albs = Warm.albums(who,'',false).filter(a=>a.priv!=='私密');
+    const dis = Warm.diaries(who,'').filter(d=>d.auth!=='私密');
+    const bios = Warm.bios(who).filter(b=>b.status==='已成稿'||b.status==='已交付');
+    const phN = albs.reduce((s,a)=>s+Warm.photos(a).length,0);
+    const quote = (bios[0] && bios[0].deliverMsg) || '';
+    return `<div class="wb-hero" style="background:linear-gradient(135deg,#0d4bb3,#7c5cff)"><b>🕯 传承 · ${esc(who)} 家人可见的内容</b>
+        <p>仅在长者授权的范围内查看；查看行为写入操作日志，长者可随时收回授权或撤销分享。</p>
+        <div class="row"><div><b>${albs.length}</b><span>本共享相册</span></div><div><b>${phN}</b><span>张照片</span></div><div><b>${dis.length}</b><span>篇日记</span></div><div><b>${bios.length}</b><span>部传记</span></div></div></div>
+      ${quote? `<div class="mcard2"><b>💌 父亲交付时的一句话</b><p>${esc(quote)}</p><div style="margin-top:9px"><button class="btn sm g" onclick="Mob.legacyBack(${bios[0]._id})">回一句感谢</button></div></div>`:''}
+      <div class="mc"><div class="mc-h"><b>AI 个人传记</b><span>${bios.length} 部已成稿 / 已交付</span></div>
+        ${bios.length? bios.map(b=>`<div class="wb-bio"><b>${esc(b.title)}</b>
+          <div class="ab-tags">${tagHTML({tag:{'已成稿':'green','已交付':'purple'}}, b.status)}<span class="tag blue">${(b.chapters||[]).length} 章</span><span class="tag">${esc(b.style)}</span></div>
+          <p>${esc(String((b.chapters&&b.chapters[b.chapters.length-1]&&b.chapters[b.chapters.length-1].c)||'').slice(0,60))}</p>
+          <div class="mbtns" style="margin-top:8px"><button class="btn sm p" onclick="Mob.wBio(${b._id})">📖 阅读全文</button>
+            <button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 打印装订</button>
+            <button class="btn sm g" onclick="Mob.legacyBack(${b._id})">💬 回应一句</button></div></div>`).join('')
+        : '<div class="tiny" style="padding:6px 0">长者还没有定稿的传记。他写好后，会第一时间出现在这里。</div>'}</div>
+      <div class="mc"><div class="mc-h"><b>共享相册</b><span>长者设为「私密」的不展示</span></div>
+        ${albs.length? `<div class="wb-grid">${albs.map(a=>`<div class="wb-al" onclick="Mob.wAlbum(${a._id})"><div class="im">${esc(a.cover||'📷')}<i>${Warm.photos(a).length} 张</i></div>
+          <b>${esc(a.name)}</b><p>${esc(a.cate)} · ${esc(a.share==='已生成链接'?'有效期至 '+(a.shareExp||'—'):'未分享')}</p></div>`).join('')}</div>`:'<div class="tiny">暂无共享相册</div>'}</div>
+      <div class="mc"><div class="mc-h"><b>最近的日记</b><span>${dis.length} 条</span></div>
+        <ul class="mlist">${dis.slice(0,6).map(d=>`<li onclick="Mob.wDiary(${d._id})"><div class="ic ${d.kind==='录音'?'':d.kind==='画画'?'g':d.kind==='拍照'?'w':''}">${({'笔记':'🖊','录音':'🎙','画画':'🎨','拍照':'📷'})[d.kind]||'📔'}</div>
+          <div class="tx"><b>${esc(d.title)}</b><p>${esc(d.date)} · ${esc(d.mood||'平静')} · ${esc(String(d.content||'').replace('【转写】','').slice(0,22))}</p></div>
+          <div class="rt"><span class="link">查看</span></div></li>`).join('')}</ul></div>
+      <div class="mc"><div class="mc-h"><b>帮父亲续写</b><span>可远程发起，长者确认后写入</span></div>
+        <div class="mbtns"><button class="btn p" onclick="Mob.remindWrite()">🔔 提醒父亲记一条</button><button class="btn" onclick="Mob.printElderAlbum()">🖨 为父亲订一本纸质相册</button></div></div>`;
   },
 
   /* ===== 特殊长者 · 智能手环端 ===== */
@@ -559,6 +625,195 @@ const Mob = {
   arriveAll(){ S.bandLog=S.bandLog||[]; MB.BLOCS().forEach(L=>{ if(!S.bandLog.some(x=>x.id===L.id)) Mob._blog(L); }); persist(); renderMobile(S.view); logAct('手环自动打卡（批量演示）', MB.special, '低'); toast('📳 已模拟长者依次到达全部特殊位置并自动打卡','ok'); },
   bandVibrate(){ toast('📳 手环已震动并语音播报（演示）','ok'); logAct('手环震动测试', MB.special, '低'); },
   bandCall(){ toast('📞 已语音呼叫家人（'+(MB.SA().gphone||'135****1180')+'）','warn'); pushAlert('特殊长者手环呼叫', `${MB.special} 通过智能手环发起亲情呼叫，已通知家属与值班管家`); logAct('手环亲情呼叫', MB.special, '中'); },
+  /* ===== 温暖与传承：手机屏内弹层（与 Web 端共用 Warm 能力层） ===== */
+  wKind(k){ S.dyKind=k; renderMobile(S.view); toast('已切换到「'+k+'」记录方式，填好点下方保存即可','ok'); },
+
+  /* ---- 相册 ---- */
+  wNewAlbum(owner){
+    const def = owner || MB.elder;
+    MB.sheet(`<h4>📔 新建相册 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform">
+        <div class="field"><label><i>*</i>相册名称</label><input class="inp" id="wName" placeholder="如：1970s 厂门口的那些年"></div>
+        <div class="field"><label>归属长者</label><select class="sel" id="wOwner">${ELDER_NAMES.map(n=>`<option${n===def?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+        <div class="field"><label>相册分类</label><select class="sel" id="wCate">${ALBUM_CATES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+        <div class="field"><label>可见范围</label><div class="seg" id="wPriv">${['私密','家人可见','园区公开'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>拍摄地 / 来源</label><input class="inp" id="wPlace" value="家里翻拍"></div>
+        <div class="field"><label>相册简介</label><textarea class="inp" id="wNote" rows="2" placeholder="这本相册想留给谁、想说些什么"></textarea></div></div>
+      <div class="mbtns"><button class="btn" onclick="MB.close()">取消</button><button class="btn p" onclick="Warm.createAlbum()">创建并添加第一张</button></div>`);
+    Warm.seg('wPriv');
+  },
+  wAlbum(id){
+    const a = Warm.album(id); if(!a) return; const ps = Warm.photos(a);
+    const ro = S.mobileRole && S.mobileRole[S.view]==='child';
+    MB.sheet(`<h4>📸 ${esc(a.name)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="ab-h"><div class="ab-cover">${esc(a.cover||'📷')}</div><div><b style="font-size:14px">${esc(a.name)}</b>
+        <div class="tiny">${esc(a.owner)} · ${esc(a.cate)} · ${esc(a.place||'—')} · 创建 ${esc(a.date)}</div>
+        <div class="ab-tags">${tagHTML({tag:{'私密':'ink','家人可见':'blue','园区公开':'green'}}, a.priv)}${tagHTML({tag:{'未分享':'ink','已生成链接':'green','已撤销':'warn'}}, a.share)}${tagHTML({tag:{'正常':'green','已销毁':'red'}}, a.status)}<span class="tag purple">${ps.length} 张</span></div></div></div>
+      ${a.note?`<div class="ab-note">${esc(a.note)}</div>`:''}
+      <div class="ab-grid">${ps.length? ps.map((p,i)=>`<div class="ab-ph"><div class="im">${p.img?`<img src="${p.img}">`:p.sketch?`<img src="${p.sketch}">`:esc(p.ico||'📷')}${p.fixed?'<i class="fx">AI 修复</i>':''}</div>
+        <b>${esc(p.t)}</b><p>${esc(p.cap||'（未填写图注）')}</p><span>${esc(p.date||'')}${p.voice?' · 🎙 '+esc(p.voice):''}</span>
+        ${ro?'':`<div class="ab-ops"><button class="btn sm" onclick="Warm.fixPhoto(${a._id},${i})">✨</button><button class="btn sm" onclick="Mob.wPhotoNote(${a._id},${i})">💬</button><button class="btn sm d" onclick="Warm.delPhoto(${a._id},${i})">🗑</button></div>`}</div>`).join('')
+        : '<div class="tiny">还没有照片，点下方「＋ 添加照片」。</div>'}</div>
+      <div class="mbtns" style="margin-top:12px">${ro
+        ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm p blk" onclick="Warm.printSheet(${a._id})">🖨 订一本纸质相册</button><button class="btn sm" onclick="Mob.wAlbum(${a._id})">↻ 刷新</button><button class="btn sm" onclick="MB.close()">关闭</button></div>`
+        : `<button class="btn p blk" onclick="Warm.addPhoto(${a._id})">＋ 添加照片</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm g" onclick="Warm.share(${a._id})">🔗 分享</button><button class="btn sm" onclick="Warm.printSheet(${a._id})">🖨 打印纸质</button><button class="btn sm d" onclick="Warm.destroy(${a._id})">🗑 销毁</button><button class="btn sm" onclick="Mob.wAlbum(${a._id})">↻ 刷新</button></div>`}</div>`);
+  },
+  wAddPhoto(id){
+    const a = Warm.album(id); if(!a) return;
+    MB.sheet(`<h4>🖼 添加到《${esc(a.name)}》 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="seg" id="pSrc">${['拍照上传','扫描翻拍','手迹作品','园区活动'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div>
+      <div class="mform" style="margin-top:10px">
+        <div class="field"><label><i>*</i>照片标题</label><input class="inp" id="pTitle" placeholder="如：1985 年 · 技术能手奖状"></div>
+        <div class="field"><label>拍摄 / 年份日期</label><input class="inp" id="pDate" value="${today()}"></div>
+        <div class="field"><label>画面内容（原型用图标代图）</label><div class="seg" id="pIco">${['📷','🏭','🌳','💑','🖊','🎤','🧣','🥟','🌅','🖼','🏆','👵'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>想说的话（图注）</label><textarea class="inp" id="pCap" rows="2" placeholder="这张照片背后的故事"></textarea></div>
+        <div class="field"><label>语音配图（可选）</label><div class="rec-row"><button class="btn sm" onclick="Warm.recPhoto(this)">● 按住说话</button><span class="mono" id="pRecT">00'00\u0022</span><span class="tiny" id="pRecS">未录制</span></div></div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wAlbum(${a._id})">返回相册</button><button class="btn p" onclick="Warm.savePhoto(${a._id})">💾 保存这张</button></div>`);
+    Warm.seg('pSrc'); Warm.seg('pIco');
+  },
+  wPhotoNote(id, i){
+    const a = Warm.album(id); const p = a && a.photos[i]; if(!p) return;
+    MB.sheet(`<h4>💬 补充图注 · ${esc(p.t)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="field"><label>这张照片的故事</label><textarea class="inp" id="pnCap" rows="4">${esc(p.cap||'')}</textarea></div>
+      <div class="field"><label>画面内容</label><div class="seg" id="pnIco">${['📷','🏭','🌳','💑','🖊','🎤','🧣','🥟','🌅','🖼','🏆','👵'].map(x=>`<button class="${x===(p.ico||'📷')?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="tiny">图注会以第一人称进入 AI 传记草稿。</div>
+      <div class="mbtns" style="margin-top:12px"><button class="btn" onclick="Mob.wAlbum(${a._id})">返回</button><button class="btn p" onclick="Warm.saveNote(${a._id},${i})">保存</button></div>`);
+    Warm.seg('pnIco');
+  },
+  wShare(id){
+    const a = Warm.album(id); if(!a) return;
+    const code = 'ALB'+String(a._id).padStart(4,'0')+String(Date.now()).slice(-4);
+    const link = 'https://ky-park.cn/a/'+code;
+    MB.sheet(`<h4>🔗 分享《${esc(a.name)}》 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>分享范围</label><div class="seg" id="shScope">${['仅家人','园区公开','凭链接任何人'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>有效期</label><div class="seg" id="shExp">${['7 天','30 天','长期有效'].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>接收对象</label><input class="inp" id="shTo" value="${esc(a.owner==='徐世昌'?'徐乐（女儿）/ 家庭群':'家人')}"></div>
+        <div class="field"><label>分享链接</label><div class="share-box"><span class="mono">${link}</span><button class="btn sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('${link}');toast('链接已复制，可转发到家庭群','ok')">复制</button></div>
+          <div class="tiny">分享码：<b class="mono">${code}</b>　·　可随时撤销，撤销后链接立即失效。</div></div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wAlbum(${a._id})">取消</button><button class="btn p" onclick="Warm.doShare(${a._id})">生成分享</button></div>`);
+    Warm.seg('shScope'); Warm.seg('shExp');
+  },
+  wPrint(id){
+    const a = Warm.album(id); if(!a) return;
+    MB.sheet(`<h4>🖨 打印成纸质相册 · ${esc(a.name)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>纸张规格</label><div class="seg" id="prPaper">${['A4 哑光','12 寸相簿','拍立得 3寸'].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>装订方式</label><div class="seg" id="prBind">${['精装硬壳','蝴蝶对裱','环装可拆'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>打印份数</label><input class="inp" id="prCopies" type="number" min="1" max="9" value="1"></div>
+        <div class="field"><label>随册附印</label><div class="ck-row">${['图注全文','长者可手写页','AI 传记摘录','二维码回到电子相册'].map((x,i)=>`<label class="ck2"><input type="checkbox" ${i<2?'checked':''}> ${x}</label>`).join('')}</div></div>
+        <div class="tiny">已打印 ${a.printCnt||0} 次；接单后 1 个工作日送出，可到园区服务台领取。</div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wAlbum(${a._id})">取消</button><button class="btn p" onclick="Warm.doPrint(${a._id})">生成版式并打印</button></div>`);
+    Warm.seg('prPaper'); Warm.seg('prBind');
+  },
+  wPrintList(){
+    const list = Warm.albums(MB.elder,'',false);
+    if(!list.length){ toast('还没有相册，先去「温暖」新建一本','warn'); return; }
+    MB.sheet(`<h4>🖨 选一本相册（打印 / 分享） <span class="link" onclick="MB.close()">关闭</span></h4>
+      <ul class="mlist">${list.map(a=>`<li onclick="Mob.wPrint(${a._id})"><div class="ic">${esc(a.cover||'📷')}</div>
+        <div class="tx"><b>${esc(a.name)}</b><p>${Warm.photos(a).length} 张 · ${esc(a.cate)} · 已打印 ${a.printCnt||0} 次 · ${esc(a.priv)}</p></div>
+        <div class="rt"><span class="link" onclick="event.stopPropagation();Warm.share(${a._id})">分享</span></div></li>`).join('')}</ul>
+      <div class="mbtns" style="margin-top:12px"><button class="btn blk" onclick="MB.close()">关闭</button></div>`);
+  },
+  wTrash(){
+    const dead = Warm.albums(MB.elder,'',true).filter(a=>a.status==='已销毁');
+    MB.sheet(`<h4>🗑 相册回收站 <span class="link" onclick="MB.close()">关闭</span></h4>
+      ${dead.length? `<ul class="mlist">${dead.map(a=>`<li><div class="ic w">🗑</div><div class="tx"><b>${esc(a.name)}</b><p>销毁于 ${esc(a.destroyAt||a.date)} · 30 天内可恢复</p></div>
+        <div class="rt"><span class="link" onclick="Warm.restore(${a._id})">恢复</span></div></li>`).join('')}</ul>`
+        : '<div class="tiny">回收站是空的。相册可随时销毁，销毁后分享链接立即失效，30 天内可恢复。</div>'}
+      <div class="mbtns" style="margin-top:12px"><button class="btn blk" onclick="renderMobile(S.view)">关闭并刷新</button></div>`);
+  },
+
+  /* ---- 日记 ---- */
+  wDiary(id){
+    const d = Warm.diary(id); if(!d) return;
+    MB.sheet(`<h4>📔 ${esc(d.title)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="dy-view"><div class="dy-meta">${esc(d.name)} · ${esc(d.kind)} · ${esc(d.date)} ${esc(d.time||'')} · ${esc(d.from||'')}${d.dur?' · 时长 '+esc(d.dur):''}</div>
+        <div class="dy-tags">${tagHTML({tag:{'笔记':'blue','录音':'purple','画画':'green','拍照':'warn'}}, d.kind)}${tagHTML({tag:{'家人可见':'green','私密':'ink','园区公开':'blue'}}, d.auth)}${tagHTML({tag:{'已引用':'green','未引用':'ink'}}, d.bio)}<span class="tag purple">心情 ${esc(d.mood)}</span></div>
+        ${d.kind==='录音'? `<div class="play"><button class="btn sm p" onclick="Warm.play(this)">▶ 播放</button><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="mono">${esc(d.dur||'')}</span></div>`:''}
+        ${d.sketch? `<div class="dy-img"><img src="${d.sketch}"></div>` : (d.img? `<div class="dy-img big">${esc(d.img)}</div>`:'')}
+        <div class="dy-text">${esc(d.content||'（未填写内容）')}</div></div>
+      <div class="mbtns" style="margin-top:12px">
+        <button class="btn sm ${d.bio==='已引用'?'':'g'}" onclick="Warm.toggleBio(${d._id})">${d.bio==='已引用'?'➖ 取消引用':'＋ 用作传记素材'}</button>
+        <button class="btn sm" onclick="Warm.toAlbum(${d._id})">📸 归入相册</button>
+        <button class="btn sm d" onclick="Warm.delDiary(${d._id})">🗑 删除</button>
+        <button class="btn sm" onclick="Mob.wDiary(${d._id})">↻ 刷新</button></div>`);
+  },
+  wToAlbum(id){
+    const d = Warm.diary(id); if(!d) return;
+    const list = Warm.albums(d.name,'',false);
+    MB.sheet(`<h4>📸 归入相册 · ${esc(d.title)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>选择相册（归属：${esc(d.name)}）</label>
+        <select class="sel" id="taAlb">${list.length? list.map(a=>`<option value="${a._id}">${esc(a.name)}（${Warm.photos(a).length} 张）</option>`).join('') : '<option value="">暂无相册，将新建一本「日记手记」</option>'}</select></div>
+        <div class="tiny">笔记与录音会生成一张带正文摘录的卡片图；画画与拍照直接使用原图。</div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wDiary(${d._id})">返回</button><button class="btn p" onclick="Warm.doToAlbum(${d._id})">确定归入</button></div>`);
+  },
+
+  /* ---- 传记（传承） ---- */
+  wGen(owner){
+    const who = owner || MB.elder;
+    const albs = Warm.albums(who,'',false), dis = Warm.diaries(who,'');
+    if(!albs.length && !dis.length){ toast(who+' 还没有相册或日记，请先创建温暖素材','warn'); return; }
+    const ar = archiveOf(who);
+    const fam = ar && ar.family ? String(ar.family).split(/[、,，]/)[0] : '';
+    MB.sheet(`<h4>🤖 联动日记与相册 · 辅生成传记 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>传主</label><select class="sel" id="gName" onchange="Warm.genRefresh()">${ELDER_NAMES.map(n=>`<option${n===who?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+        <div class="field"><label>传记名</label><input class="inp" id="gTitle" value="${esc(who+'的人生小记')}"></div>
+        <div class="field"><label>体裁</label><div class="seg" id="gStyle">${BIO_STYLES.map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>交付对象</label><input class="inp" id="gFam" value="${esc(fam||'子女')}"></div></div>
+      <div id="gMats"><div class="tiny">正在加载素材…</div></div>
+      <div class="lgc-tip">⚠ AI 只负责把您写的与拍的串成草稿，<b>全部内容由您自由改写</b>；定稿前不对外展示。</div>
+      <div class="mbtns" style="margin-top:12px"><button class="btn" onclick="MB.close()">取消</button><button class="btn p" onclick="Warm.startGen()">🤖 生成草稿</button></div>`);
+    Warm.seg('gStyle'); Warm.genRefresh();
+  },
+  wBio(id){
+    const b = Warm.bio(id); if(!b) return; const chs = b.chapters||[];
+    const ro = S.mobileRole && S.mobileRole[S.view]==='child';
+    MB.sheet(`<h4>🕯 ${esc(b.title)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="ab-tags">${tagHTML({tag:{'草稿':'ink','生成中':'blue','已成稿':'green','已交付':'purple'}}, b.status)}<span class="tag blue">${chs.length} 章</span><span class="tag purple">${esc(b.style)}</span><span class="tag">${esc(b.vol||'')}</span></div>
+      <div class="prog" style="margin:10px 0"><i style="width:${b.progress||0}%"></i></div>
+      <div class="tiny">${ro?'父亲授权您阅读的部分，仅家属可见；如需补充可提醒父亲。':(b.status==='生成中'?'AI 正在逐章生成，完成后可直接编写':'每一章都可以自己重写，也可以加一章想说的话。')}</div>
+      ${chs.length? chs.map((c,i)=>`<div class="lgc-ch"><div class="lgc-ch-h"><b>${esc(c.t)}</b><span class="tiny">${(c.c||'').length} 字 · ${c.edited?'本人已改':'AI 初稿'}</span></div>
+        <textarea class="inp" id="ch${i}" rows="3" ${ro?'readonly':''}>${esc(c.c||'')}</textarea>
+        ${ro?'':`<div class="lgc-ch-ops"><button class="btn sm" onclick="Warm.saveOne(${b._id},${i})">💾 本章</button><button class="btn sm" onclick="Warm.polish(${b._id},${i})">🤖 换说法</button><button class="btn sm" onclick="Warm.fromMate(${b._id},${i})">📔 引原文</button></div>`}</div>`).join('')
+        : '<div class="tiny">草稿生成中…</div>'}
+      <div class="mbtns" style="margin-top:12px">${ro
+        ? `<button class="btn p blk" onclick="Mob.legacyBack(${b._id})">💬 回应一句</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 打印装订</button><button class="btn sm" onclick="Mob.wBio(${b._id})">↻ 刷新</button><button class="btn sm" onclick="MB.close()">关闭</button></div>`
+        : (b.status==='生成中'
+          ? `<button class="btn blk" onclick="Mob.wBio(${b._id})">后台生成，重新打开</button>`
+          : `<button class="btn p blk" onclick="Warm.saveChapters(${b._id})">💾 全部保存</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" onclick="Warm.addChapter(${b._id})">＋ 加一章</button><button class="btn sm g" onclick="Warm.finalize(${b._id})">✅ 定稿</button><button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 成书</button><button class="btn sm p" onclick="Warm.deliver(${b._id})">📮 交付</button></div>`)} </div>`);
+  },
+  wDeliver(id){
+    const b = Warm.bio(id); if(!b) return;
+    MB.sheet(`<h4>📮 交付家人 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>交付对象</label><input class="inp" id="dlTo" value="${esc(b.family||'徐乐')}"></div>
+        <div class="field"><label>送达方式</label><div class="seg" id="dlWay">${['APP 推送','短信链接','纸质快递','园区服务台领取'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>附一句话</label><textarea class="inp" id="dlMsg" rows="2" placeholder="想对家人说的话">这本册子交给你们，翻到它就像我还在说话。</textarea></div>
+        <div class="tiny">交付后子女端「传承」会同步出现《${esc(b.title)}》，仅授权家属可见，可随时撤销。</div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wBio(${b._id})">返回</button><button class="btn p" onclick="Warm.doDeliver(${b._id})">确认交付</button></div>`);
+    Warm.seg('dlWay');
+  },
+  legacyBack(id){
+    const b = Warm.bio(id);
+    MB.sheet(`<h4>💬 回一句给${esc(MB.elder)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="field"><label>回应${b?'《'+esc(b.title)+'》':''}</label><textarea class="inp" id="lbTxt" rows="3">爸，这本册子我读了三遍，明年我们把老屋那几张也补上去。</textarea></div>
+      <button class="btn p blk" onclick="Mob.legacySend(${id||0})">发送回应（同步长者端与房间大屏）</button>`);
+  },
+  legacySend(id){
+    const t = ($('lbTxt')&&$('lbTxt').value)||'回应'; const b = Warm.bio(id);
+    MODULES.circle.rows.unshift({ _id:++UID, author:MB.child, kind:'子女留言', text:t+(b?'　—— 读《'+b.title+'》':''), imgs:'', likes:0, cmts:0, share:'已同步', date:now(), status:'已发布' });
+    if(b){ b.replyMsg=t; b.replyTime=now(); }
+    MB.close(); persist(); renderMobile(S.view); logAct('子女回应传记', (b?b.title:'')+'：'+String(t).slice(0,18), '低');
+    toast('已回应，长者端「温暖」与房间大屏会收到','ok');
+  },
+  remindWrite(){
+    MB.close();
+    pushAlert('子女关怀提醒', `子女 ${MB.child} 提醒 ${MB.elder} 记一条时光日记 / 整理一张老照片，已推送到长者端与房间大屏`);
+    logAct('提醒长者记录', MB.elder+' / '+S.view.toUpperCase(), '低'); toast('已提醒父亲记录','ok');
+  },
+  printElderAlbum(){ Mob.wPrintList(); },
+
 broadcast(){ const a=MB.SA(), d=new Date(), p=n=>String(n).padStart(2,'0');
     const wk=['日','一','二','三','四','五','六'][d.getDay()]; const h=d.getHours();
     const seg=h<6?'凌晨':h<11?'上午':h<13?'中午':h<18?'下午':'晚上';

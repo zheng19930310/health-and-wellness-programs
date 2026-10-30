@@ -179,7 +179,9 @@ function badgeCount(k){
     account:r=>r.status==='锁定', log:r=>r.risk==='高', param:r=>false, org:r=>false, role:r=>false, archive:r=>r.status==='请假外出',
     health:r=>r.risk==='高', activity:r=>r.status==='进行中', sport:r=>r.status==='异常中止', class:r=>r.status==='开课中',
     menu:r=>r.status==='待上架', diet:r=>r.risk==='高', arrange:r=>r.cook==='待确认', family:r=>r.status==='待审核',
-    clean:r=>r.inspect==='待整改', dashboard:r=>false, twin:r=>false, reports:r=>false, point:r=>false };
+    clean:r=>r.inspect==='待整改', dashboard:r=>false, twin:r=>false, reports:r=>false, point:r=>false,
+    space:r=>false, building:r=>r.status!=='在用', room:r=>['维修中','清洁中'].includes(r.status), stay:r=>['待签约','退租申请','换房中'].includes(r.status),
+    album:r=>false, diary:r=>false, legacy:r=>r.status==='草稿' };
   return (map[k]?rows.filter(map[k]).length:0);
 }
 App.foldGroup = h => { let n=h.nextElementSibling; while(n && !n.classList.contains('grp')){ n.classList.toggle('hide'); n=n.nextElementSibling; } };
@@ -192,7 +194,8 @@ function applyFold(){
 App.toggleFold = () => { S.folded = !S.folded; applyFold(); try{ localStorage.setItem(LS+'_fold', S.folded?'1':'0'); }catch(e){} };
 App.about = () => Modal.open('ℹ️ 关于本原型', `<div style="font-size:13px;line-height:2">
   <p><b>康养项目综合管理平台 · 前端高保真原型</b>（单 HTML 文件，无后端，数据全部为模拟）</p>
-  <p>· 依据 PRD V1.1 实现 Web 管理后台 27 个模块，支持<b>增删改查、条件检索、分页、批量删除、CSV 导出、流程状态流转与详情查看</b>。</p>
+  <p>· 依据 PRD V1.1 实现 Web 管理后台 <b>37 个一级入口 / 64 个模块</b>，支持<b>增删改查、条件检索、分页、批量删除、CSV 导出、流程状态流转与详情查看</b>。</p>
+  <p>· 新增<b>空间资产</b>（分区→楼栋→房间→IoT 设备四级联动、入住绑定与退租）与<b>温暖传承</b>（相册、日记、AI 个人传记）两大产品域。</p>
   <p>· 门户首页可切换 <b>Web 后台 / 数字大屏 / APP 端 / 小程序端</b> 四端；数字大屏使用在线 ECharts 5.5.1。</p>
   <p>· 主色调：蓝 <code>#1668DC</code> · 黑 <code>#0A1524</code> · 绿 <code>#00B578</code>。</p>
   <p>· 数据保存在浏览器 localStorage，可在侧栏底部「重置演示数据」还原。</p>
@@ -357,6 +360,7 @@ const Crud = {
     r[field] = typeof a.to==='function'? a.to(r) : a.to;
     if(a.set) Object.assign(r, a.set(r));
     if(a.ts) r[a.ts] = now();
+    if(a.after){ try{ a.after(r); }catch(err){ console.warn('流程联动失败', err); } }
     if(a.push) pushAlert(a.pushTitle, a.pushBody, r);
     persist(); Modal.close(); renderPage(); renderNav();
     toast(`${a.t}成功：${esc(r.name||r.title||r.no||'')} → ${r[field]}`,'ok');
@@ -419,6 +423,8 @@ function detailArchive(r){
   const tab=(t,rows)=>`<div class="card-h" style="padding:12px 0 8px"><h3>${t}</h3></div>${rows}`;
   const byName = k => (MODULES[k].rows||[]).filter(x=>x.name===r.name);
   const health = byName('health'), leave = byName('leave'), care = byName('care'), sport = byName('sport'), order = byName('order'), fam = MODULES.family.rows.filter(x=>x.ename===r.name);
+  const stayOf = (MODULES.stay.rows||[]).filter(x=>x.name===r.name), rm = roomOf(r.room);
+  const albs = (MODULES.album.rows||[]).filter(a=>a.owner===r.name && a.status!=='已销毁'), dys = (MODULES.diary.rows||[]).filter(d=>d.name===r.name), bios = (MODULES.legacy.rows||[]).filter(b=>b.name===r.name);
   const kv = (o,cols)=>`<div class="dinfo">${cols.map(c=>`<div><label>${esc(c.t)}</label>${cellHTML(c,o)||'<span class="tiny">—</span>'}</div>`).join('')}</div>`;
   let body = `<div class="dwrap"><div class="dside">
       <div style="text-align:center;padding:14px;background:linear-gradient(160deg,#0f4c96,#127a63);border-radius:12px;color:#fff">
@@ -435,6 +441,11 @@ function detailArchive(r){
     <div class="dmain">
       ${tab('📇 基本信息', kv(r, MODULES.archive.cols.filter(c=>['idcard','phone','guardian','gphone','allergy','history','inDate','status'].includes(c.k))))}
       ${tab('❤️ 健康与体征（'+health.length+'）', health.length?`<table class="tb"><thead><tr><th>日期</th><th>类型</th><th>心率</th><th>血氧</th><th>血压</th><th>风险</th></tr></thead><tbody>${health.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.type)}</td><td>${esc(x.hr)}</td><td>${esc(x.spo2)}</td><td>${esc(x.bp)}</td><td>${tagHTML({tag:{'低':'green','中':'warn','高':'red'}},x.risk)}</td></tr>`).join('')}</tbody></table>`:'<div class="tiny">暂无记录</div>')}
+      ${tab('🔑 房间与入住（'+stayOf.length+' 份合同）', `${rm?`<div class="dinfo" style="margin-bottom:10px">${[['code','房号'],['area','分区'],['bld','楼栋'],['type','房型'],['beds','床位'],['size','面积'],['adapt','适老化'],['status','使用状态']].map(p=>`<div><label>${p[1]}</label>${esc(rm[p[0]]||'—')}</div>`).join('')}</div>`:'<div class="tiny">该长者当前未绑定有效房间</div>'}
+        ${stayOf.length?`<table class="tb"><thead><tr><th>合同号</th><th>房号</th><th>套餐</th><th>起</th><th>止</th><th>绑定设备</th><th>状态</th></tr></thead><tbody>${stayOf.map(s=>`<tr><td class="mono">${esc(s.no)}</td><td class="mono">${esc(s.room)}</td><td>${esc(s.pkg)}</td><td>${esc(s.start)}</td><td>${esc(s.end)}</td><td>${esc(s.band||'—')}</td><td>${tagHTML({tag:{'待签约':'blue','已绑定':'green','换房中':'warn','退租申请':'warn','已退租':'ink'}},s.status)}</td></tr>`).join('')}</tbody></table>`:''}`)}
+      ${tab('📸 温暖与传承（相册 '+albs.length+' · 日记 '+dys.length+' · 传记 '+bios.length+'）', `${albs.length?`<div class="sw-box">${albs.map(a=>`<div class="ck"><b>${a.cover||'📷'} ${esc(a.name)}</b><p>${esc(a.cate)} · ${(a.photos||[]).length} 张 · ${esc(a.priv)}${a.share!=='未分享'?' · 已分享':''}</p></div>`).join('')}</div>`:''}
+        ${dys.length?`<ul class="lst">${dys.slice(0,4).map(d=>`<li><span class="ic ${d.kind==='录音'?'':d.kind==='画画'?'g':'w'}">${d.kind==='笔记'?'✍️':d.kind==='录音'?'🎙':d.kind==='画画'?'🎨':'📷'}</span><div><b>${esc(d.title)}</b><p>${esc(String(d.content||'').slice(0,42))}…</p></div><span class="tm">${esc(d.date)}</span></li>`).join('')}</ul>`:'<div class="tiny">暂无日记记录</div>'}
+        ${bios.length?`<div class="tiny" style="margin-top:8px">传记：${bios.map(b=>`<b>${esc(b.title)}</b>（${esc(b.status)} · ${(b.chapters||[]).length} 章）`).join('　')}</div>`:''}`)}
       ${tab('👪 家属与授权（'+fam.length+'）', fam.length?fam.map(f=>`<div class="dinfo" style="margin-bottom:8px">${[['cname','子女'],['rel','关系'],['auth','授权范围'],['pay','代付权限'],['notice','通知偏好']].map(p=>`<div><label>${p[1]}</label>${esc(f[p[0]]||'—')}</div>`).join('')}</div>`).join(''):'<div class="tiny">未绑定子女/家属</div>')}
       ${tab('🎁 关怀与活动', `<ul class="lst">${care.slice(0,3).map(c=>`<li><span class="ic">🎁</span><div><b>${esc(c.type)}</b><p>${esc(c.content)}</p></div><span class="tm">${esc(c.date)}</span></li>`).join('')||'<li class="tiny">暂无关怀记录</li>'}${sport.slice(0,2).map(s=>`<li><span class="ic g">🏃</span><div><b>${esc(s.plan)}</b><p>${esc(s.dur)} 分钟 · ${esc(s.step)} 步 · ${esc(s.status)}</p></div><span class="tm">${esc(s.date)}</span></li>`).join('')}</ul>`)}
       ${tab('💳 消费记录（'+order.length+'）', order.length?`<table class="tb"><thead><tr><th>订单号</th><th>商品</th><th>金额</th><th>支付</th><th>状态</th></tr></thead><tbody>${order.map(o=>`<tr><td class="mono">${esc(o.no)}</td><td>${esc(o.goods)}</td><td><b>${Number(o.amount).toLocaleString()}</b></td><td>${esc(o.pay)}</td><td>${tagHTML({tag:{'待支付':'warn','已支付':'blue','已核销':'green','已退款':'ink','已取消':'red'}},o.status)}</td></tr>`).join('')}</tbody></table>`:'<div class="tiny">暂无消费</div>')}
@@ -442,6 +453,46 @@ function detailArchive(r){
     </div></div>`;
   Modal.open(`📇 个人档案 · ${esc(r.name)}`, body, `<button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="Modal.close();Crud.open('archive',${r._id})">编辑档案</button><button class="btn g" onclick="Modal.close();Crud.open('care')">发起关怀</button>`, true);
 }
+
+/* ---------- 空间资产 · 跨模块联动（入住绑定 / 退租 / 换房 驱动房间台账与长者档案） ---------- */
+function roomOf(code){ const c=String(code||'').trim().toUpperCase(); return (MODULES.room.rows||[]).find(r=>String(r.code).trim().toUpperCase()===c)||null; }
+function archiveOf(name){ return (MODULES.archive.rows||[]).find(a=>a.name===name)||null; }
+function bldZone(name){ const b=(MODULES.building.rows||[]).find(x=>x.name===name); return b? (b.zone||'') : ''; }
+function roomDevKeys(code){ const c=String(code||'').trim().toUpperCase(); return [c, c.replace(/-/g,'')]; }
+const SpaceLink = {
+  /* 签约绑定：房间转已入住 + 住客写入 + 档案区域房号同步 + 设备绑定到人 */
+  bind(stay){
+    const room = roomOf(stay.room);
+    if(room){ room.status='已入住'; room.guest=stay.name; if(stay.area) room.area=stay.area; if(stay.bld) room.bld=stay.bld; const z=bldZone(stay.bld); if(z) room.zone=z; }
+    const a = archiveOf(stay.name);
+    if(a){ if(room){ a.zone=room.zone||a.zone; a.room=room.code; } a.status='在院'; if(!a.inDate) a.inDate=stay.start||today(); }
+    const keys = roomDevKeys(stay.room);
+    (MODULES.device.rows||[]).forEach(d=>{ const txt=(d.no+' '+d.name+' '+d.pos+' '+(d.bind||'')).toUpperCase(); if(keys.some(k=>k&&txt.includes(k))) d.bind=stay.name; });
+    return room;
+  },
+  /* 退租结算：房间释放空置 + 住客清空 + 档案离园 + 设备解绑 */
+  release(stay){
+    const room = roomOf(stay.room);
+    if(room && room.guest===stay.name){ room.status='空置'; room.guest=''; }
+    const a = archiveOf(stay.name); if(a) a.status='离园';
+    const keys = roomDevKeys(stay.room);
+    (MODULES.device.rows||[]).forEach(d=>{ const txt=(d.no+' '+d.name+' '+d.pos).toUpperCase(); if(keys.some(k=>k&&txt.includes(k)) && d.bind===stay.name) d.bind='—'; });
+    return room;
+  },
+  /* 换房：释放原房间、绑定新房间，并把房号回写到合同 */
+  move(stay){
+    const raw = String(stay.newRoom||'');
+    const m = raw.match(/[A-Za-z]\d?[-—]?\s?\d{3}/);
+    const code = m ? m[0].replace(/[-—]\s?/,'-').toUpperCase() : '';
+    if(stay.prevRoom){ const old=roomOf(stay.prevRoom); if(old && old.guest===stay.name){ old.status='空置'; old.guest=''; } }
+    if(!code){ toast('未识别到新房号，房间台账未变动','warn'); return null; }
+    stay.room = code; stay.newRoom=''; stay.prevRoom='';
+    const room = roomOf(code);
+    if(room){ room.status='已入住'; room.guest=stay.name; const z=bldZone(stay.bld); if(z) room.zone=z; }
+    const a = archiveOf(stay.name); if(a){ a.room=code; if(room && room.zone) a.zone=room.zone; }
+    return room;
+  }
+};
 
 /* ---------- 流程动作定义 ---------- */
 const FLOWS = {
@@ -487,8 +538,19 @@ const FLOWS = {
   audit2: [ {t:'审批通过', st:'待审批', to:'已审批', f:'auth', set:r=>({status:'已完成'})}, {t:'驳回', st:'待审批', to:'已驳回', f:'auth', set:r=>({status:'失败'})}, {t:'执行导出', st:['已审批'], to:'已审批', f:'auth', set:r=>({status:'已完成'}), ask:'导出用途与水印声明', note:'purpose'} ],
   switch: [ {t:'启用', st:['停用','未启用','离线','降级','熔断','失效','已到期'], to:'启用', f:'status'}, {t:'停用', st:['启用','正常','生效'], to:'停用', f:'status'} ],
   acc: [ {t:'重置密码', st:['启用','停用','锁定'], to:'启用', ask:'新密码策略', prefill:'重置为初始密码 123456，强制下次登录修改'}, {t:'停用', st:'启用', to:'停用'}, {t:'解锁', st:['锁定','停用'], to:'启用'} ],
-  perm: [ {t:'配置权限', st:[], to:'启用', ask:'勾选模块与数据范围（演示）', prefill:'模块：档案/请假/活动；数据范围：本区域；敏感数据：健康'}, {t:'停用角色', st:'启用', to:'停用'}, {t:'启用', st:'停用', to:'启用'} ]
+  perm: [ {t:'配置权限', st:[], to:'启用', ask:'勾选模块与数据范围（演示）', prefill:'模块：档案/请假/活动；数据范围：本区域；敏感数据：健康'}, {t:'停用角色', st:'启用', to:'停用'}, {t:'启用', st:'停用', to:'启用'} ],
+  /* 空间资产 · 楼栋 */
+  bld: [ {t:'报修停用', st:'在用', to:'维护中', ask:'维护内容与预计工期', note:'note'}, {t:'恢复启用', st:['维护中','停用'], to:'在用'}, {t:'停止使用', st:['维护中','在用'], to:'停用', ask:'停用原因与在住人员安置方案', note:'note'} ],
+  /* 空间资产 · 房间 */
+  room: [ {t:'安排维修', st:['空置','预留'], to:'维修中', ask:'维修内容与工期', note:'note'}, {t:'维修完成验收', st:'维修中', to:'空置'}, {t:'清洁消毒', st:['空置','维修中'], to:'清洁中'}, {t:'清洁完成', st:'清洁中', to:'空置'}, {t:'设为预留', st:'空置', to:'预留', ask:'预留对象与期限', note:'note'}, {t:'释放为空置', st:['预留','清洁中'], to:'空置'} ],
+  /* 空间资产 · 入住绑定与退租（联动房间台账 + 长者档案 + 设备绑定） */
+  stay: [ {t:'绑定房间', st:'待签约', to:'已绑定', ts:'bindTime', ask:'确认房号与绑定设备（如 A-305 / BW-A305-01 手环）', note:'note', after:r=>SpaceLink.bind(r)},
+    {t:'办理换房', st:'已绑定', to:'已绑定', ask:'新房号（如 B-203），系统将自动释放原房间并同步档案', note:'newRoom', set:r=>({prevRoom:r.room}), after:r=>SpaceLink.move(r)},
+    {t:'申请退租', st:'已绑定', to:'退租申请', ask:'退租原因与拟退租日期', note:'note'},
+    {t:'退租结算', st:['退租申请','换房中','已绑定'], to:'已退租', ask:'结算明细（房费/押金/餐费/设备损耗）', note:'settle', set:r=>({outDate:today()}), after:r=>SpaceLink.release(r)},
+    {t:'续签一年', st:'已绑定', to:'已绑定', ask:'续签备注与优惠', note:'note', set:r=>({end:plusYear(r.end)})} ]
 };
+function plusYear(dstr){ const s=String(dstr||today()); return (/^\d{4}/.test(s)) ? (Number(s.slice(0,4))+1)+s.slice(4) : s; }
 
 /* 告警推送（写入大屏与消息中心） */
 function pushAlert(title, body, r){

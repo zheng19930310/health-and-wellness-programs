@@ -657,6 +657,185 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
 .em-lv{font-size:9.5px;font-weight:700;border-radius:4px;padding:0 4px;color:#fff;vertical-align:1px}
 .em-lv.v1{background:#e5484d}.em-lv.v2{background:#f5a623}.em-lv.v3{background:#1668dc}
 .mlist li.em-al{border-left:3px solid #e5484d;background:#fff8f8}
+
+/* ============ 空间资产：分区 → 楼栋 → 房间 → IoT 设备 ============ */
+.sp-wrap{display:grid;grid-template-columns:246px minmax(0,1fr) 336px;gap:14px;align-items:start}
+.sp-are{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;border-radius:9px;background:var(--blue-l);font-weight:600;font-size:13px;cursor:pointer;margin-bottom:6px}
+.sp-are:hover{background:#dceaff}
+.sp-are.on{background:linear-gradient(135deg,var(--blue),#3f8bff);color:#fff}
+.sp-are span{font-weight:400;font-size:11.5px;opacity:.85}
+.sp-bld{display:flex;align-items:center;gap:7px;padding:7px 10px 7px 20px;border-radius:8px;font-size:12.6px;cursor:pointer;color:var(--sub)}
+.sp-bld:hover{background:#f4f7fc}
+.sp-bld.on{background:var(--green-l);color:var(--green-d);font-weight:600}
+.sp-bld span{margin-left:auto;font-size:11px;color:var(--sub-l)}
+.sp-bld i.st{width:7px;height:7px;border-radius:50%;background:var(--green);flex:0 0 auto;display:inline-block}
+.sp-bld i.st.w{background:var(--warn)}.sp-bld i.st.r{background:var(--danger)}
+.sp-lg{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--sub);margin-bottom:12px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+.sp-lg span{display:flex;align-items:center;gap:5px}
+.sp-lg i{width:11px;height:11px;border-radius:4px;display:inline-block}
+.sp-lg i.v{background:#bfe6d3}.sp-lg i.o{background:#bcd8fb}.sp-lg i.m{background:#f6d9a6}.sp-lg i.r{background:#d4c4f7}.sp-lg i.c{background:#b6e6e2}
+.sp-fl{margin-bottom:14px}
+.sp-fl-t{font-size:12px;color:var(--sub);font-weight:600;margin-bottom:7px}
+.sp-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:9px}
+.sp-rm{position:relative;border-radius:10px;padding:9px 10px;cursor:pointer;border:1.5px solid var(--line);background:#fff;transition:.16s}
+.sp-rm:hover{transform:translateY(-2px);box-shadow:var(--sh)}
+.sp-rm b{display:block;font-size:13.5px;letter-spacing:.4px}
+.sp-rm span{font-size:11.5px;color:var(--sub)}
+.sp-rm i.dv{position:absolute;right:7px;bottom:7px;font-size:10px;font-style:normal;color:var(--sub-l);background:rgba(255,255,255,.75);border-radius:6px;padding:1px 5px}
+.sp-rm i.dv.h{color:var(--blue-d);font-weight:700}
+.sp-rm.空置{background:linear-gradient(160deg,#f4fbf7,#eaf7f0);border-color:#bfe6d3}
+.sp-rm.已入住{background:linear-gradient(160deg,#eef5ff,#e2efff);border-color:#bcd8fb}
+.sp-rm.维修中{background:linear-gradient(160deg,#fff6e8,#ffeed6);border-color:#f6d9a6}
+.sp-rm.预留{background:linear-gradient(160deg,#f6f2ff,#ece4ff);border-color:#d4c4f7}
+.sp-rm.清洁中{background:linear-gradient(160deg,#eafaf9,#dcf5f3);border-color:#b6e6e2}
+.sp-dvs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sp-dv{border:1px solid var(--line);border-radius:9px;padding:8px 9px;background:#fafcff}
+.sp-dv b{font-size:12px;display:flex;align-items:center;gap:5px}
+.sp-dv p{margin:3px 0 0;font-size:11px;color:var(--sub)}
+.sp-dv span{font-size:10px;color:var(--sub-l)}
+.sp-stay{border-left:3px solid var(--green);background:var(--green-l);border-radius:0 9px 9px 0;padding:8px 10px;margin-bottom:8px}
+.sp-stay b{font-size:12.5px}.sp-stay p{margin:2px 0 0;font-size:11.5px;color:var(--sub)}
+
+/* ============ 温暖传承：相册 / 日记 / 传记 ============ */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ck-row,.pad-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ck2,.ck3{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sub);background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.ck3{width:100%;justify-content:flex-start}
+.ck3 b{font-size:12.8px;color:var(--txt)}
+.ck3 span{margin-left:auto;font-size:11px;color:var(--sub-l)}
+.share-box{display:flex;gap:8px;align-items:center;background:#f7fafd;border:1px dashed var(--line);border-radius:9px;padding:8px 10px}
+.share-box span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.ok-box{text-align:center;padding:18px 10px}
+.ok-box .e{font-size:38px}
+.ok-box b{display:block;margin:8px 0 6px;font-size:15px}
+.ok-box p{margin:0;font-size:12.5px;color:var(--sub);line-height:1.9}
+.ok-box .mbtns{margin-top:14px;justify-content:center}
+.ab-h,.lgc-h{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.ab-cover{width:64px;height:64px;border-radius:14px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:30px;background:linear-gradient(135deg,var(--blue-l),var(--green-l));border:1px solid var(--line)}
+.ab-h h3,.lgc-h h3{font-size:16px}
+.ab-h p,.lgc-h p{margin:4px 0 0;font-size:12px;color:var(--sub)}
+.ab-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.ab-note{background:#f7fafd;border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:8px 11px;font-size:12.5px;color:var(--sub);margin-bottom:12px}
+.ab-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(216px,1fr));gap:13px}
+.ab-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:12px;cursor:pointer;transition:.16s;border:1px solid transparent}
+.ab-card:hover{transform:translateY(-3px);box-shadow:var(--sh-lg);border-color:#d8e6fb}
+.ab-card b{display:block;font-size:13.6px;margin-top:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ab-card p{margin:3px 0 0;font-size:11.5px;color:var(--sub)}
+.ab-card .tiny{margin-top:6px;display:block}
+.ab-im{position:relative;height:96px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:38px;background:linear-gradient(150deg,#eef4fd,#e2f5ee);border:1px solid var(--line)}
+.ab-im i{position:absolute;right:7px;bottom:7px;font-style:normal;font-size:10.5px;background:rgba(10,21,36,.62);color:#fff;border-radius:6px;padding:1px 6px}
+.ab-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ab-strip{display:flex;gap:5px;margin-top:8px}
+.ab-strip span{width:26px;height:26px;border-radius:7px;background:#f4f7fc;display:flex;align-items:center;justify-content:center;font-size:13px;border:1px solid var(--line)}
+.ab-strip i.more{font-style:normal;font-size:11px;color:var(--sub-l);align-self:center}
+.ab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:11px;max-height:52vh;overflow:auto}
+.ab-ph{border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff}
+.ab-ph .im{position:relative;height:78px;border-radius:9px;background:linear-gradient(150deg,#f2f6fc,#e8f4ef);display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden}
+.ab-ph .im img{width:100%;height:100%;object-fit:cover}
+.ab-ph .im i.fx{position:absolute;left:6px;top:6px;font-style:normal;font-size:10px;background:var(--purple);color:#fff;border-radius:5px;padding:1px 5px}
+.ab-ph b{display:block;font-size:12.6px;margin-top:8px}
+.ab-ph p{margin:3px 0 0;font-size:11.5px;color:var(--sub);line-height:1.6}
+.ab-ph span{display:block;font-size:10.5px;color:var(--sub-l);margin-top:4px}
+.ab-ops{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.dy-seg{margin-bottom:12px}
+.dy-form .field{margin-bottom:11px}
+.pad{width:100%;height:190px;border:1.5px dashed var(--line-d);border-radius:11px;background:#fff;touch-action:none;cursor:crosshair}
+.pad-tools{margin-bottom:9px}
+.rec-row{display:flex;align-items:center;gap:10px;background:#f7fafd;border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.rec-row .mono{font-size:15px;font-weight:700;color:var(--blue-d)}
+.shot{height:120px;border-radius:11px;background:linear-gradient(150deg,#0a1524,#1b3350);display:flex;align-items:center;justify-content:center;color:#cfe6ff;font-size:12px;cursor:pointer;text-align:center}
+.shot .cam{font-size:30px;margin-bottom:4px}
+.play{display:flex;align-items:center;gap:10px;background:#f7fafd;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin:10px 0}
+.wave{display:flex;align-items:center;gap:3px;flex:1;height:22px}
+.wave i{width:3px;height:8px;border-radius:2px;background:var(--blue);opacity:.5}
+.wave.run i{animation:wv .9s ease-in-out infinite}
+.wave.run i:nth-child(2){animation-delay:.1s}.wave.run i:nth-child(3){animation-delay:.2s}.wave.run i:nth-child(4){animation-delay:.3s}
+.wave.run i:nth-child(5){animation-delay:.15s}.wave.run i:nth-child(6){animation-delay:.25s}.wave.run i:nth-child(7){animation-delay:.35s}
+@keyframes wv{0%,100%{height:6px}50%{height:19px}}
+.dy-view .dy-meta{font-size:12px;color:var(--sub)}
+.dy-tags{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}
+.dy-img{border-radius:11px;background:#f4f7fc;border:1px solid var(--line);padding:10px;text-align:center;font-size:40px;margin-bottom:10px}
+.dy-img img{max-width:100%;border-radius:8px}
+.dy-img.big{padding:22px}
+.dy-text{background:#fffdf7;border:1px solid #f0e6c8;border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.95;white-space:pre-wrap}
+.lgc-wiz .field,.lgc-ch .field{margin-bottom:11px}
+.lgc-tip{background:#fff8e8;border:1px solid #f2dfae;border-radius:10px;padding:10px 12px;font-size:12.2px;color:#8a6d1f;margin-top:10px}
+.lgc-mat{margin-bottom:12px}
+.lgc-mat h4{font-size:13px;margin-bottom:7px}
+.lgc-cks{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:150px;overflow:auto}
+.lgc-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.lgc-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:14px}
+.lgc-top{display:flex;gap:11px;align-items:flex-start;margin-bottom:10px}
+.lgc-top b{font-size:14.5px}
+.lgc-top p{margin:3px 0 0;font-size:11.5px;color:var(--sub)}
+.lgc-vol,.lgc-vol2{flex:0 0 auto;width:52px;height:52px;border-radius:12px;background:linear-gradient(150deg,var(--purple),#a87bff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;padding:2px}
+.lgc-vol2{width:46px;height:46px;font-size:10.5px}
+.lgc-st{margin-left:auto}
+.lgc-chs{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.lgc-sum{font-size:12.2px;color:var(--sub);background:#f7fafd;border-radius:9px;padding:9px 11px;line-height:1.8;margin-bottom:9px}
+.lgc-ch{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:10px;background:#fcfdff}
+.lgc-ch-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.lgc-ch-h b{font-size:13.2px;color:var(--blue-d)}
+.lgc-ch textarea{width:100%;line-height:1.9;font-size:13px}
+.lgc-ch-ops{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+
+/* ============ 打印层（相册 / 传记纸质版式） ============ */
+#printHost{display:none}
+#printHost.on{display:block;position:fixed;inset:0;z-index:960;background:rgba(10,21,36,.62);overflow:auto}
+.ph-bar{position:sticky;top:0;display:flex;align-items:center;gap:12px;padding:11px 18px;background:var(--ink);color:#fff;z-index:2}
+.ph-bar b{font-size:14px}
+.ph-bar .tiny{color:#9fb3c9}
+.ph-bar div{margin-left:auto;display:flex;gap:8px}
+.ph-body{padding:22px}
+.pt-cover,.pt-page,.pt-chap{background:#fff;max-width:720px;margin:0 auto 20px;padding:34px 40px;box-shadow:var(--sh-lg);border-radius:4px}
+.pt-cover{text-align:center;padding-top:60px}
+.pt-cover h1{font-size:26px;letter-spacing:2px}
+.pt-cover p{margin:10px 0;color:var(--sub);font-size:13px}
+.pt-cover .big{font-size:66px;margin:22px 0}
+.pt-cover .note{font-size:12.5px;line-height:1.9;color:var(--txt);background:#f7fafd;border-radius:10px;padding:12px}
+.pt-cover .meta{font-size:11px;color:var(--sub-l)}
+.pt-im{height:220px;border-radius:10px;background:#f2f6fc;display:flex;align-items:center;justify-content:center;font-size:74px;margin-bottom:14px;overflow:hidden}
+.pt-im img{width:100%;height:100%;object-fit:cover}
+.pt-page h2,.pt-chap h2{font-size:17px;margin-bottom:8px}
+.pt-page .cap{font-size:14px;line-height:2;color:var(--txt);white-space:pre-wrap}
+.pt-page .dt{font-size:11px;color:var(--sub-l);margin-top:12px}
+.pt-chap p{font-size:14px;line-height:2.1;white-space:pre-wrap;margin:0}
+.pt-chap span{display:block;margin-top:16px;font-size:11px;color:var(--sub-l);text-align:right}
+@media print{
+  body{overflow:visible;background:#fff}
+  .view,#mask,#toasts,.em-win,.v3d-mask,.xk-win{display:none!important}
+  #printHost.on{display:block;position:static;background:none;overflow:visible}
+  .ph-bar{display:none}
+  .ph-body{padding:0}
+  .pt-cover,.pt-page,.pt-chap{box-shadow:none;border-radius:0;max-width:none;margin:0;page-break-after:always}
+}
+
+/* ============ 移动端：温暖 / 传承 Tab ============ */
+.wb-hero{background:linear-gradient(135deg,#7c5cff,#b07bff);color:#fff;border-radius:16px;padding:14px 15px;margin-bottom:12px}
+.wb-hero b{font-size:16px}
+.wb-hero p{margin:5px 0 0;font-size:11.5px;opacity:.9;line-height:1.7}
+.wb-hero .row{display:flex;gap:14px;margin-top:11px}
+.wb-hero .row div b{font-size:17px}
+.wb-hero .row div span{display:block;font-size:10.5px;opacity:.85}
+.wb-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wb-al{background:#fff;border-radius:13px;padding:10px;box-shadow:0 2px 10px rgba(16,42,67,.06)}
+.wb-al .im{height:70px;border-radius:10px;background:linear-gradient(150deg,#f1ecff,#e6f7ef);display:flex;align-items:center;justify-content:center;font-size:28px;position:relative}
+.wb-al .im i{position:absolute;right:6px;bottom:6px;font-style:normal;font-size:10px;background:rgba(10,21,36,.55);color:#fff;border-radius:6px;padding:0 5px}
+.wb-al b{display:block;font-size:12.8px;margin-top:7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.wb-al p{margin:2px 0 0;font-size:10.5px;color:var(--sub-l)}
+.wb-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
+.wb-acts div{background:#fff;border-radius:12px;padding:11px 4px;text-align:center;box-shadow:0 2px 10px rgba(16,42,67,.06)}
+.wb-acts div .e{display:block;font-size:20px}
+.wb-acts div span{font-size:10.5px;color:var(--sub)}
+.wb-bio{background:#fff;border-radius:13px;padding:12px;box-shadow:0 2px 10px rgba(16,42,67,.06);margin-bottom:10px}
+.wb-bio b{font-size:13.5px}
+.wb-bio p{margin:4px 0 0;font-size:11px;color:var(--sub)}
+.wb-bio .prog{margin:9px 0}
+.wb-quote{font-size:12px;color:var(--txt);background:#f7fafd;border-radius:9px;padding:9px 10px;margin-top:9px;line-height:1.85;border-left:3px solid var(--purple)}
+.sheet .ab-grid{grid-template-columns:1fr 1fr;max-height:none}
+.sheet .dy-panel .seg button{font-size:12px;padding:7px 11px}
+.sheet .lgc-cks{grid-template-columns:1fr}
+.sheet .pad{height:170px}
 </style>
 </head>
 <body>
@@ -671,7 +850,7 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
       <div class="logo"><img src="assets/favicon.svg" alt="" width="46" height="46" class="mk-img" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'"><div class="mk">🌿</div><div><b>康养项目综合管理平台</b><span>SMART WELLNESS CAMPUS PLATFORM · V1.1</span></div></div>
       <h1>让长者<em>安享康养</em>·让家人<em>安心托付</em><br>让运营<em>高效可控</em>·让安全<em>时刻在线</em></h1>
       <p>覆盖旅游区 / 康养区 / 文化区三大分区，<b>Web 后台 · 数字大屏 · APP · 小程序</b> 四端协同，<br>以数字孪生与物联网为底座、AI 为助手，把「健康管理 · 生活照料 · 文化社交 · 亲情连接」与「紧急监管三级响应」装进同一个服务闭环。</p>
-      <div class="lg-feat"><i>🚨 紧急监管 · 三级响应</i><i>🏙 数字孪生驾驶舱</i><i>🧭 3D 园区与室内导航</i><i>⌚ 智能手环监护</i><i>🤖 小康 AI 助手</i><i>🏠 子女远程照护</i><i>🛡 老年防诈守护</i><i>🎨 人文关怀闭环</i><i>🍲 康养大健康消费</i><i>📱 适老化 / 不识长者模式</i></div>
+      <div class="lg-feat"><i>🚨 紧急监管 · 三级响应</i><i>🏙 数字孪生驾驶舱</i><i>🧭 3D 园区与室内导航</i><i>⌚ 智能手环监护</i><i>🤖 小康 AI 助手</i><i>🏠 子女远程照护</i><i>🛡 老年防诈守护</i><i>🎨 人文关怀闭环</i><i>🏗 空间资产与 IoT 联动</i><i>📖 温暖传承 · AI 传记</i><i>🍲 康养大健康消费</i><i>📱 适老化 / 不识长者模式</i></div>
     </div>
     <div class="lg-card">
       <h2>欢迎登录</h2><div class="sub">请使用平台账号进入对应工作台</div>
@@ -811,11 +990,12 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
       <p>完整移动服务入口，按角色分为长者端与子女端。适老化大字体、高对比、语音优先，覆盖健康、生活服务、安全求助、消费与社交。</p>
       <div class="seg" id="appRole"><button class="on" data-r="elder">长者端</button><button data-r="child">子女端</button><button data-r="special">手环端</button><button data-r="guard">紧急监管端</button></div>
       <div class="f">
-        <i>✅ 首页 / 健康 / 服务 / 我的 四大 Tab</i>
+        <i>✅ 首页 / 健康 / 服务 / 温暖 / 我的 多 Tab</i>
         <i>✅ 健康数据可视化 + 运动打卡</i>
         <i>✅ 活动报名、订餐、AI 陪伴（可交互）</i>
         <i>✅ SOS 一键呼救 → 后台告警联动</i>
         <i>✅ 子女端：远程照护、代付充值、探望预约</i>
+        <i>✅ 温暖与传承：相册增删/分享/打印、四类日记、AI 传记自由编写</i>
         <i>✅ 特殊长者：智能手环 时间/震动/SOS/到达自动打卡</i>
         <i>✅ 紧急监管端：实时告警滚动、场景安全状态、接单处置、备勤一键通话</i>
       </div>
@@ -838,6 +1018,7 @@ table.tb .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
         <i>✅ 康养圈动态、点赞、留言</i>
         <i>✅ 请假与预约表单（可提交）</i>
         <i>✅ 子女端：授权查看、代付、探望</i>
+        <i>✅ 长者记日记与照片，子女端只读接收「传承」</i>
         <i>✅ 特殊长者：智能手环 时间/震动/SOS/到达自动打卡</i>
         <i>✅ 紧急监管端：接警列表、三级响应规则、执勤/备勤调度与群呼</i>
       </div>
@@ -876,22 +1057,30 @@ const ACCOUNTS = [
 /* 角色可见模块（RBAC 简化演示） */
 const ROLE_MENUS = {
   admin:   '*',
-  manager: ['dashboard','emergency','screen','twin','reports','archive','leave','activity','booking','consume','complaint','plan','iot','fraud','open','sys'],
-  ops:     ['dashboard','emergency','archive','leave','activity','booking','care','family','complaint','plan','remind','clean','circle','consume','meal','fraud','ai','class'],
-  doctor:  ['dashboard','emergency','archive','health','leave','care','sport','meal','psych','hospice','ai','remind','reports'],
-  iot:     ['dashboard','emergency','screen','twin','iot','video','bio','ocr','deviceops','remind','sys'],
+  manager: ['dashboard','emergency','screen','twin','reports','space','building','room','stay','album','diary','legacy','archive','leave','activity','booking','consume','complaint','plan','iot','fraud','open','sys'],
+  ops:     ['dashboard','emergency','space','room','stay','album','diary','legacy','archive','leave','activity','booking','care','family','complaint','plan','remind','clean','circle','consume','meal','fraud','ai','class'],
+  doctor:  ['dashboard','emergency','archive','health','leave','care','sport','meal','psych','hospice','diary','album','legacy','ai','remind','reports'],
+  iot:     ['dashboard','emergency','screen','twin','space','building','room','iot','video','bio','ocr','deviceops','remind','sys'],
   service: ['dashboard','emergency','complaint','care','circle','reports','remind','activity','archive'],
-  social:  ['dashboard','care','activity','class','circle','psych','hospice','fraud','remind','archive'],
-  clean:   ['dashboard','clean','iot','remind','plan'],
-  guard:   ['dashboard','emergency','screen','twin','iot','video','deviceops','remind','archive'],
-  elder:   ['dashboard','archive'],
-  child:   ['dashboard','archive'],
-  special: ['dashboard','archive']
+  social:  ['dashboard','care','activity','class','circle','psych','hospice','album','diary','legacy','fraud','remind','archive'],
+  clean:   ['dashboard','space','room','clean','iot','remind','plan'],
+  guard:   ['dashboard','emergency','screen','twin','space','room','iot','video','deviceops','remind','archive'],
+  elder:   ['dashboard','archive','album','diary','legacy'],
+  child:   ['dashboard','archive','album','diary','legacy'],
+  special: ['dashboard','archive','album','diary','legacy']
 };
 
 /* ---------------- 长者基础数据（多模块引用） ---------------- */
 const ELDER_NAMES = ['徐世昌','张桂兰','李长庚','王秀珍','陈国栋','刘玉兰','周文彬','吴桂芳','孙德福','钱月英','郑海山','冯静怡','蒋明远','沈碧云'];
 const ZONES = ['康养区 A 栋','康养区 B 栋','康养区 C 栋','文化区','旅游区 旅居客房'];
+/* 空间资产 · 分区 / 房型 / 房间状态（区域 → 楼栋 → 房间 → IoT 设备四级） */
+const AREAS = ['康养区','文化区','旅游区','生活配套区'];
+const ROOM_TYPES = ['单人间','双人间','护理间','套间','旅居客房','公共空间'];
+const ROOM_STATUS = ['空置','已入住','维修中','预留','清洁中'];
+/* 温暖传承 · 相册分类 / 日记类型 / 传记体裁 */
+const ALBUM_CATES = ['人生历程','家庭团聚','节日庆典','旅居风景','活动剪影','手迹作品'];
+const DIARY_KINDS = ['笔记','录音','画画','拍照'];
+const BIO_STYLES = ['温情回忆录','家书体','编年史','口述实录'];
 
 /* ---------------- 模块定义（schema 驱动 CRUD） ----------------
  * col: {k,t,type,opts,tag,noform,notbl,req,w,unit,mono}
@@ -1535,6 +1724,145 @@ M('ai', { title:'AI 聊天陪伴管理', icon:'🤖', grp:'健康促进', flow:'
   ])
 });
 
+/* ========== 温暖传承（相册 · 日记 · AI 传记） ========== */
+M('album', { title:'温暖相册', icon:'📸', grp:'温暖传承', custom:'album', page:12,
+  desc:'长者可创建自己的相册并分类管理：添加/销毁照片，一键分享或打印成纸质相册留藏，子女端可查看授权内容',
+  cols:[
+    {k:'name',t:'相册名称',req:1},
+    {k:'owner',t:'归属长者',type:'select',opts:ELDER_NAMES,req:1,filter:1},
+    {k:'cate',t:'相册分类',type:'select',opts:ALBUM_CATES,filter:1},
+    {k:'cover',t:'封面',notbl:1},
+    {k:'cnt',t:'照片数',type:'num',noform:1},
+    {k:'date',t:'创建日期',type:'date',notbl:1},
+    {k:'priv',t:'可见范围',type:'select',opts:['私密','家人可见','园区公开'],tag:{'私密':'ink','家人可见':'blue','园区公开':'green'},filter:1},
+    {k:'share',t:'分享状态',type:'select',opts:['未分享','已生成链接','已撤销'],tag:{'未分享':'ink','已生成链接':'green','已撤销':'warn'},noform:1},
+    {k:'shareExp',t:'分享有效期',noform:1,notbl:1},
+    {k:'printCnt',t:'打印次数',type:'num',noform:1},
+    {k:'place',t:'拍摄地/来源',notbl:1},
+    {k:'status',t:'状态',type:'select',opts:['正常','已销毁'],tag:{'正常':'green','已销毁':'red'},noform:1,notbl:1},
+    {k:'photos',t:'照片列表',noform:1,notbl:1},
+    {k:'note',t:'相册简介',type:'textarea',notbl:1}
+  ],
+  rows: R(['name','owner','cate','cover','cnt','date','priv','share','shareExp','printCnt','place','status','photos','note'],[
+    ['1970s 厂门口的那些年','徐世昌','人生历程','🏭',4,'2025-04-18','家人可见','已生成链接','2026-12-31',2,'红星机械厂旧照','正常',
+      [{t:'1978 年 · 厂门口合影',ico:'🏭',date:'1978-06-12',cap:'第一年进厂，工装是新发的，门口那棵树还没这么粗'},
+       {t:'1982 年 · 车间夜班',ico:'🛠',date:'1982-11-03',cap:'夜班后食堂的一碗热汤面，能吹半个月'},
+       {t:'1985 年 · 技术能手奖状',ico:'🏆',date:'1985-05-01',cap:'厂里发的奖状，你妈拿去裱了框'},
+       {t:'1991 年 · 师徒合影',ico:'👥',date:'1991-09-09',cap:'带了七个徒弟，现在有两个还在干这行'}],
+      '工人生涯的老照片，已送扫描修复，拟打印一本送给小孙子'],
+    ['与桂兰的三十年','徐世昌','家庭团聚','💑',4,'2025-09-30','私密','未分享','',0,'家里相册翻拍','正常',
+      [{t:'1988 年 · 婚礼',ico:'💍',date:'1988-10-01',cap:'一辆自行车就把你妈接回了家'},
+       {t:'1990 年 · 徐乐出生',ico:'👶',date:'1990-03-16',cap:'女儿第一天到会哭，抱在手里不知道怎么办'},
+       {t:'2008 年 · 全家在公园',ico:'🌳',date:'2008-04-05',cap:'拍这张的时候谁也没想到如今会在康养园区'},
+       {t:'2024 年 · 金婚合影',ico:'🥂',date:'2024-10-01',cap:'园区帮忙拍的，比婚礼那天还认真'}],
+      '只给家人看，准备在传记里单独开一章'],
+    ['重阳文艺汇演','张桂兰','节日庆典','🎉',3,'2026-10-20','园区公开','已生成链接','2026-11-15',1,'文化活动中心','正常',
+      [{t:'开场鼓舞',ico:'🥁',date:'2026-10-19',cap:'轮椅前排也能看得清'},
+       {t:'书法展示',ico:'🖌',date:'2026-10-19',cap:'写了“岁岁重阳”四个字'},
+       {t:'合影大屏',ico:'📺',date:'2026-10-19',cap:'大屏滚动播出，儿子在手机上看到了'}],
+      '园区节日活动的集体相册，护理站统一维护'],
+    ['银杏大道的一年','刘玉兰','旅居风景','🍂',4,'2026-10-12','园区公开','已生成链接','长期有效',0,'园区实拍','正常',
+      [{t:'春 · 新芽',ico:'🌱',date:'2026-03-20',cap:'刚到园区第一天拍的'},
+       {t:'夏 · 浓荫',ico:'🌳',date:'2026-07-02',cap:'中午不敢走，傍晚四十分钟'},
+       {t:'秋 · 金叶',ico:'🍁',date:'2026-10-25',cap:'捡了十二片叶子做书签'},
+       {t:'冬 · 初雪',ico:'❄️',date:'2026-12-08',cap:'下雪那天眼晴室人最多'}],
+      '旅居期间随手拍，想做一本风景日历送老邻居'],
+    ['合唱团社区联排','李长庚','活动剪影','🎤',3,'2026-09-28','家人可见','未分享','',0,'社区文化中心','正常',
+      [{t:'开嗓练声',ico:'🎼',date:'2026-09-26',cap:'每周三下午雷打不动'},
+       {t:'与社区小学同台',ico:'🧒',date:'2026-09-28',cap:'小朋友唱得比我们准'},
+       {t:'谢幕后合影',ico:'📷',date:'2026-09-28',cap:'指挥说我们比专业团还开心'}],
+      '志愿者合唱团的记录，准备放进期末成果报告'],
+    ['明远的手迹','蒋明远','手迹作品','✍️',3,'2026-08-15','家人可见','已生成链接','2027-08-14',1,'书画室','正常',
+      [{t:'第一次写下自己的名字',ico:'🖊',date:'2026-06-11',cap:'不识字的爷爷第一次写下“蒋明远”三个字'},
+       {t:'临摹《兰亭序》',ico:'📜',date:'2026-07-20',cap:'只临了四行，但是坐住了二十分钟'},
+       {t:'给孙子的一张卡片',ico:'💌',date:'2026-08-15',cap:'写“平安”两个字，送出去他就笑了'}],
+      '认知训练作业记录，治疗师每周归档一次'],
+    ['老屋与炊烟','周文彬','人生历程','🏡',3,'2026-05-06','家人可见','未分享','',1,'故乡老家','正常',
+      [{t:'老屋正房',ico:'🛖',date:'1965-01-01',cap:'一九六五年搬进去的，瓦是父亲一筐一筐上顶的'},
+       {t:'炊烟与井台',ico:'🔥',date:'1972-08-14',cap:'早上去担水，能碰见三个同村人'},
+       {t:'老槐树下的年夜饭',ico:'🥟',date:'1984-01-30',cap:'那年家里第一次有电视机'}],
+      '童年与故乡的记忆，想作为传记的第一章配图'],
+    ['静怡的手工课','冯静怡','手迹作品','🧶',2,'2026-10-08','园区公开','已生成链接','长期有效',0,'老年课堂','正常',
+      [{t:'钩针围巾',ico:'🧣',date:'2026-10-08',cap:'课堂作品，送给园区门岗的小秦'},
+       {t:'剪纸重阳',ico:'✂️',date:'2026-10-16',cap:'剪了十二张，一人一张'}],
+      '老年课堂助教的作品集，可直接导出打印成卡片']
+  ])
+});
+
+M('diary', { title:'时光日记', icon:'📔', grp:'温暖传承', custom:'diary', page:12,
+  desc:'笔记、录音、画画、拍照四种记录方式均可写入；家属经授权可回听重玩，内容可选作 AI 传记素材',
+  cols:[
+    {k:'name',t:'作者',type:'select',opts:ELDER_NAMES,req:1,filter:1},
+    {k:'title',t:'标题',req:1},
+    {k:'kind',t:'记录方式',type:'select',opts:DIARY_KINDS,filter:1,tag:{'笔记':'blue','录音':'purple','画画':'green','拍照':'warn'}},
+    {k:'date',t:'日期',type:'date',notbl:1},
+    {k:'time',t:'时间',noform:1},
+    {k:'content',t:'正文/转写',type:'textarea',notbl:1},
+    {k:'img',t:'画作/照片',noform:1,notbl:1},
+    {k:'dur',t:'录音时长',noform:1},
+    {k:'mood',t:'心情',type:'select',opts:['平静','开心','感恩','想家','有点累'],filter:1},
+    {k:'auth',t:'可见范围',type:'select',opts:['家人可见','私密','园区公开'],tag:{'家人可见':'green','私密':'ink','园区公开':'blue'},filter:1},
+    {k:'from',t:'记录终端',type:'select',opts:['Web 后台','APP 端','小程序端'],noform:1},
+    {k:'bio',t:'已入传记',type:'select',opts:['已引用','未引用'],tag:{'已引用':'green','未引用':'ink'},noform:1,notbl:1}
+  ],
+  rows: R(['name','title','kind','date','time','content','img','dur','mood','auth','from','bio'],[
+    ['徐世昌','今天的银杏叶比昨天黄了一些','笔记','2026-10-24','09:12','上午去银杏大道走了四十分钟，捡到一片完整的叶子夹在书里。护工小何帮我量了血压，136/84，比上周稳。乐乐晚上视频时说孙子月考进了前十，听到这个声音我就安心了。','','','平静','家人可见','APP 端','已引用'],
+    ['徐世昌','厂里那批老工人来了个电话','录音','2026-10-22','20:30','【转写】“老徐，还记得八三年夜班不？你拿搪瓷缸给我也打了半年水……”听了特别高兴，就是耳朵有点跟不上，后来小陈帮我重播了一遍。','','2\'41"','开心','家人可见','APP 端','已引用'],
+    ['徐世昌','孙子考前十，我心里高兴','拍照','2026-10-21','19:05','小乐把成绩单拍给我，我打印了一张放在床头。','🏆','','','开心','家人可见','小程序端','已引用'],
+    ['蒋明远','写下了自己的名字','画画','2026-06-11','15:20','今天治疗师让我自己写名字。写了三遍，第三遍“蒋”字左边那一点没漏。手抖，但是我想自己写。','🖊','','','开心','家人可见','APP 端','已引用'],
+    ['蒋明远','晚上九点该喝水了','录音','2026-10-25','21:00','【自动记录】手环提醒后我按了一下：“小蒋，我要喝水。”','','0\'07"','平静','私密','APP 端','未引用'],
+    ['张桂兰','轮椅推到窗户边看到下雪了','笔记','2026-10-23','08:40','今天下雨夹雪，我把轮椅推到窗边看了很久。想起了以前在家扫院子，现在不用扫了，但手脚还是闲不住。护工给我念了今天的菜单。','','','想家','家人可见','Web 后台','未引用'],
+    ['周文彬','老屋的井台','画画','2026-05-06','10:00','凭记忆画了小时候的老屋和井台，画不像，但那个位置是对的。画完给同屋老李看，他笑说“这跟我老家一样”。','🏡','','','感恩','家人可见','Web 后台','已引用'],
+    ['李长庚','联排拿了小奖状','拍照','2026-09-28','16:30','社区给我们合唱团发了参与奖，我把奖状拍下来发给了老伴。','🎤','','','开心','园区公开','APP 端','未引用'],
+    ['刘玉兰','十二片叶子做成了书签','笔记','2026-10-25','15:10','银杏叶夹在书里压了三天，今天拿出来的时候边缘没卷。给女儿留了四片，给隔壁床小刘两片，剩下自己留着。','','','开心','家人可见','APP 端','未引用'],
+    ['冯静怡','钩针围巾送出去了','笔记','2026-10-08','11:20','手工课钩了三天的围巾，今天送给了门岗小秦。他接的时候两手接的，我忽然觉得自己还能做点事。','','','感恩','园区公开','小程序端','未引用'],
+    ['孙德福','和儿子说了几句以前的事情','录音','2026-10-19','17:12','【转写】“爸，那时候你是不是经常背我去看病？”“……记得，雪天走了三里地。”说完我爸笑了一下，今天精神比昨天好。','','4\'06"','感恩','家人可见','APP 端','已引用'],
+    ['徐世昌','想把“平安”两个字写好','笔记','2026-10-26','21:30','今天练了二十分钟字，就写“平安”两个字。给乐乐和孙子一人一张，别的也不多写了，就想把这两个字写好。','','','平静','家人可见','APP 端','未引用']
+  ])
+});
+
+M('legacy', { title:'传承 · AI 传记', icon:'🕯', grp:'温暖传承', custom:'legacy', page:12,
+  desc:'把长者的日记与相册联动成传承内容：AI 辅生成个人传记分章草稿，长者与家属可自由改写、定稿、打印成书并交付子女',
+  cols:[
+    {k:'name',t:'传主',type:'select',opts:ELDER_NAMES,req:1,filter:1},
+    {k:'title',t:'传记名',req:1},
+    {k:'style',t:'体裁',type:'select',opts:BIO_STYLES,filter:1},
+    {k:'vol',t:'卷册',notbl:1},
+    {k:'srcDiary',t:'引用日记',type:'num',noform:1},
+    {k:'srcPhoto',t:'引用照片',type:'num',noform:1},
+    {k:'chapters',t:'章节',noform:1,notbl:1},
+    {k:'progress',t:'完成度(%)',type:'num',noform:1},
+    {k:'status',t:'状态',type:'select',opts:['草稿','生成中','已成稿','已交付'],tag:{'草稿':'ink','生成中':'blue','已成稿':'green','已交付':'purple'},filter:1,noform:1},
+    {k:'by',t:'整理人'},
+    {k:'time',t:'更新时间',noform:1},
+    {k:'family',t:'交付对象',notbl:1},
+    {k:'printCnt',t:'打印成书',type:'num',noform:1,notbl:1},
+    {k:'note',t:'后记/备注',type:'textarea',notbl:1}
+  ],
+  rows: R(['name','title','style','vol','srcDiary','srcPhoto','chapters','progress','status','by','time','family','printCnt','note'],[
+    ['徐世昌','《银杏下的三十年》','温情回忆录','第一卷',3,8,
+      [{t:'第一章 · 厂门口的少年',c:'1978 年夏天，我在红星机械厂门口拍了一张合影，工装是新发的。那时候我以为一辈子就会在车间里过去了，不知道后来会走了这么远。'},
+       {t:'第二章 · 一辆自行车接回家的人',c:'1988 年国庆，我用一辆自行车把桂兰接回了家。三十年过去，现在我们在银杏大道上并肩散步，比那时候还稳。'},
+       {t:'第三章 · 乐乐与孙子',c:'女儿出生那天到会哭，我不知道怎么抱。如今她会拍孙子成绩单给我看，我把那张纸打印出来放在床头。'},
+       {t:'第四章 · 平安二字',c:'今天练了二十分钟字，只写“平安”两个字。人这一辈子，到最后就想把这两个字写好。'}],
+      100,'已成稿','李静怡','2026-10-26 21:30','徐乐 / 孙子徐一凡',1,'想在自己 80 岁生日前拿到纸质的，一人一本'],
+    ['蒋明远','《名字》','口述实录','手记本',2,3,
+      [{t:'序 · 不识字的人也能留下什么',c:'明远爷爷一辈子没读过书，他不会用手机，也不认得路牌。但他在纸上写下了自己的名字。'},
+       {t:'一 · 第一遍写下“蒋明远”',c:'写了三遍，第三遍“蒋”字左边那一点没漏。手发抖，但是他说想自己写。'},
+       {t:'二 · 给孙子的卡片',c:'卡片上只有两个字：平安。写得不齐，但送出去他就笑了。'}],
+      65,'草稿','何雨欣','2026-10-25 15:20','蒋涛',0,'认知训练记录为主，需家属补充少年与工作经历'],
+    ['周文彬','《老屋与井台》','编年史','纪念册',1,3,
+      [{t:'1965 · 搬进老屋',c:'那年冬天搬进去，瓦是父亲一筐一筐上顶的。'},
+       {t:'1972 · 担水的早晨',c:'早上去担水，能碰见三个同村人，一路都是话。'},
+       {t:'1984 · 第一台电视机',c:'年夜饭摆在老槐树下吃的，电视里在重播西游记。'}],
+      40,'草稿','冯静怡','2026-10-20 10:05','周敏 / 社区文史馆',0,'社工协助整理，照片可引用“老屋与炊烟”相册'],
+    ['孙德福','《背我去看病的雪天》','家书体','家藏本',1,0,
+      [{t:'一 · 三里地的雪',c:'那年雪大，你烧退了还在背上说“爸我不重”。'},
+       {t:'二 · 如今园区的晚上',c:'如今晚上护工每两小时来看一次，窗户外就是路灯，雪天反倒少了。'}],
+      85,'已交付','陈叙白','2026-10-19 18:00','孙丽',1,'临终关怀项目交付，本周已打印一本送家属']
+  ])
+});
+
 /* ========== 消费经营 ========== */
 M('consume', { title:'消费与会员管理', icon:'💳', grp:'消费经营', tabs:['会员管理|member','套餐产品|pkg','订单核销|order','储值积分|point'] }, true);
 M('member', { title:'会员管理', icon:'💳', grp:'消费经营', flow:'member',
@@ -2170,8 +2498,126 @@ M('apilog', { title:'对接调用日志', icon:'📊', grp:'系统',
   ])
 });
 
+/* ========== 空间资产（区域 → 楼栋 → 房间 → IoT 设备 / 入住绑定与退租） ========== */
+M('space', { title:'空间资产总览', icon:'🏗', grp:'空间资产', custom:'space', page:24,
+  desc:'按分区→楼栋→房间逐级下钻，查看每个房间的房型、状态、住客与已接入 IoT 设备，支持房间新增与设备绑定' });
+
+M('building', { title:'区域与楼栋', icon:'🏢', grp:'空间资产', flow:'bld',
+  desc:'园区各分区的楼栋台账：业态、层数、房间与床位、楼栋管家、消防等级与启用状态',
+  cols:[
+    {k:'code',t:'楼栋编号',mono:1,req:1},
+    {k:'area',t:'分区',type:'select',opts:AREAS,req:1,filter:1,tag:{'康养区':'blue','文化区':'purple','旅游区':'green','生活配套区':'warn'}},
+    {k:'name',t:'楼栋名称',req:1},
+    {k:'zone',t:'对应档案区域',type:'select',opts:ZONES,notbl:1},
+    {k:'type',t:'业态',type:'select',opts:['康养公寓','护理专区','旅居客房','文化活动','餐饮配套','康复医疗'],filter:1},
+    {k:'floors',t:'楼层',type:'num',req:1},
+    {k:'rooms',t:'房间数',type:'num'},
+    {k:'beds',t:'床位',type:'num'},
+    {k:'live',t:'在住人数',type:'num'},
+    {k:'steward',t:'楼栋管家'},
+    {k:'fire',t:'消防等级',type:'select',opts:['一级','二级','三级'],tag:{'一级':'green','二级':'blue','三级':'warn'},notbl:1},
+    {k:'elev',t:'电梯/无障碍',notbl:1},
+    {k:'build',t:'启用日期',type:'date',notbl:1},
+    {k:'status',t:'状态',type:'select',opts:['在用','维护中','停用'],tag:{'在用':'green','维护中':'warn','停用':'ink'},filter:1,noform:1},
+    {k:'note',t:'备注',type:'textarea',notbl:1}
+  ],
+  rows: R(['code','area','name','zone','type','floors','rooms','beds','live','steward','fire','elev','build','status','note'],[
+    ['A-01','康养区','A 栋康养公寓','康养区 A 栋','康养公寓',12,48,66,38,'李静怡','一级','2 客梯 + 1 医梯 · 全无障碍坡道','2023-09-01','在用','自理与半自理长者主栋，3F 设共享书画角'],
+    ['B-01','康养区','B 栋康养公寓','康养区 B 栋','康养公寓',10,40,58,31,'周与安','一级','2 客梯 · 走廊双侧扶手','2023-09-01','在用','半自理为主，1F 接文化区连廊'],
+    ['C-01','康养区','C 栋护理专区','康养区 C 栋','护理专区',6,24,36,22,'何雨欣','一级','1 医梯 · 全楼层护理站','2023-12-01','在用','失能与专护长者，每层设净衣/污衣井'],
+    ['W-01','文化区','文化活动楼','文化区','文化活动',3,12,0,0,'冯静怡','二级','无楼梯台阶 · 舞台升降平台','2024-05-16','在用','书画室、阅览室、老年课堂与体测室'],
+    ['W-02','文化区','礼堂与剧场','文化区','文化活动',2,3,0,0,'吴桂芳','二级','轮椅席位 12 个','2024-05-16','维护中','礼堂屋顶防水翻修，11 月中旬完工'],
+    ['T-01','旅游区','旅居客房楼','旅游区 旅居客房','旅居客房',8,32,48,17,'钱伟','二级','2 客梯 · 行李通道独立','2025-10-09','在用','短住体验与旅居转化，按日计价'],
+    ['T-02','旅游区','银杏度假别墅','旅游区 旅居客房','旅居客房',4,12,24,5,'刘敏','三级','每户独立院落 · 无电梯（低楼层安排）','2025-10-09','在用','家庭旅居长住，配厨房与小院'],
+    ['L-01','生活配套区','营养餐厅','营养餐厅','餐饮配套',2,6,0,0,'孙德福','二级','餐梯 1 部 · 明厨亮灶','2023-09-01','在用','含后厨与备餐间，烟感与燃气联动告警'],
+    ['L-02','生活配套区','康复中心','文化区','康复医疗',4,9,0,0,'陈叙白','一级','2 客梯 · 理疗室独立回水','2024-08-14','在用','康复理疗室、医务室与心理疏导室']
+  ])
+});
+
+M('room', { title:'房间台账', icon:'🚪', grp:'空间资产', flow:'room', page:12,
+  desc:'楼栋下的房间资产：房型、床位、面积朝向、适老化改造、月租、使用状态与当前住客，可与 IoT 设备一屏绑定',
+  cols:[
+    {k:'code',t:'房号',mono:1,req:1,filter:1},
+    {k:'area',t:'分区',type:'select',opts:AREAS,filter:1,tag:{'康养区':'blue','文化区':'purple','旅游区':'green','生活配套区':'warn'}},
+    {k:'bld',t:'楼栋',type:'select',dyn:()=>MODULES.building.rows.map(b=>b.name),req:1,filter:1},
+    {k:'zone',t:'档案区域',type:'select',opts:ZONES,notbl:1},
+    {k:'floor',t:'楼层',type:'num',req:1},
+    {k:'type',t:'房型',type:'select',opts:ROOM_TYPES,filter:1},
+    {k:'beds',t:'床位',type:'num'},
+    {k:'size',t:'面积(㎡)',type:'num'},
+    {k:'orient',t:'朝向',type:'select',opts:['南向','东南','北向','西向'],notbl:1},
+    {k:'adapt',t:'适老化',type:'select',opts:['已改造','改造中','未改造'],tag:{'已改造':'green','改造中':'warn','未改造':'ink'},filter:1},
+    {k:'price',t:'月租(元)',type:'money'},
+    {k:'status',t:'使用状态',type:'select',opts:ROOM_STATUS,tag:{'空置':'blue','已入住':'green','维修中':'red','预留':'warn','清洁中':'ink'},filter:1,noform:1},
+    {k:'guest',t:'当前住客'},
+    {k:'note',t:'备注',type:'textarea',notbl:1}
+  ],
+  rows: R(['code','area','bld','zone','floor','type','beds','size','orient','adapt','price','status','guest','note'],[
+    ['A-105','康养区','A 栋康养公寓','康养区 A 栋',1,'单人间',1,28,'南向','已改造',6800,'已入住','蒋明远','认知友好改造：夜灯、防跌倒扶手、大字面板'],
+    ['A-112','康养区','A 栋康养公寓','康养区 A 栋',1,'单人间',1,28,'南向','已改造',6800,'已入住','吴桂芳','自理长者，靠近活动区'],
+    ['A-305','康养区','A 栋康养公寓','康养区 A 栋',3,'单人间',1,30,'东南','已改造',7200,'已入住','徐世昌','慢病管理床位，配床垫监测'],
+    ['A-306','康养区','A 栋康养公寓','康养区 A 栋',3,'双人间',2,42,'南向','已改造',5600,'空置','','夫妻合住备选，待设施复检'],
+    ['A-308','康养区','A 栋康养公寓','康养区 A 栋',3,'护理间',1,26,'北向','已改造',8600,'已入住','张桂兰','失能照护：护理床、移位机、加湿器'],
+    ['A-310','康养区','A 栋康养公寓','康养区 A 栋',3,'单人间',1,28,'南向','改造中',7000,'维修中','','卫生间抓杆与地面防滑改造'],
+    ['B-101','康养区','B 栋康养公寓','康养区 B 栋',1,'套间',2,52,'南向','已改造',12800,'已入住','孙德福','专护套间，配陪护床与氧源'],
+    ['B-201','康养区','B 栋康养公寓','康养区 B 栋',2,'单人间',1,30,'东南','已改造',7200,'已入住','李长庚','志愿者骨干，靠近书画室'],
+    ['B-215','康养区','B 栋康养公寓','康养区 B 栋',2,'双人间',2,42,'南向','已改造',5600,'已入住','王秀珍','需氧疗，床位配氧浓度监测'],
+    ['B-203','康养区','B 栋康养公寓','康养区 B 栋',2,'单人间',1,28,'北向','未改造',6200,'空置','','待适老化改造后开放'],
+    ['B-305','康养区','B 栋康养公寓','康养区 B 栋',3,'双人间',2,42,'西向','已改造',5400,'预留','','文化区连廊侧，预留给家属探访陪护'],
+    ['C-101','康养区','C 栋护理专区','康养区 C 栋',1,'护理间',1,32,'南向','已改造',11800,'已入住','陈国栋','专护：床垫监测 + 紧急呼叫双回路'],
+    ['C-118','康养区','C 栋护理专区','康养区 C 栋',1,'单人间',1,26,'东南','已改造',6600,'已入住','刘玉兰','新入住旅居转长住'],
+    ['C-102','康养区','C 栋护理专区','康养区 C 栋',1,'护理间',1,30,'北向','已改造',11200,'清洁中','','等待感染科终末消毒验收'],
+    ['C-220','康养区','C 栋护理专区','康养区 C 栋',2,'双人间',2,44,'南向','已改造',6000,'已入住','郑海山','糖尿病随访床位'],
+    ['W-108','文化区','文化活动楼','文化区',1,'套间',2,58,'南向','已改造',9800,'已入住','冯静怡','长者课堂助教工作室住宿'],
+    ['W-203','文化区','文化活动楼','文化区',2,'单人间',1,30,'东向','已改造',7000,'已入住','周文彬','书画社常驻，配大字面板'],
+    ['W-110','文化区','文化活动楼','文化区',1,'公共空间',0,60,'南向','已改造',0,'预留','','兼作家属座谈与心理团辅室'],
+    ['T-306','旅游区','旅居客房楼','旅游区 旅居客房',3,'旅居客房',2,46,'东南','已改造',268,'已入住','钱月英','按日计价旅居房，体验转化中'],
+    ['T-308','旅游区','旅居客房楼','旅游区 旅居客房',3,'旅居客房',1,34,'南向','已改造',228,'空置','','短住空房，可直接绑定入住'],
+    ['T-102','旅游区','银杏度假别墅','旅游区 旅居客房',1,'旅居客房',3,88,'南向','已改造',458,'空置','','带小院家庭套房'],
+    ['L-201','生活配套区','康复中心','文化区',2,'公共空间',0,48,'北向','已改造',0,'清洁中','','理疗床位 4 张，紫外线消毒中']
+  ])
+});
+
+M('stay', { title:'入住绑定与退租', icon:'🔑', grp:'空间资产', flow:'stay', page:10,
+  desc:'住客与房间、床位、手环门禁的绑定关系管理：签约绑定、换房、退租申请与结算，全程联动房间台账与长者档案',
+  cols:[
+    {k:'no',t:'合同编号',mono:1,noform:1},
+    {k:'name',t:'住客',type:'select',opts:ELDER_NAMES,req:1,filter:1},
+    {k:'area',t:'分区',type:'select',opts:AREAS,filter:1},
+    {k:'bld',t:'楼栋',type:'select',dyn:()=>MODULES.building.rows.map(b=>b.name),req:1},
+    {k:'room',t:'房号',req:1,mono:1,placeholder:'如 A-305（可从房间台账选择空置房）'},
+    {k:'bed',t:'床位',type:'num',notbl:1},
+    {k:'pkg',t:'康养套餐',type:'select',opts:['旅居体验套餐','健康管理套餐','生活照护套餐','文化增值套餐','钻石定制套餐'],filter:1},
+    {k:'start',t:'入住日期',type:'date',req:1},
+    {k:'end',t:'合同到期',type:'date'},
+    {k:'rent',t:'月费用(元)',type:'money'},
+    {k:'deposit',t:'押金(元)',type:'money',notbl:1},
+    {k:'band',t:'绑定设备',placeholder:'手环/门禁/床垫监测'},
+    {k:'steward',t:'责任管家'},
+    {k:'status',t:'办理状态',type:'select',opts:['待签约','已绑定','换房中','退租申请','已退租'],tag:{'待签约':'blue','已绑定':'green','换房中':'warn','退租申请':'warn','已退租':'ink'},filter:1,noform:1},
+    {k:'bindTime',t:'绑定时间',noform:1,notbl:1},
+    {k:'outDate',t:'退租日期',type:'date',notbl:1},
+    {k:'settle',t:'退租结算',type:'textarea',notbl:1},
+    {k:'note',t:'备注',type:'textarea',notbl:1}
+  ],
+  rows: R(['no','name','area','bld','room','bed','pkg','start','end','rent','deposit','band','steward','status','bindTime','outDate','settle','note'],[
+    ['SZ2025031201','徐世昌','康养区','A 栋康养公寓','A-305',1,'健康管理套餐','2025-03-12','2028-03-11',7200,20000,'BW-A305-01 手环 / 人脸门禁','李静怡','已绑定','2025-03-12 09:20','','','高血压随访，家属可远程查看体征'],
+    ['SZ2024110201','张桂兰','康养区','A 栋康养公寓','A-308',1,'生活照护套餐','2024-11-02','2027-11-01',8600,30000,'TH-A308-01 温湿度 / HU-A308-01 加湿器','何雨欣','已绑定','2024-11-02 14:05','','','失能照护，需两名护理员白班巡护'],
+    ['SZ2025061801','李长庚','康养区','B 栋康养公寓','B-201',1,'文化增值套餐','2025-06-18','2028-06-17',7200,10000,'人脸门禁 / 运动手环','周与安','已绑定','2025-06-18 10:12','','','志愿者骨干，可申请活动室备用床位'],
+    ['SZ2025012401','王秀珍','康养区','B 栋康养公寓','B-215',1,'健康管理套餐','2025-01-24','2028-01-23',5600,15000,'SOS-B215-01 紧急呼叫','李静怡','退租申请','2025-01-24 16:40','','','','拟转至女儿所在城市养老，待结算'],
+    ['SZ2023120101','孙德福','康养区','B 栋康养公寓','B-101',1,'钻石定制套餐','2023-12-01','2026-11-30',12800,50000,'手环 / 床垫监测 / 氧气监测','何雨欣','已绑定','2023-12-01 08:30','','','临终关怀，家属 24h 可探视'],
+    ['SZ2023090801','陈国栋','康养区','C 栋护理专区','C-101',1,'钻石定制套餐','2023-09-08','2026-09-07',11800,40000,'MAT-C101-01 床垫监测 / 双回路呼叫','何雨欣','已绑定','2023-09-08 11:00','','','专护，含夜间两轮巡护'],
+    ['SZ2025083001','刘玉兰','康养区','C 栋护理专区','C-118',1,'旅居体验套餐','2025-08-30','2026-11-29',6600,6000,'手环 / 人脸门禁','周与安','换房中','2025-08-30 15:20','','','','旅居转长住，申请换南向单人间'],
+    ['SZ2025100901','钱月英','旅游区','旅居客房楼','T-306',1,'旅居体验套餐','2025-10-09','2026-11-08',268,2000,'SPORT-T306-01 运动手环','钱伟','待签约','','','','','短住 30 日体验，待签正式入住合同并绑定房间'],
+    ['SZ2025052001','蒋明远','康养区','A 栋康养公寓','A-105',1,'生活照护套餐','2025-05-20','2028-05-19',6800,12000,'BW-A105-01 智能手环（大字版）','何雨欣','已绑定','2025-05-20 09:40','','','','不识长者，手环仅时间/震动/SOS/自动打卡'],
+    ['SZ2024051601','周文彬','文化区','文化活动楼','W-203',1,'文化增值套餐','2024-05-16','2027-05-15',7000,10000,'LT-W101-01 照明联动','冯静怡','已绑定','2024-05-16 13:10','','','','书画社成员，晚间照明自动调暗'],
+    ['SZ2024090101','沈碧云','生活配套区','康复中心','L-201',0,'健康管理套餐','2024-09-01','2026-11-01',0,5000,'无','陈叙白','已退租','2024-09-01 10:00','2026-09-30','','房费 0 元（康复工位借用），押金已全额退回','理疗室改作储物，不再住宿'],
+    ['SZ2025021101','吴桂芳','康养区','A 栋康养公寓','A-112',1,'生活照护套餐','2025-02-11','2028-02-10',6800,10000,'人脸门禁','李静怡','已绑定','2025-02-11 10:30','','','','合唱队成员，夜间回房门禁常开授权']
+  ])
+});
+
 /* 模块中文名（供面包屑/详情引用） */
-const GRP_ORDER = ['园区总览','长者服务','服务运营','健康促进','消费经营','设备安防','系统'];
+const GRP_ORDER = ['园区总览','长者服务','服务运营','健康促进','温暖传承','消费经营','空间资产','设备安防','系统'];
 
 /* ================= 紧急监管 · 基础数据 =================
  * 三级响应体系：一级（紧急）安保中控室接警，医护部+护理/管家主处置，3 分钟未确认升级院长/值班领导，必要时 120；
@@ -2388,7 +2834,9 @@ function badgeCount(k){
     account:r=>r.status==='锁定', log:r=>r.risk==='高', param:r=>false, org:r=>false, role:r=>false, archive:r=>r.status==='请假外出',
     health:r=>r.risk==='高', activity:r=>r.status==='进行中', sport:r=>r.status==='异常中止', class:r=>r.status==='开课中',
     menu:r=>r.status==='待上架', diet:r=>r.risk==='高', arrange:r=>r.cook==='待确认', family:r=>r.status==='待审核',
-    clean:r=>r.inspect==='待整改', dashboard:r=>false, twin:r=>false, reports:r=>false, point:r=>false };
+    clean:r=>r.inspect==='待整改', dashboard:r=>false, twin:r=>false, reports:r=>false, point:r=>false,
+    space:r=>false, building:r=>r.status!=='在用', room:r=>['维修中','清洁中'].includes(r.status), stay:r=>['待签约','退租申请','换房中'].includes(r.status),
+    album:r=>false, diary:r=>false, legacy:r=>r.status==='草稿' };
   return (map[k]?rows.filter(map[k]).length:0);
 }
 App.foldGroup = h => { let n=h.nextElementSibling; while(n && !n.classList.contains('grp')){ n.classList.toggle('hide'); n=n.nextElementSibling; } };
@@ -2401,7 +2849,8 @@ function applyFold(){
 App.toggleFold = () => { S.folded = !S.folded; applyFold(); try{ localStorage.setItem(LS+'_fold', S.folded?'1':'0'); }catch(e){} };
 App.about = () => Modal.open('ℹ️ 关于本原型', `<div style="font-size:13px;line-height:2">
   <p><b>康养项目综合管理平台 · 前端高保真原型</b>（单 HTML 文件，无后端，数据全部为模拟）</p>
-  <p>· 依据 PRD V1.1 实现 Web 管理后台 27 个模块，支持<b>增删改查、条件检索、分页、批量删除、CSV 导出、流程状态流转与详情查看</b>。</p>
+  <p>· 依据 PRD V1.1 实现 Web 管理后台 <b>37 个一级入口 / 64 个模块</b>，支持<b>增删改查、条件检索、分页、批量删除、CSV 导出、流程状态流转与详情查看</b>。</p>
+  <p>· 新增<b>空间资产</b>（分区→楼栋→房间→IoT 设备四级联动、入住绑定与退租）与<b>温暖传承</b>（相册、日记、AI 个人传记）两大产品域。</p>
   <p>· 门户首页可切换 <b>Web 后台 / 数字大屏 / APP 端 / 小程序端</b> 四端；数字大屏使用在线 ECharts 5.5.1。</p>
   <p>· 主色调：蓝 <code>#1668DC</code> · 黑 <code>#0A1524</code> · 绿 <code>#00B578</code>。</p>
   <p>· 数据保存在浏览器 localStorage，可在侧栏底部「重置演示数据」还原。</p>
@@ -2566,6 +3015,7 @@ const Crud = {
     r[field] = typeof a.to==='function'? a.to(r) : a.to;
     if(a.set) Object.assign(r, a.set(r));
     if(a.ts) r[a.ts] = now();
+    if(a.after){ try{ a.after(r); }catch(err){ console.warn('流程联动失败', err); } }
     if(a.push) pushAlert(a.pushTitle, a.pushBody, r);
     persist(); Modal.close(); renderPage(); renderNav();
     toast(`${a.t}成功：${esc(r.name||r.title||r.no||'')} → ${r[field]}`,'ok');
@@ -2628,6 +3078,8 @@ function detailArchive(r){
   const tab=(t,rows)=>`<div class="card-h" style="padding:12px 0 8px"><h3>${t}</h3></div>${rows}`;
   const byName = k => (MODULES[k].rows||[]).filter(x=>x.name===r.name);
   const health = byName('health'), leave = byName('leave'), care = byName('care'), sport = byName('sport'), order = byName('order'), fam = MODULES.family.rows.filter(x=>x.ename===r.name);
+  const stayOf = (MODULES.stay.rows||[]).filter(x=>x.name===r.name), rm = roomOf(r.room);
+  const albs = (MODULES.album.rows||[]).filter(a=>a.owner===r.name && a.status!=='已销毁'), dys = (MODULES.diary.rows||[]).filter(d=>d.name===r.name), bios = (MODULES.legacy.rows||[]).filter(b=>b.name===r.name);
   const kv = (o,cols)=>`<div class="dinfo">${cols.map(c=>`<div><label>${esc(c.t)}</label>${cellHTML(c,o)||'<span class="tiny">—</span>'}</div>`).join('')}</div>`;
   let body = `<div class="dwrap"><div class="dside">
       <div style="text-align:center;padding:14px;background:linear-gradient(160deg,#0f4c96,#127a63);border-radius:12px;color:#fff">
@@ -2644,6 +3096,11 @@ function detailArchive(r){
     <div class="dmain">
       ${tab('📇 基本信息', kv(r, MODULES.archive.cols.filter(c=>['idcard','phone','guardian','gphone','allergy','history','inDate','status'].includes(c.k))))}
       ${tab('❤️ 健康与体征（'+health.length+'）', health.length?`<table class="tb"><thead><tr><th>日期</th><th>类型</th><th>心率</th><th>血氧</th><th>血压</th><th>风险</th></tr></thead><tbody>${health.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.type)}</td><td>${esc(x.hr)}</td><td>${esc(x.spo2)}</td><td>${esc(x.bp)}</td><td>${tagHTML({tag:{'低':'green','中':'warn','高':'red'}},x.risk)}</td></tr>`).join('')}</tbody></table>`:'<div class="tiny">暂无记录</div>')}
+      ${tab('🔑 房间与入住（'+stayOf.length+' 份合同）', `${rm?`<div class="dinfo" style="margin-bottom:10px">${[['code','房号'],['area','分区'],['bld','楼栋'],['type','房型'],['beds','床位'],['size','面积'],['adapt','适老化'],['status','使用状态']].map(p=>`<div><label>${p[1]}</label>${esc(rm[p[0]]||'—')}</div>`).join('')}</div>`:'<div class="tiny">该长者当前未绑定有效房间</div>'}
+        ${stayOf.length?`<table class="tb"><thead><tr><th>合同号</th><th>房号</th><th>套餐</th><th>起</th><th>止</th><th>绑定设备</th><th>状态</th></tr></thead><tbody>${stayOf.map(s=>`<tr><td class="mono">${esc(s.no)}</td><td class="mono">${esc(s.room)}</td><td>${esc(s.pkg)}</td><td>${esc(s.start)}</td><td>${esc(s.end)}</td><td>${esc(s.band||'—')}</td><td>${tagHTML({tag:{'待签约':'blue','已绑定':'green','换房中':'warn','退租申请':'warn','已退租':'ink'}},s.status)}</td></tr>`).join('')}</tbody></table>`:''}`)}
+      ${tab('📸 温暖与传承（相册 '+albs.length+' · 日记 '+dys.length+' · 传记 '+bios.length+'）', `${albs.length?`<div class="sw-box">${albs.map(a=>`<div class="ck"><b>${a.cover||'📷'} ${esc(a.name)}</b><p>${esc(a.cate)} · ${(a.photos||[]).length} 张 · ${esc(a.priv)}${a.share!=='未分享'?' · 已分享':''}</p></div>`).join('')}</div>`:''}
+        ${dys.length?`<ul class="lst">${dys.slice(0,4).map(d=>`<li><span class="ic ${d.kind==='录音'?'':d.kind==='画画'?'g':'w'}">${d.kind==='笔记'?'✍️':d.kind==='录音'?'🎙':d.kind==='画画'?'🎨':'📷'}</span><div><b>${esc(d.title)}</b><p>${esc(String(d.content||'').slice(0,42))}…</p></div><span class="tm">${esc(d.date)}</span></li>`).join('')}</ul>`:'<div class="tiny">暂无日记记录</div>'}
+        ${bios.length?`<div class="tiny" style="margin-top:8px">传记：${bios.map(b=>`<b>${esc(b.title)}</b>（${esc(b.status)} · ${(b.chapters||[]).length} 章）`).join('　')}</div>`:''}`)}
       ${tab('👪 家属与授权（'+fam.length+'）', fam.length?fam.map(f=>`<div class="dinfo" style="margin-bottom:8px">${[['cname','子女'],['rel','关系'],['auth','授权范围'],['pay','代付权限'],['notice','通知偏好']].map(p=>`<div><label>${p[1]}</label>${esc(f[p[0]]||'—')}</div>`).join('')}</div>`).join(''):'<div class="tiny">未绑定子女/家属</div>')}
       ${tab('🎁 关怀与活动', `<ul class="lst">${care.slice(0,3).map(c=>`<li><span class="ic">🎁</span><div><b>${esc(c.type)}</b><p>${esc(c.content)}</p></div><span class="tm">${esc(c.date)}</span></li>`).join('')||'<li class="tiny">暂无关怀记录</li>'}${sport.slice(0,2).map(s=>`<li><span class="ic g">🏃</span><div><b>${esc(s.plan)}</b><p>${esc(s.dur)} 分钟 · ${esc(s.step)} 步 · ${esc(s.status)}</p></div><span class="tm">${esc(s.date)}</span></li>`).join('')}</ul>`)}
       ${tab('💳 消费记录（'+order.length+'）', order.length?`<table class="tb"><thead><tr><th>订单号</th><th>商品</th><th>金额</th><th>支付</th><th>状态</th></tr></thead><tbody>${order.map(o=>`<tr><td class="mono">${esc(o.no)}</td><td>${esc(o.goods)}</td><td><b>${Number(o.amount).toLocaleString()}</b></td><td>${esc(o.pay)}</td><td>${tagHTML({tag:{'待支付':'warn','已支付':'blue','已核销':'green','已退款':'ink','已取消':'red'}},o.status)}</td></tr>`).join('')}</tbody></table>`:'<div class="tiny">暂无消费</div>')}
@@ -2651,6 +3108,46 @@ function detailArchive(r){
     </div></div>`;
   Modal.open(`📇 个人档案 · ${esc(r.name)}`, body, `<button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="Modal.close();Crud.open('archive',${r._id})">编辑档案</button><button class="btn g" onclick="Modal.close();Crud.open('care')">发起关怀</button>`, true);
 }
+
+/* ---------- 空间资产 · 跨模块联动（入住绑定 / 退租 / 换房 驱动房间台账与长者档案） ---------- */
+function roomOf(code){ const c=String(code||'').trim().toUpperCase(); return (MODULES.room.rows||[]).find(r=>String(r.code).trim().toUpperCase()===c)||null; }
+function archiveOf(name){ return (MODULES.archive.rows||[]).find(a=>a.name===name)||null; }
+function bldZone(name){ const b=(MODULES.building.rows||[]).find(x=>x.name===name); return b? (b.zone||'') : ''; }
+function roomDevKeys(code){ const c=String(code||'').trim().toUpperCase(); return [c, c.replace(/-/g,'')]; }
+const SpaceLink = {
+  /* 签约绑定：房间转已入住 + 住客写入 + 档案区域房号同步 + 设备绑定到人 */
+  bind(stay){
+    const room = roomOf(stay.room);
+    if(room){ room.status='已入住'; room.guest=stay.name; if(stay.area) room.area=stay.area; if(stay.bld) room.bld=stay.bld; const z=bldZone(stay.bld); if(z) room.zone=z; }
+    const a = archiveOf(stay.name);
+    if(a){ if(room){ a.zone=room.zone||a.zone; a.room=room.code; } a.status='在院'; if(!a.inDate) a.inDate=stay.start||today(); }
+    const keys = roomDevKeys(stay.room);
+    (MODULES.device.rows||[]).forEach(d=>{ const txt=(d.no+' '+d.name+' '+d.pos+' '+(d.bind||'')).toUpperCase(); if(keys.some(k=>k&&txt.includes(k))) d.bind=stay.name; });
+    return room;
+  },
+  /* 退租结算：房间释放空置 + 住客清空 + 档案离园 + 设备解绑 */
+  release(stay){
+    const room = roomOf(stay.room);
+    if(room && room.guest===stay.name){ room.status='空置'; room.guest=''; }
+    const a = archiveOf(stay.name); if(a) a.status='离园';
+    const keys = roomDevKeys(stay.room);
+    (MODULES.device.rows||[]).forEach(d=>{ const txt=(d.no+' '+d.name+' '+d.pos).toUpperCase(); if(keys.some(k=>k&&txt.includes(k)) && d.bind===stay.name) d.bind='—'; });
+    return room;
+  },
+  /* 换房：释放原房间、绑定新房间，并把房号回写到合同 */
+  move(stay){
+    const raw = String(stay.newRoom||'');
+    const m = raw.match(/[A-Za-z]\d?[-—]?\s?\d{3}/);
+    const code = m ? m[0].replace(/[-—]\s?/,'-').toUpperCase() : '';
+    if(stay.prevRoom){ const old=roomOf(stay.prevRoom); if(old && old.guest===stay.name){ old.status='空置'; old.guest=''; } }
+    if(!code){ toast('未识别到新房号，房间台账未变动','warn'); return null; }
+    stay.room = code; stay.newRoom=''; stay.prevRoom='';
+    const room = roomOf(code);
+    if(room){ room.status='已入住'; room.guest=stay.name; const z=bldZone(stay.bld); if(z) room.zone=z; }
+    const a = archiveOf(stay.name); if(a){ a.room=code; if(room && room.zone) a.zone=room.zone; }
+    return room;
+  }
+};
 
 /* ---------- 流程动作定义 ---------- */
 const FLOWS = {
@@ -2696,8 +3193,19 @@ const FLOWS = {
   audit2: [ {t:'审批通过', st:'待审批', to:'已审批', f:'auth', set:r=>({status:'已完成'})}, {t:'驳回', st:'待审批', to:'已驳回', f:'auth', set:r=>({status:'失败'})}, {t:'执行导出', st:['已审批'], to:'已审批', f:'auth', set:r=>({status:'已完成'}), ask:'导出用途与水印声明', note:'purpose'} ],
   switch: [ {t:'启用', st:['停用','未启用','离线','降级','熔断','失效','已到期'], to:'启用', f:'status'}, {t:'停用', st:['启用','正常','生效'], to:'停用', f:'status'} ],
   acc: [ {t:'重置密码', st:['启用','停用','锁定'], to:'启用', ask:'新密码策略', prefill:'重置为初始密码 123456，强制下次登录修改'}, {t:'停用', st:'启用', to:'停用'}, {t:'解锁', st:['锁定','停用'], to:'启用'} ],
-  perm: [ {t:'配置权限', st:[], to:'启用', ask:'勾选模块与数据范围（演示）', prefill:'模块：档案/请假/活动；数据范围：本区域；敏感数据：健康'}, {t:'停用角色', st:'启用', to:'停用'}, {t:'启用', st:'停用', to:'启用'} ]
+  perm: [ {t:'配置权限', st:[], to:'启用', ask:'勾选模块与数据范围（演示）', prefill:'模块：档案/请假/活动；数据范围：本区域；敏感数据：健康'}, {t:'停用角色', st:'启用', to:'停用'}, {t:'启用', st:'停用', to:'启用'} ],
+  /* 空间资产 · 楼栋 */
+  bld: [ {t:'报修停用', st:'在用', to:'维护中', ask:'维护内容与预计工期', note:'note'}, {t:'恢复启用', st:['维护中','停用'], to:'在用'}, {t:'停止使用', st:['维护中','在用'], to:'停用', ask:'停用原因与在住人员安置方案', note:'note'} ],
+  /* 空间资产 · 房间 */
+  room: [ {t:'安排维修', st:['空置','预留'], to:'维修中', ask:'维修内容与工期', note:'note'}, {t:'维修完成验收', st:'维修中', to:'空置'}, {t:'清洁消毒', st:['空置','维修中'], to:'清洁中'}, {t:'清洁完成', st:'清洁中', to:'空置'}, {t:'设为预留', st:'空置', to:'预留', ask:'预留对象与期限', note:'note'}, {t:'释放为空置', st:['预留','清洁中'], to:'空置'} ],
+  /* 空间资产 · 入住绑定与退租（联动房间台账 + 长者档案 + 设备绑定） */
+  stay: [ {t:'绑定房间', st:'待签约', to:'已绑定', ts:'bindTime', ask:'确认房号与绑定设备（如 A-305 / BW-A305-01 手环）', note:'note', after:r=>SpaceLink.bind(r)},
+    {t:'办理换房', st:'已绑定', to:'已绑定', ask:'新房号（如 B-203），系统将自动释放原房间并同步档案', note:'newRoom', set:r=>({prevRoom:r.room}), after:r=>SpaceLink.move(r)},
+    {t:'申请退租', st:'已绑定', to:'退租申请', ask:'退租原因与拟退租日期', note:'note'},
+    {t:'退租结算', st:['退租申请','换房中','已绑定'], to:'已退租', ask:'结算明细（房费/押金/餐费/设备损耗）', note:'settle', set:r=>({outDate:today()}), after:r=>SpaceLink.release(r)},
+    {t:'续签一年', st:'已绑定', to:'已绑定', ask:'续签备注与优惠', note:'note', set:r=>({end:plusYear(r.end)})} ]
 };
+function plusYear(dstr){ const s=String(dstr||today()); return (/^\d{4}/.test(s)) ? (Number(s.slice(0,4))+1)+s.slice(4) : s; }
 
 /* 告警推送（写入大屏与消息中心） */
 function pushAlert(title, body, r){
@@ -3381,20 +3889,737 @@ function drawScreenCharts(soft){
       {name:'设备',value:18,children:[{name:'离线',value:11},{name:'低电量',value:7}]}]}]},true);
 }
 
+/* ============================================================
+ *  空间资产 · 分区→楼栋→房间→IoT 设备四级联动视图
+ * ============================================================ */
+function roomDevicesOf(code){
+  const c = String(code||'').trim().toUpperCase(), raw = c.replace(/-/g,'');
+  return (MODULES.device.rows||[]).filter(d=>{
+    const txt = (String(d.no||'')+String(d.name||'')+String(d.pos||'')).toUpperCase();
+    return (raw && txt.includes(raw)) || (c && txt.includes(c));
+  });
+}
+function roomStayOf(code){ const c=String(code||'').trim().toUpperCase(); return (MODULES.stay.rows||[]).filter(s=>String(s.room).trim().toUpperCase()===c); }
+const Sp = {
+  st(){ if(!S.sp) S.sp = {}; const b = MODULES.building.rows; if(!S.sp.bld) S.sp.bld = (b[0]&&b[0].name)||''; if(!S.sp.room){ const r = S.sp.bld ? Sp.rooms(S.sp.bld)[0] : null; S.sp.room = r?r.code:''; } return S.sp; },
+  rooms(bld){ const n = bld||this.st().bld; return (MODULES.room.rows||[]).filter(r=>r.bld===n); },
+  floors(bld){ const rs=this.rooms(bld); const map={}; rs.forEach(r=>{ (map[r.floor]=map[r.floor]||[]).push(r); }); return Object.keys(map).sort((a,b)=>a-b).map(f=>({floor:f, list:map[f]})); },
+  pickArea(a){ this.st(); S.sp.area=a; const first=MODULES.building.rows.find(b=>b.area===a); S.sp.bld = first?first.name:''; S.sp.room = (Sp.rooms()[0]||{}).code||''; renderPage(); },
+  pickBld(n){ this.st(); S.sp.bld=n; S.sp.room=(Sp.rooms()[0]||{}).code||''; renderPage(); },
+  pickRoom(c){ this.st(); S.sp.room=c; renderPage(); }
+};
+
+/* ---------- 手写板（画画记录，Web 与移动端共用） ---------- */
+const Pad = {
+  cur:null,
+  mount(id){ const c=$(id); if(!c||c.__pad) return; c.__pad=1;
+    const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); ctx.lineCap='round'; ctx.lineJoin='round';
+    const P = { ctx, drawing:false, color:'#1b2b3d', size:4 };
+    const pos = e => { const r=c.getBoundingClientRect(); const px=(e.touches?e.touches[0].clientX:e.clientX)-r.left, py=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+      return [px*(c.width/r.width), py*(c.height/r.height)]; };
+    const down = e => { const p=pos(e); P.drawing=true; ctx.beginPath(); ctx.moveTo(p[0],p[1]); e.preventDefault(); };
+    const move = e => { if(!P.drawing) return; const p=pos(e); ctx.strokeStyle=P.color; ctx.lineWidth=P.size; ctx.lineTo(p[0],p[1]); ctx.stroke(); e.preventDefault(); };
+    const up = () => { P.drawing=false; };
+    c.addEventListener('mousedown',down); c.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+    c.addEventListener('touchstart',down,{passive:false}); c.addEventListener('touchmove',move,{passive:false}); c.addEventListener('touchend',up);
+    Pad.cur = P; },
+  color(v){ if(Pad.cur) Pad.cur.color=v; },
+  size(v){ if(Pad.cur) Pad.cur.size=+v; },
+  clear(id){ const c=$(id); if(!c) return; const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); },
+  dataURL(id){ const c=$(id); return c? c.toDataURL('image/jpeg',0.62) : ''; }
+};
+
+/* ---------- 录音计时（模拟，Web 与移动端共用） ---------- */
+const Rec = {
+  tm:null, sec:0, label:null, endCb:null,
+  fmt(s){ const p=n=>String(n).padStart(2,'0'); return Math.floor(s/60)+'\u0027'+p(s%60)+'\u0022'; },
+  start(label,endCb){ this.stop(); this.sec=0; this.label=label; this.endCb=endCb; const el=$(label);
+    this.tm=setInterval(()=>{ this.sec++; const t=$(this.label); if(t) t.textContent=this.fmt(this.sec); else this.stop(); },1000); },
+  stop(){ if(this.tm){ clearInterval(this.tm); this.tm=null; } }
+};
+
+/* ---------- 打印层：先给纸质版式预览，再交给浏览器打印 ---------- */
+function printHostClose(){ const h=$('printHost'); if(h) h.classList.remove('on'); }
+function printSheets(html){
+  let h = $('printHost');
+  if(!h){ h=document.createElement('div'); h.id='printHost';
+    h.innerHTML = '<div class="ph-bar"><b>🖨 纸质版式预览</b><span class="tiny">按纸张尺寸分页排版 · 点「打印」后可选另存为 PDF</span>'
+      + '<div><button class="btn sm" onclick="printHostClose()">✕ 关闭</button> <button class="btn sm p" onclick="try{window.print()}catch(e){toast(\'当前环境不支持直接打印，已保留版式预览\',\'warn\')}">🖨 打印 / 另存 PDF</button></div></div><div class="ph-body" id="phBody"></div>';
+    document.body.appendChild(h); }
+  $('phBody').innerHTML = html; h.classList.add('on');
+  setTimeout(()=>{ try{ window.print(); }catch(e){ toast('当前环境不支持直接打印，已生成纸质版式预览','warn'); } }, 260);
+}
+
+/* ---------- 房间设备接入（按房型给出标准配置并写入设备台账） ---------- */
+const ROOM_DEV_PLAN = {
+  '护理间':['床垫监测','紧急呼叫按钮','温湿度传感器','加湿器'],
+  '单人间':['紧急呼叫按钮','温湿度传感器','照明'],
+  '双人间':['紧急呼叫按钮','温湿度传感器','照明','智能插座'],
+  '套间':['温湿度传感器','紧急呼叫按钮','空调/新风','智能插座'],
+  '旅居客房':['运动手环','智能插座','温湿度传感器'],
+  '公共空间':['照明','烟感报警','摄像头']
+};
+const DEV_PREFIX = { '床垫监测':'MAT','紧急呼叫按钮':'SOS','温湿度传感器':'TH','加湿器':'HU','照明':'LT','空调/新风':'AC','智能插座':'SOCK','智能手环':'BW','运动手环':'SPORT','烟感报警':'SMOKE','摄像头':'CAM' };
+function addRoomDevices(code){
+  const r = roomOf(code); if(!r){ toast('未找到该房间','err'); return; }
+  const plan = ROOM_DEV_PLAN[r.type] || ['温湿度传感器','紧急呼叫按钮'];
+  const raw = String(code).replace(/-/g,''); let n=0;
+  plan.forEach(cate=>{
+    const no = (DEV_PREFIX[cate]||'DEV')+'-'+raw+'-01';
+    if((MODULES.device.rows||[]).some(d=>String(d.no).toUpperCase()===no)) return;
+    MODULES.device.rows.unshift({ _id:++UID, no, name:code+' '+cate, cate, zone:r.zone||bldZone(r.bld)||r.area, pos:code+' 卧室', model:'MQTT-3.1.1', fw:'v1.0.0',
+      online:'在线', batt:100, last:now(), bind:(r.guest&&r.status==='已入住')?r.guest:'—', install:today() }); n++;
+  });
+  persist(); renderPage();
+  if(n) { toast(`已为 ${code}（${r.type}）接入 ${n} 台标准设备，可在设备台账查看`,'ok'); logAct('房间设备接入', code+' × '+n, '中'); }
+  else toast('该房间标准配置已全部接入','warn');
+}
+
+/* ---------- 自定义页：空间资产总览 ---------- */
+Object.assign(CUSTOM, {
+  space(key){
+    const m = MODULES[key]; const st = Sp.st();
+    $('crumb').innerHTML = `首页 / 空间资产 / <b>${esc(m.title)}</b>`;
+    const devs = MODULES.device.rows||[], rooms = MODULES.room.rows||[], blds = MODULES.building.rows||[];
+    const areas = Array.from(new Set(blds.map(b=>b.area)));
+    const on = devs.filter(d=>d.online==='在线').length;
+    const live = rooms.filter(r=>r.status==='已入住').length, free = rooms.filter(r=>r.status==='空置').length;
+    const kpi = [['🗺','分区', areas.length+' 个', '康养 / 文化 / 旅游 / 生活配套', ''],
+      ['🏢','楼栋', blds.length+' 栋', '在用 '+blds.filter(b=>b.status==='在用').length+' · 维护 '+blds.filter(b=>b.status!=='在用').length, ''],
+      ['🚪','房间总数', rooms.length+' 间', '床位 '+rooms.reduce((s,r)=>s+(+r.beds||0),0)+' 张', ''],
+      ['🛏','已入住', live+' 间', '空置 '+free+' 间', '入住率 '+Math.round(live/rooms.length*100)+'%'],
+      ['🔧','维修/清洁', rooms.filter(r=>['维修中','清洁中'].includes(r.status)).length+' 间', '预留 '+rooms.filter(r=>r.status==='预留').length+' 间', ''],
+      ['📡','IoT 设备', devs.length+' 台', '在线 '+on+' 台', '在线率 '+Math.round(on/devs.length*100)+'%']];
+    const curBld = blds.find(b=>b.name===st.bld) || blds[0] || {};
+    const rs = Sp.rooms(curBld.name);
+    const cur = rs.find(r=>r.code===st.room) || rs[0] || null;
+    $('page').innerHTML = `<div class="page-h"><div><h2>🏗 空间资产总览</h2><p>${esc(m.desc)}　·　当前：${esc(st.area||curBld.area||'全部分区')} / ${esc(curBld.name||'—')}　·　房间与设备实时联动</p></div>
+      <div class="acts"><button class="btn" onclick="App.go('admin','building')">🏢 楼栋台账</button><button class="btn" onclick="App.go('admin','room')">🚪 房间台账</button>
+      <button class="btn" onclick="Crud.open('room')">＋ 新增房间</button><button class="btn p" onclick="App.go('admin','stay')">🔑 入住与退租办理</button></div></div>
+    <div class="kpis" style="grid-template-columns:repeat(6,1fr)">${kpi.map(k=>`<div class="kpi"><i><span class="e">${k[0]}</span>${k[1]}</i><b>${k[2]}</b><span>${k[3]}${k[4]?' · '+k[4]:''}</span></div>`).join('')}</div>
+    <div class="sp-wrap">
+      <div class="card"><div class="card-h"><h3>分区与楼栋</h3><span class="tiny">点击下钻</span></div><div class="card-b" style="padding:10px 12px">
+        ${areas.map(a=>{ const bs=blds.filter(b=>b.area===a); return `<div class="sp-are${st.area===a?' on':''}" onclick="Sp.pickArea('${a}')">${a}<span>${bs.length} 栋 / ${(rooms.filter(r=>r.area===a).length)}</span></div>`
+          + (st.area===a? bs.map(b=>{ const n=rooms.filter(r=>r.bld===b.name).length; return `<div class="sp-bld${b.name===st.bld?' on':''}" onclick="Sp.pickBld('${esc(b.name)}')"><i class="st ${b.status==='在用'?'g':b.status==='维护中'?'w':'r'}"></i>${esc(b.name)}<span>${n} 间</span></div>`; }).join(''):''); }).join('')}
+        <div class="tiny" style="margin-top:10px">楼栋状态：${blds.filter(b=>b.status!=='在用').map(b=>esc(b.name)+'（'+esc(b.status)+'）').join('、')||'全部在用'}</div></div></div>
+      <div class="card"><div class="card-h"><h3>${esc(curBld.name||'房间列表')} · 按楼层</h3><span class="tiny">${rs.length} 间 · 管家 ${esc(curBld.steward||'—')} · ${esc(curBld.elev||'')}</span></div>
+      <div class="card-b">
+        <div class="sp-lg"><span><i class="v"></i>空置</span><span><i class="o"></i>已入住</span><span><i class="m"></i>维修中</span><span><i class="r"></i>预留</span><span><i class="c"></i>清洁中</span></div>
+        ${Sp.floors(curBld.name).map(f=>`<div class="sp-fl"><div class="sp-fl-t">${f.floor}F<span class="tiny">　${f.list.length} 间 · 在住 ${f.list.filter(r=>r.status==='已入住').length}</span></div>
+          <div class="sp-tiles">${f.list.map(r=>{ const dcount=roomDevicesOf(r.code).length; return `<div class="sp-rm ${r.status}" onclick="Sp.pickRoom('${r.code}')"><b>${esc(r.code)}</b><span>${esc(r.type)}${r.guest?' · '+esc(r.guest):''}</span><i class="dv${dcount?' h':''}">${dcount?'📡 '+dcount:'📡 0'}</i></div>`; }).join('')}</div></div>`).join('')
+          || '<div class="empty"><div class="e">🚪</div>该楼栋暂无房间记录，可点击「＋ 新增房间」录入</div>'}
+      </div></div>
+      <div class="card"><div class="card-h"><h3>房间详情</h3><span class="tiny">${cur?esc(cur.code):'未选择'}</span></div><div class="card-b" id="spDetail">${cur?spRoomHTML(cur):'<div class="tiny">请先在中间选择房间</div>'}</div></div>
+    </div>`;
+    if(!st.area && curBld.area) st.area = curBld.area;
+    if(!st.room && cur) st.room = cur.code;
+  }
+});
+function spRoomHTML(r){
+  const devs = roomDevicesOf(r.code), stays = roomStayOf(r.code);
+  const env = devs.filter(d=>['温湿度传感器','加湿器','空调/新风'].includes(d.cate));
+  const ar = archiveOf(r.guest);
+  return `<div class="dinfo" style="grid-template-columns:1fr 1fr">${[['code','房号'],['type','房型'],['beds','床位'],['size','面积(㎡)'],['orient','朝向'],['adapt','适老化'],['price','月租(元)'],['status','使用状态']].map(p=>`<div><label>${p[1]}</label>${esc(r[p[0]]===''||r[p[0]]==null?'—':r[p[0]])}</div>`).join('')}</div>
+    <div class="card-h" style="padding:14px 0 8px"><h3>📡 IoT 设备（${devs.length}）</h3><span class="tiny">实时读数</span></div>
+    ${devs.length? `<div class="sp-dvs">${devs.map(d=>`<div class="sp-dv"><b><span class="dot ${d.online==='在线'?'on':'al'}"></span>${esc(d.name)}</b><p>${liveReadings(d).map(x=>esc(x[0]+' '+x[1])).join('　')||esc(d.online)}</p><span class="mono">${esc(d.no)}</span></div>`).join('')}</div>`
+      : '<div class="tiny">该房间尚未接入设备，可一键按房型标准配置接入。</div>'}
+    <div class="mbtns" style="margin:10px 0 4px;flex-wrap:wrap"><button class="btn sm p" onclick="addRoomDevices('${r.code}')">＋ 接入标准设备</button>
+      <button class="btn sm" onclick="Crud.open('device')">＋ 手动新增设备</button>
+      <button class="btn sm" onclick="App.go('admin','iot')">📡 设备台账</button></div>
+    <div class="card-h" style="padding:14px 0 8px"><h3>🔑 入住与合同（${stays.length}）</h3></div>
+    ${stays.length? stays.map(s=>`<div class="sp-stay"><b>${esc(s.name)} · ${esc(s.pkg)}</b><p>合同 ${esc(s.no)} · ${esc(s.start)} → ${esc(s.end)} · 月费 ${Number(s.rent||0).toLocaleString()} 元</p>
+      <p>状态：${tagHTML({tag:{'待签约':'blue','已绑定':'green','换房中':'warn','退租申请':'warn','已退租':'ink'}},s.status)}　绑定：${esc(s.band||'—')}</p></div>`).join('')
+      : `<div class="tiny">${r.status==='空置'?'当前空置，可直接发起入住绑定。':'暂无有效合同记录。'}</div>`}
+    <div class="mbtns" style="margin-top:10px;flex-wrap:wrap">
+      ${r.status==='空置'?`<button class="btn sm g" onclick="S.kw.stay='';App.go('admin','stay');toast('请在入住绑定与退租中新增合同并绑定 ${r.code}','ok')">🔑 去办理入住绑定</button>`:''}
+      ${r.status==='已入住'&&ar?`<button class="btn sm" onclick="Modal.close();detailArchive(MODULES.archive.rows.find(x=>x.name==='${esc(r.guest)}'))">📇 住客档案</button>`:''}
+      ${r.status==='空置'?`<button class="btn sm" onclick="Crud.flow('room',${r._id},0)">🔧 安排维修</button>`:''}
+      ${r.status==='维修中'?`<button class="btn sm g" onclick="Crud.flow('room',${r._id},1)">✅ 维修完成</button>`:''}
+      <button class="btn sm" onclick="Crud.open('room',${r._id})">✏️ 编辑房间</button></div>
+    <div class="tiny" style="margin-top:10px">${env.length?'环控摘要：'+env.map(d=>liveReadings(d)[0][0]+' '+liveReadings(d)[0][1]).join(' · '):'无环控设备'}${r.note?'<br>备注：'+esc(r.note):''}</div>`;
+}
+
+/* ============================================================
+ *  温暖与传承 · 能力层（相册 / 日记 / AI 传记）
+ *  Web 自定义页与 APP / 小程序端共用同一套数据与操作
+ * ============================================================ */
+const Warm = {
+  album(id){ return (MODULES.album.rows||[]).find(r=>r._id===+id) || null; },
+  diary(id){ return (MODULES.diary.rows||[]).find(r=>r._id===+id) || null; },
+  bio(id){ return (MODULES.legacy.rows||[]).find(r=>r._id===+id) || null; },
+  albums(owner, cate, all){ return (MODULES.album.rows||[]).filter(a=>(all||a.status!=='已销毁') && (!owner||a.owner===owner) && (!cate||cate==='全部'||a.cate===cate)); },
+  diaries(owner, kind){ return (MODULES.diary.rows||[]).filter(d=>(!owner||d.name===owner) && (!kind||kind==='全部'||d.kind===kind)); },
+  bios(owner){ return (MODULES.legacy.rows||[]).filter(b=>!owner||b.name===owner); },
+  photos(a){ return (a && a.photos) || []; },
+  sync(a){ a.cnt = Warm.photos(a).length; },
+  save(){ persist(); Warm.refresh(); },
+  who(){ const d = S.mobileRole && S.view!=='admin' ? S.mobileRole[S.view] : null;
+    return (S.user && S.user.roleKey==='elder') ? S.user.name : (d==='elder'&&S.user?S.user.name:''); },
+  /* Web 后台用共享弹层；APP / 小程序端一律用手机屏内弹层（MB.sheet） */
+  isWeb(){ return !(S.view==='app' || S.view==='mp'); },
+  dismiss(){ Modal.close(); if(typeof MB!=='undefined' && MB.close) MB.close(); },
+  viewAlbum(id){ if(Warm.isWeb()) Warm.openAlbum(id); else Mob.wAlbum(id); },
+  viewDiary(id){ if(Warm.isWeb()) Warm.openDiary(id); else Mob.wDiary(id); },
+  viewBio(id){ if(Warm.isWeb()) Warm.openBio(id); else Mob.wBio(id); },
+
+  /* ---------- 相册：新建 ---------- */
+  newAlbum(owner){
+    if(!Warm.isWeb()) return Mob.wNewAlbum(owner);
+    const def = owner || Warm.who() || ELDER_NAMES[0];
+    Modal.open('📸 新建相册（归属长者拥有完全的增删与销毁权）', `<div class="mform">
+      <div class="field"><label>相册名称 *</label><input class="inp" id="wName" placeholder="如：1970s 厂门口的那些年"></div>
+      <div class="field"><label>归属长者</label><select class="sel" id="wOwner">${ELDER_NAMES.map(n=>`<option${n===def?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+      <div class="field"><label>相册分类</label><select class="sel" id="wCate">${ALBUM_CATES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="field"><label>可见范围</label><div class="seg" id="wPriv">${['私密','家人可见','园区公开'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>拍摄地 / 来源</label><input class="inp" id="wPlace" placeholder="家里翻拍 / 园区实拍 / 老照片扫描"></div>
+      <div class="field"><label>相册简介</label><textarea class="inp" id="wNote" rows="2" placeholder="这本相册想留给谁、想说些什么"></textarea></div>
+      <div class="tiny">创建后即可添加照片；支持拍照上传、老照片扫描翻拍、手迹作品拍摄，以及引用园区活动集体相册。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.createAlbum()">创建并添加第一张</button>`);
+    Warm.seg('wPriv');
+  },
+  seg(id){ const b=$(id); if(!b) return; b.onclick = e=>{ const x=e.target.closest('button'); if(!x) return; [...b.children].forEach(n=>n.classList.remove('on')); x.classList.add('on'); }; },
+  segVal(id, dft){ const b=$(id); if(!b) return dft; const x=b.querySelector('button.on'); return x?x.dataset.v:dft; },
+  createAlbum(){
+    const name = ($('wName').value||'').trim();
+    if(!name){ toast('请填写相册名称','err'); return; }
+    const a = { _id:++UID, name, owner:$('wOwner').value, cate:$('wCate').value, cover:'📷', cnt:0, date:today(),
+      priv:Warm.segVal('wPriv','家人可见'), share:'未分享', shareExp:'', printCnt:0, place:($('wPlace').value||'').trim(),
+      status:'正常', photos:[], note:($('wNote').value||'').trim() };
+    MODULES.album.rows.unshift(a); persist(); logAct('新建相册', name+'（'+a.owner+'）','低'); toast('相册「'+name+'」已创建','ok');
+    Warm.addPhoto(a._id);
+  },
+
+  /* ---------- 相册：添加 / 删除照片 ---------- */
+  addPhoto(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!Warm.isWeb()) return Mob.wAddPhoto(id);
+    Modal.open('🖼 向「'+esc(a.name)+'」添加照片（现有 '+Warm.photos(a).length+' 张）', `<div class="seg" id="pSrc">${['拍照上传','扫描翻拍','手迹作品','园区活动'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div>
+      <div class="mform" style="margin-top:12px">
+        <div class="field"><label>照片标题 *</label><input class="inp" id="pTitle" placeholder="如：1985 年 · 技术能手奖状"></div>
+        <div class="field"><label>拍摄 / 年份日期</label><input class="inp" id="pDate" value="${today()}"></div>
+        <div class="field"><label>画面内容（原型用图标代图）</label><div class="seg" id="pIco">${['📷','🏭','🌳','💑','🖊','🎤','🧣','🥟','🌅','🖼','🏆','👵'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div>
+          <div class="tiny">接入相机后此处为真实缩略图，可选 <b>AI 清晰修复</b>、<b>黑白上色</b>、<b>OCR 认字</b>（演示按钮在照片详情内）。</div></div>
+        <div class="field"><label>想说的话（图注，会成为传记素材）</label><textarea class="inp" id="pCap" rows="2" placeholder="这张照片背后的故事"></textarea></div>
+        <div class="field"><label>语音配图（可选）</label><div class="rec-row"><button class="btn sm" onclick="Warm.recPhoto(this)">● 按住说话</button><span class="mono" id="pRecT">00'00\u0022</span><span class="tiny" id="pRecS">未录制</span></div></div>
+      </div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn" onclick="Warm.openAlbum(${a._id})">返回相册</button><button class="btn p" onclick="Warm.savePhoto(${a._id})">保存这张照片</button>`);
+    Warm.seg('pSrc'); Warm.seg('pIco');
+  },
+  recPhoto(btn){
+    if(Rec.tm){ Rec.stop(); btn.textContent='● 按住说话'; $('pRecS').textContent='已录制 '+Rec.fmt(Rec.sec); $('pRecS').className='tag green'; return; }
+    btn.textContent='■ 停止'; $('pRecS').textContent='录制中…'; $('pRecS').className='tag red'; Rec.start('pRecT');
+  },
+  savePhoto(id){
+    const a = Warm.album(id); if(!a) return;
+    const t = ($('pTitle').value||'').trim();
+    if(!t){ toast('请填写照片标题','err'); return; }
+    const recOn = !!Rec.tm; Rec.stop();
+    a.photos = a.photos || [];
+    a.photos.push({ t, ico:Warm.segVal('pIco','📷'), date:($('pDate').value||today()).trim(),
+      cap:($('pCap').value||'').trim(), src:Warm.segVal('pSrc','拍照上传'),
+      voice: recOn? Rec.fmt(Rec.sec) : '' });
+    Warm.sync(a); a.status='正常'; persist(); logAct('相册添加照片', a.name+' → '+t, '低');
+    toast('已添加《'+t+'》，相册共 '+a.cnt+' 张','ok');
+    Warm.viewAlbum(a._id);
+  },
+  delPhoto(id, i){
+    const a = Warm.album(id); if(!a) return; const p = a.photos[i]; if(!p) return;
+    if(!confirm('确认删除照片《'+p.t+'》？删除后不可恢复（可从回收站找回 7 天）。')) return;
+    a.photos.splice(i,1); Warm.sync(a); persist(); logAct('删除照片', a.name+' / '+p.t, '中'); Warm.refresh(); Warm.viewAlbum(a._id);
+  },
+  fixPhoto(id, i){ const a=Warm.album(id); const p=a&&a.photos[i]; if(!p) return;
+    if(p.fixed){ toast('该照片已完成 AI 修复','warn'); return; }
+    p.fixed=1; persist(); logAct('AI 照片修复', a.name+' / '+p.t, '低'); Warm.viewAlbum(a._id); toast('AI 已去除划痕并提升清晰度（演示）','ok'); },
+
+  /* ---------- 相册：详情弹层 ---------- */
+  openAlbum(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!Warm.isWeb()) return Mob.wAlbum(id);
+    const ps = Warm.photos(a);
+    const body = `<div class="ab-h"><div class="ab-cover">${esc(a.cover||'📷')}</div>
+      <div><h3>${esc(a.name)}</h3><p>${esc(a.owner)} · ${esc(a.cate)} · ${esc(a.place||'—')} · 创建 ${esc(a.date)}</p>
+      <div class="ab-tags">${tagHTML({tag:{'私密':'ink','家人可见':'blue','园区公开':'green'}}, a.priv)}${tagHTML({tag:{'未分享':'ink','已生成链接':'green','已撤销':'warn'}}, a.share)}${tagHTML({tag:{'正常':'green','已销毁':'red'}}, a.status)}
+        <span class="tag purple">${ps.length} 张</span><span class="tag">已打印 ${a.printCnt||0} 次</span></div></div></div>
+      ${a.note?`<div class="ab-note">${esc(a.note)}</div>`:''}
+      <div class="ab-grid">${ps.length? ps.map((p,i)=>`<div class="ab-ph"><div class="im">${p.img?`<img src="${p.img}">`:esc(p.ico||'📷')}${p.fixed?'<i class="fx">AI 修复</i>':''}</div>
+        <b>${esc(p.t)}</b><p>${esc(p.cap||'（未填写图注）')}</p><span>${esc(p.date||'')}${p.src?' · '+esc(p.src):''}${p.voice?' · 🎙 '+esc(p.voice):''}</span>
+        <div class="ab-ops"><button class="btn sm" onclick="Warm.fixPhoto(${a._id},${i})">✨ AI 修复</button><button class="btn sm" onclick="Warm.photoNote(${a._id},${i})">💬 补充</button><button class="btn sm d" onclick="Warm.delPhoto(${a._id},${i})">🗑 删除</button></div></div>`).join('')
+        : '<div class="empty"><div class="e">🖼</div>还没有照片，点击下方「添加照片」</div>'}</div>`;
+    Modal.open('📸 相册详情 · '+esc(a.name), body,
+      `<button class="btn" onclick="Modal.close()">关闭</button>
+       <button class="btn p" onclick="Warm.addPhoto(${a._id})">＋ 添加照片</button>
+       <button class="btn g" onclick="Warm.share(${a._id})">🔗 分享</button>
+       <button class="btn" onclick="Warm.printSheet(${a._id})">🖨 打印成纸质相册</button>
+       <button class="btn d" onclick="Warm.destroy(${a._id})">🗑 销毁相册</button>`, true);
+  },
+  photoNote(id, i){
+    const a = Warm.album(id); const p = a && a.photos[i]; if(!p) return;
+    if(!Warm.isWeb()) return Mob.wPhotoNote(id, i);
+    Modal.open('💬 补充图注 · '+esc(p.t), `<div class="mform"><div class="field"><label>这张照片的故事</label>
+      <textarea class="inp" id="pnCap" rows="4">${esc(p.cap||'')}</textarea></div>
+      <div class="field"><label>画面内容</label><div class="seg" id="pnIco">${['📷','🏭','🌳','💑','🖊','🎤','🧣','🥟','🌅','🖼','🏆','👵'].map(x=>`<button class="${x===(p.ico||'📷')?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="tiny">图注会以「第一人称」进入 AI 传记草稿，写得越具体，传记越像本人。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.saveNote(${a._id},${i})">保存</button>`);
+    Warm.seg('pnIco');
+  },
+  saveNote(id, i){ const a=Warm.album(id), p=a&&a.photos[i]; if(!p) return; p.cap=($('pnCap').value||'').trim(); p.ico=Warm.segVal('pnIco',p.ico); persist(); Warm.refresh(); toast('图注已更新','ok'); Warm.viewAlbum(a._id); },
+
+  /* ---------- 相册：分享 / 撤销 ---------- */
+  share(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!Warm.isWeb()) return Mob.wShare(id);
+    const code = 'ALB'+String(a._id).padStart(4,'0')+String(Date.now()).slice(-4);
+    const link = 'https://ky-park.cn/a/'+code;
+    Modal.open('🔗 分享相册 · '+esc(a.name), `<div class="mform">
+      <div class="field"><label>分享范围</label><div class="seg" id="shScope">${['仅家人','园区公开','凭链接任何人'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>有效期</label><div class="seg" id="shExp">${['7 天','30 天','长期有效'].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>接收对象</label><input class="inp" id="shTo" placeholder="如：徐乐（女儿）/ 家庭群"></div>
+      <div class="field"><label>分享链接</label><div class="share-box"><span class="mono" id="shLink">${link}</span><button class="btn sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('${link}');toast('链接已复制，长者端可一键转发','ok')">复制</button></div>
+        <div class="tiny">分享码：<b class="mono">${code}</b>　·　长者可在相册页随时「撤销分享」，撤销后链接立即失效；打印与浏览行为会回写到运营日志。</div></div>
+      </div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.doShare(${a._id})">生成分享</button>`);
+    Warm.seg('shScope'); Warm.seg('shExp');
+  },
+  doShare(id){
+    const a = Warm.album(id); if(!a) return;
+    a.share='已生成链接'; a.shareTo=($('shTo').value||'').trim()||'家人';
+    a.shareScope=Warm.segVal('shScope','仅家人');
+    const exp=Warm.segVal('shExp','30 天');
+    const d=new Date(); if(exp==='7 天') d.setDate(d.getDate()+7); else if(exp==='30 天') d.setDate(d.getDate()+30);
+    a.shareExp = exp==='长期有效'? '长期有效' : d.toISOString().slice(0,10);
+    if(a.priv==='私密') a.priv='家人可见';
+    persist(); logAct('分享相册', a.name+' → '+a.shareScope+'（'+a.shareExp+'）','中'); Warm.refresh();
+    toast('分享已生成：'+a.shareScope+' · 有效期至 '+a.shareExp,'ok'); Warm.viewAlbum(a._id);
+  },
+
+  /* ---------- 相册：打印成纸质 ---------- */
+  printSheet(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!Warm.isWeb()) return Mob.wPrint(id);
+    Modal.open('🖨 打印成纸质相册 · '+esc(a.name), `<div class="mform">
+      <div class="field"><label>纸张规格</label><div class="seg" id="prPaper">${['A4 哑光','12 寸相簿','拍立得 3寸'].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>装订方式</label><div class="seg" id="prBind">${['精装硬壳','蝴蝶对裱','环装可拆'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>打印份数</label><input class="inp" id="prCopies" type="number" min="1" max="9" value="1"></div>
+      <div class="field"><label>随册附印</label><div class="ck-row">${['图注全文','长者可手写页','AI 传记摘录','二维码回到电子相册'].map((x,i)=>`<label class="ck2"><input type="checkbox" ${i<2?'checked':''}> ${x}</label>`).join('')}</div></div>
+      <div class="tiny">原型会真实调用浏览器打印：可选择的「另存为 PDF」即得到排版好的纸质版式；园区打印室接单后 1 个工作日送出。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.doPrint(${a._id})">生成版式并打印</button>`);
+    Warm.seg('prPaper'); Warm.seg('prBind');
+  },
+  doPrint(id){
+    const a = Warm.album(id); if(!a) return;
+    const web = Warm.isWeb();
+    const paper=Warm.segVal('prPaper','12 寸相簿'), bind=Warm.segVal('prBind','精装硬壳'), copies=Math.max(1, +($('prCopies').value||1));
+    const ps=Warm.photos(a);
+    const sheets = `<div class="pt-cover"><h1>${esc(a.name)}</h1><p>${esc(a.owner)} · ${esc(a.cate)}</p><div class="big">${esc(a.cover||'📷')}</div>
+      ${a.note?`<p class="note">${esc(a.note)}</p>`:''}<p class="meta">${paper} · ${bind} · 共 ${Math.max(1,ps.length)} 页 · ${copies} 册 · 打印时间 ${now()}</p></div>`
+      + (ps.length? ps.map((p,i)=>`<div class="pt-page"><div class="pt-im">${p.img?`<img src="${p.img}">`:esc(p.ico||'📷')}</div>
+        <h2>${i+1}. ${esc(p.t)}</h2><p class="cap">${esc(p.cap||'')}</p><p class="dt">${esc(p.date||'')}${p.src?' · 来源：'+esc(p.src):''}</p></div>`).join('')
+        : `<div class="pt-page"><div class="pt-im">🖼</div><h2>第 1 页 · 等待放入照片</h2><p class="cap">这本相册还是空的，可以先打印封面，再逐步补充。</p></div>`);
+    printSheets(sheets);
+    a.printCnt = (a.printCnt||0) + copies;
+    persist(); logAct('打印纸质相册', a.name+' × '+copies+' 册（'+paper+'/'+bind+'）','低'); Warm.refresh();
+    if(!web){ toast('《'+a.name+'》已按 '+paper+'/'+bind+' × '+copies+' 册下单，累计打印 '+a.printCnt+' 次','ok'); return; }
+    Modal.open('🖨 已生成纸质版式', `<div class="ok-box"><div class="e">🖨</div><b>《${esc(a.name)}》打印任务已生成</b>
+      <p>规格：${paper} · ${bind} · ${copies} 册 · 共 ${Math.max(1,ps.length)} 页<br>累计打印 ${a.printCnt} 次　·　打印室接单后 1 个工作日送出，可由家属到园区服务台领取。</p>
+      <div class="mbtns"><button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="Warm.printSheet(${a._id})">重新打印</button><button class="btn g" onclick="Warm.openAlbum(${a._id})">返回相册</button></div></div>`);
+  },
+
+  /* ---------- 相册：销毁 ---------- */
+  destroy(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!confirm('确认销毁相册《'+a.name+'》？\n销毁后：照片不再展示、分享链接立即失效、AI 传记中引用将标记为「素材已撤销」。\n（数据保留在回收站 30 天，可由超级管理员恢复）')) return;
+    a.status='已销毁'; a.share = a.share==='已生成链接' ? '已撤销' : a.share; a.destroyAt=now();
+    Warm.dismiss(); persist(); logAct('销毁相册', a.name+'（'+a.owner+'）','高'); Warm.refresh();
+    toast('相册已销毁，分享链接同时失效（回收站保留 30 天）','warn');
+  },
+  restore(id){ const a=Warm.album(id); if(!a) return; a.status='正常'; delete a.destroyAt; Warm.dismiss(); persist(); logAct('恢复相册', a.name,'中'); Warm.refresh(); toast('相册已恢复','ok'); },
+
+  /* ---------- 日记：四类记录（笔记 / 录音 / 画画 / 拍照） ---------- */
+  diaryPanel(kind, owner, inSheet){
+    const who = owner || Warm.who() || ELDER_NAMES[0];
+    const k = kind || '笔记';
+    const head = `<div class="seg dy-seg" id="dyKind">${DIARY_KINDS.map(x=>`<button class="${x===k?'on':''}" data-v="${x}" onclick="Warm.setKind('${x}')">${({'笔记':'🖊 写笔记','录音':'🎙 说录音','画画':'🎨 画两笔','拍照':'📷 拍张照'})[x]}</button>`).join('')}</div>`;
+    let body = '';
+    if(k==='笔记') body = `<div class="field"><label>标题</label><input class="inp" id="dTitle" placeholder="今天想记下什么"></div>
+      <div class="field"><label>正文（支持手写识别文字直接粘进来）</label><textarea class="inp" id="dText" rows="${inSheet?4:5}" placeholder="今天做了什么事、想对谁说什么"></textarea></div>`;
+    else if(k==='录音') body = `<div class="field"><label>标题</label><input class="inp" id="dTitle" placeholder="这段录音叫什么"></div>
+      <div class="rec-row"><button class="btn p" id="dRecBtn" onclick="Warm.recDiary(this)">● 开始说话</button><span class="mono" id="dRecT">00'00\u0022</span><span class="tiny" id="dRecS">未录制</span></div>
+      <div class="field" style="margin-top:10px"><label>自动转写文字（可手工修正）</label><textarea class="inp" id="dText" rows="3" placeholder="录音结束后自动生成转写初稿，可自行修正"></textarea></div>`;
+    else if(k==='画画') body = `<div class="field"><label>作品名称</label><input class="inp" id="dTitle" placeholder="这幅画叫什么"></div>
+      <div class="pad-tools"><div class="seg" id="padColor">${['#1b2b3d','#e5484d','#1668dc','#00b578','#f5a623','#7c5cff'].map((c,i)=>`<button class="${i?'':'on'}" data-v="${c}" style="background:${c};color:#fff" onclick="Pad.color('${c}')">●</button>`).join('')}</div>
+        <div class="seg" id="padSize">${[['细','2'],['中','4'],['粗','8']].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x[1]}" onclick="Pad.size(${x[1]})">${x[0]}</button>`).join('')}</div>
+        <button class="btn sm" onclick="Pad.clear('dPad')">🧽 擦干净</button></div>
+      <canvas id="dPad" class="pad" width="640" height="300"></canvas>
+      <div class="field" style="margin-top:8px"><label>配一句话（会写进传记）</label><input class="inp" id="dText" placeholder="如：凭记忆画了小时候的老屋和井台"></div>`;
+    else body = `<div class="field"><label>照片标题</label><input class="inp" id="dTitle" placeholder="如：银杏叶夹在书里了"></div>
+      <div class="field"><label>拍摄场景</label><div class="seg" id="dScene">${['园区实景','家人合影','手迹作品','旅居途中','活动瞬间'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="shot" onclick="toast('原型以占位图代表相机预览；接入后可真实拍照','warn')"><div><div class="cam">📷</div><span>点击模拟拍照（支持 OCR 认字与自动增强）</span></div></div>
+      <input type="hidden" id="dIcoShot" value="📷">
+      <div class="field" style="margin-top:10px"><label>这张照片说明</label><textarea class="inp" id="dText" rows="3"></textarea></div>`;
+    return `<div class="dy-panel">${head}
+      <div class="dy-form">
+        <div class="field"><label>记录人</label><select class="sel" id="dName">${ELDER_NAMES.map(n=>`<option${n===who?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+        ${body}
+        <div class="two"><div class="field"><label>心情</label><div class="seg" id="dMood">${['平静','开心','感恩','想家','有点累'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>可见范围</label><div class="seg" id="dAuth">${['家人可见','私密','园区公开'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div></div>
+      <div class="mbtns"><button class="btn" onclick="Warm.resetDiary()">清空</button><button class="btn p blk" onclick="Warm.saveDiary()">💾 保存这条日记</button></div>
+      <div class="tiny">保存后可在下方列表回看；日记与相册图注都能作为 <b>AI 传记素材</b>，长者随时可取消引用。</div></div></div>`;
+  },
+  afterDiary(){ ['dMood','dAuth','dScene'].forEach(id=>Warm.seg(id)); const k=S.dyKind||'笔记';
+    if(k==='画画') Pad.mount('dPad'); if(k==='拍照'){ const s=$('dScene'); if(s) s.onclick = e=>{ const b=e.target.closest('button'); if(!b) return; [...s.children].forEach(x=>x.classList.remove('on')); b.classList.add('on'); const map={'园区实景':'🌳','家人合影':'💑','手迹作品':'🖊','旅居途中':'🌅','活动瞬间':'🎤'}; const h=$('dIcoShot'); if(h) h.value=map[b.dataset.v]||'📷'; }; } },
+  setKind(k){ S.dyKind = k; if(S.view==='admin') Warm.refresh(); else renderMobile(S.view); },
+  resetDiary(){ S.dyKind='笔记'; Warm.setKind('笔记'); },
+  recDiary(btn){
+    if(Rec.tm){ const sec=Rec.sec; Rec.stop(); btn.textContent='● 开始说话'; const s=$('dRecS'); if(s){ s.textContent='已录制 '+Rec.fmt(sec); s.className='tag green'; }
+      const t=$('dText'); if(t && !t.value.trim()) t.value='【转写】'+ (sec<15? '今天声音有点哑，说的不多，就是想录下这个声音。' : '刚那会儿精神好，我把以前的事说了一段，请帮我看看转得对不对。');
+      return; }
+    btn.textContent='■ 停止'; const s=$('dRecS'); if(s){ s.textContent='录制中…'; s.className='tag red'; } Rec.start('dRecT');
+  },
+  saveDiary(){
+    const k = S.dyKind || '笔记';
+    const title = ($('dTitle').value||'').trim();
+    if(!title){ toast('请填写标题','err'); return; }
+    let content = ($('dText').value||'').trim(), img='', dur='';
+    if(k==='录音'){ const sec=Rec.sec; Rec.stop(); dur=sec? Rec.fmt(sec):'0\u002715"'; content = content.startsWith('【转写】')? content : (content? '【转写】'+content : '【转写】（本次未补充转写文字）'); }
+    else if(k==='画画'){ img = Pad.dataURL('dPad')? '🎨' : '🎨'; content = content || '自己在画板上涂了一幅。'; }
+    else if(k==='拍照'){ img = ($('dIcoShot')&&$('dIcoShot').value)||'📷'; content = content || '拍了这张，当时想说点什么。'; }
+    const d=new Date(); const p=n=>String(n).padStart(2,'0');
+    const row = { _id:++UID, name:$('dName').value, title, kind:k, date:today(), time:p(d.getHours())+':'+p(d.getMinutes()),
+      content, img, dur, mood:Warm.segVal('dMood','平静'), auth:Warm.segVal('dAuth','家人可见'),
+      from: S.view==='admin'?'Web 后台':(S.view==='mp'?'小程序端':'APP 端'), bio:'未引用' };
+    if(k==='画画' && $('dPad')) row.sketch = Pad.dataURL('dPad');
+    MODULES.diary.rows.unshift(row); persist(); logAct('写时光日记', row.name+'《'+title+'》（'+k+'）','低');
+    S.diarySel = S.diarySel||{}; S.diarySel[row._id]=true;
+    toast('已保存：'+k+'《'+title+'》','ok');
+    if(S.view==='admin'){ Warm.refresh(); } else { renderMobile(S.view); }
+  },
+  openDiary(id){
+    const d = Warm.diary(id); if(!d) return;
+    if(!Warm.isWeb()) return Mob.wDiary(id);
+    Modal.open('📔 '+esc(d.title), `<div class="dy-view">
+      <div class="dy-meta">${esc(d.name)} · ${esc(d.kind)} · ${esc(d.date)} ${esc(d.time||'')} · ${esc(d.from||'')} ${d.dur?'· 时长 '+esc(d.dur):''}</div>
+      <div class="dy-tags">${tagHTML({tag:{'笔记':'blue','录音':'purple','画画':'green','拍照':'warn'}}, d.kind)}${tagHTML({tag:{'家人可见':'green','私密':'ink','园区公开':'blue'}}, d.auth)}${tagHTML({tag:{'已引用':'green','未引用':'ink'}}, d.bio)}<span class="tag purple">心情 ${esc(d.mood)}</span></div>
+      ${d.kind==='录音'? `<div class="play"><button class="btn sm p" onclick="Warm.play(this)">▶ 播放</button><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="mono">${esc(d.dur||'')}</span></div>`:''}
+      ${d.sketch? `<div class="dy-img"><img src="${d.sketch}"></div>` : (d.img? `<div class="dy-img big">${esc(d.img)}</div>`:'')}
+      <div class="dy-text">${esc(d.content||'（未填写内容）')}</div></div>`,
+      `<button class="btn" onclick="Modal.close()">关闭</button>
+       <button class="btn ${d.bio==='已引用'?'':'g'}" onclick="Warm.toggleBio(${d._id})">${d.bio==='已引用'?'➖ 取消传记引用':'＋ 用作传记素材'}</button>
+       <button class="btn" onclick="Warm.toAlbum(${d._id})">📸 归入相册</button>
+       <button class="btn d" onclick="Warm.delDiary(${d._id})">🗑 删除</button>`);
+  },
+  play(btn){ if(btn.dataset.on){ btn.dataset.on=''; btn.textContent='▶ 播放'; const w0=btn.parentNode.querySelector('.wave'); if(w0) w0.classList.remove('run'); return; }
+    btn.dataset.on='1'; btn.textContent='⏸ 播放中'; const w=btn.parentNode.querySelector('.wave'); if(w) w.classList.add('run');
+    setTimeout(()=>{ if(btn.isConnected){ btn.dataset.on=''; btn.textContent='▶ 播放'; if(w) w.classList.remove('run'); toast('录音播放完毕（原型为模拟）','ok'); } }, 1600); },
+  toggleBio(id){ const d=Warm.diary(id); if(!d) return;
+    const keep = ($('mask') && $('mask').classList.contains('on')) || !!$('mbSheet');
+    d.bio = d.bio==='已引用'?'未引用':'已引用'; persist(); logAct('日记传记引用', d.name+'《'+d.title+'》→ '+d.bio,'低'); Warm.refresh();
+    if(keep) Warm.viewDiary(id);
+    toast(d.bio==='已引用'?'已加入 AI 传记素材':'已从传记素材中移出','ok'); },
+  toAlbum(id){ const d=Warm.diary(id); if(!d) return;
+    if(!Warm.isWeb()) return Mob.wToAlbum(id);
+    const list = Warm.albums(d.name,'',false);
+    Modal.open('📸 将日记归入相册 · '+esc(d.title), `<div class="mform"><div class="field"><label>选择相册（归属：${esc(d.name)}）</label>
+      <select class="sel" id="taAlb">${list.length? list.map(a=>`<option value="${a._id}">${esc(a.name)}（${Warm.photos(a).length} 张）</option>`).join('') : '<option value="">暂无相册，将新建一本「日记手记」</option>'}</select></div>
+      <div class="tiny">笔记与录音将生成一张带正文摘录的卡片图；画画与拍照则直接使用原图。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.doToAlbum(${d._id})">确定归入</button>`); },
+  doToAlbum(id){ const d=Warm.diary(id); if(!d) return; let a=Warm.album(($('taAlb')&&$('taAlb').value)||0);
+    if(!a){ a={ _id:++UID, name:d.name+'的日记手记', owner:d.name, cate:'手迹作品', cover:'📔', cnt:0, date:today(), priv:d.auth==='私密'?'私密':'家人可见',
+      share:'未分享', shareExp:'', printCnt:0, place:'时光日记', status:'正常', photos:[], note:'由日记内容归集而成' }; MODULES.album.rows.unshift(a); }
+    a.photos = a.photos||[];
+    a.photos.push({ t:d.title, ico: d.sketch?'🎨':(d.img||({'笔记':'🖊','录音':'🎙','画画':'🎨','拍照':'📷'})[d.kind]), date:d.date, cap:(d.content||'').replace('【转写】',''), src:'来自时光日记', sketch:d.sketch||'' });
+    Warm.sync(a); d.bio='已引用'; persist(); Warm.dismiss(); logAct('日记归入相册', d.title+' → '+a.name,'低'); Warm.refresh(); toast('已归入相册《'+a.name+'》','ok'); Warm.viewAlbum(a._id); },
+  delDiary(id){ const d=Warm.diary(id); if(!d) return; if(!confirm('确认删除日记《'+d.title+'》？')) return;
+    MODULES.diary.rows = MODULES.diary.rows.filter(x=>x._id!==+id); persist(); Warm.dismiss(); logAct('删除日记', d.name+' / '+d.title,'中'); Warm.refresh(); toast('已删除','warn'); },
+  diaryChips(owner){ const ds=Warm.diaries(owner,''); return ds.length? ds.map(d=>`<span class="tag ${d.kind==='录音'?'purple':d.kind==='画画'?'green':d.kind==='拍照'?'warn':'blue'}">${esc(d.kind)} ${esc(d.title)}</span>`).join(' ') : '<span class="tiny">暂无日记</span>'; },
+
+  /* ---------- 传承 · AI 传记 ---------- */
+  refresh(){ if(S.view==='admin') renderPage(); else if(S.view==='app'||S.view==='mp') renderMobile(S.view); },
+  chaptersOf(name, style, aIds, dIds, fam){
+    const CN=['一','二','三','四','五','六','七','八','九','十','十一','十二'];
+    const albs = aIds.map(i=>Warm.album(i)).filter(Boolean);
+    const dis  = dIds.map(i=>Warm.diary(i)).filter(Boolean);
+    const phN  = albs.reduce((s,a)=>s+Warm.photos(a).length, 0);
+    const tone = style==='家书体'? '亲爱的家人：' : style==='口述实录'? '（以下为本人原话，只作了顺句处理）' : '';
+    const out = [];
+    out.push({ t:'序 · 这本册子是怎么来的', c: tone+'这些内容来自我在园区留下的 '+dis.length+' 篇日记与 '+albs.length+' 本相册（共 '+phN+' 张照片）。文字是系统从我自己写的、自己说的话里拼起来的，后来我又自己改过。' });
+    albs.forEach((a,i)=>{
+      const ps = Warm.photos(a);
+      const lines = ps.length? ps.map(p=>{
+        const y = p.date && /^\d{4}/.test(p.date)? p.date.slice(0,4)+' 年 ' : '';
+        return (style==='编年史'? y+'：' : y? y+'，' : '')+p.t+'——'+(p.cap||'这张照片我记不太清细节了，只记得当时很高兴。');
+      }).join('；')+'。' : '这本相册里的照片还没补充图注，先从封面开始吧。';
+      out.push({ t:'第'+CN[i]+'章 · '+a.name, c:(a.cate==='人生历程'?'回头一看，那些年真的过得飞快。':a.cate==='旅居风景'?'在园区住久了，四季都是景。':a.cate==='手迹作品'?'字写得不好，但是我自己写的。':'')+(tone||'')+lines+'（素材来自相册《'+a.name+'》，'+ps.length+' 张，'+a.date+' 建立。）' });
+    });
+    const wr = dis.filter(d=>d.kind!=='录音'), vc = dis.filter(d=>d.kind==='录音');
+    if(wr.length) out.push({ t:'日常 · 我写下来的日子', c: wr.map(d=>d.date+'　'+d.title+'：'+String(d.content||'').replace('【转写】','')).join('\n') });
+    if(vc.length) out.push({ t:'声音 · 我录下来的话', c: vc.map(d=>d.date+'　'+d.title+'：'+String(d.content||'').replace('【转写】','')).join('\n') });
+    out.push({ t:'后记 · 想留给谁', c:'这本册子想交给'+(fam||'家人')+'。字是我自己的字，事情是我自己的事情。要是哪天我不在了，翻开它就像我还在说话。' });
+    return out;
+  },
+  genForm(owner){
+    if(!Warm.isWeb()) return Mob.wGen(owner);
+    const who = owner || Warm.who() || ELDER_NAMES[0];
+    const albs = Warm.albums(who,'',false), dis = Warm.diaries(who,'');
+    const ar = archiveOf(who);
+    const fam = ar && ar.family ? String(ar.family).split(/[、,，]/)[0] : '';
+    if(!albs.length && !dis.length){ toast(who+' 还没有相册或日记，请先创建温暖素材','warn'); return; }
+    Modal.open('🕯 联动日记与相册 · 辅生成 AI 个人传记', `<div class="lgc-wiz">
+      <div class="two"><div class="field"><label>传主</label><select class="sel" id="gName" onchange="Warm.genRefresh()">${ELDER_NAMES.map(n=>`<option${n===who?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+        <div class="field"><label>传记名</label><input class="inp" id="gTitle" value=""></div></div>
+      <div class="field"><label>体裁</label><div class="seg" id="gStyle">${BIO_STYLES.map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div>
+        <div class="tiny">温情回忆录：第一人称回忆；家书体：写给家人的口吻；编年史：按年份记事；口述实录：保留原话。</div></div>
+      <div class="field"><label>交付对象</label><input class="inp" id="gFam" value="${esc(fam||'子女')}"></div>
+      <div id="gMats"><div class="tiny">正在加载素材…</div></div>
+      <div class="lgc-tip">⚠ AI 只负责把长者的文字与照片串成草稿，<b>全部内容由长者与家属自由改写</b>；定稿前不对外展示，也不会自动推送。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.startGen()">🤖 生成传记草稿</button>`, true);
+    Warm.seg('gStyle'); $('gTitle').value = who+'的人生小记'; Warm.genRefresh();
+  },
+  genRefresh(){
+    const who = $('gName').value; $('gTitle').value = who+'的人生小记';
+    const albs = Warm.albums(who,'',false), dis = Warm.diaries(who,'');
+    const box = $('gMats'); if(!box) return;
+    box.innerHTML = `<div class="lgc-mat"><h4>📸 相册素材（${albs.length}）</h4><div class="lgc-cks">${albs.length? albs.map(a=>`<label class="ck3"><input type="checkbox" value="${a._id}" data-t="a" ${Warm.photos(a).length?'checked':''}> <b>${esc(a.name)}</b><span>${Warm.photos(a).length} 张 · ${esc(a.cate)}</span></label>`).join('') : '<span class="tiny">该长者暂无相册</span>'}</div></div>
+      <div class="lgc-mat"><h4>📔 日记素材（${dis.length}）</h4><div class="lgc-cks">${dis.length? dis.map(d=>`<label class="ck3"><input type="checkbox" value="${d._id}" data-t="d" ${d.bio==='已引用'?'checked':''}> <b>${esc(d.title)}</b><span>${esc(d.kind)} · ${esc(d.date)}</span></label>`).join('') : '<span class="tiny">该长者暂无日记</span>'}</div></div>`;
+  },
+  startGen(){
+    const name=$('gName').value, style=Warm.segVal('gStyle','温情回忆录'), title=($('gTitle').value||'').trim()||name+'的人生小记';
+    const fam=($('gFam').value||'').trim()||'家人';
+    const cks = [...document.querySelectorAll('#gMats input[type=checkbox]')].filter(c=>c.checked);
+    const aIds = cks.filter(c=>c.dataset.t==='a').map(c=>+c.value), dIds = cks.filter(c=>c.dataset.t==='d').map(c=>+c.value);
+    if(!aIds.length && !dIds.length){ toast('至少勾选一本相册或一篇日记作为素材','err'); return; }
+    const chs = Warm.chaptersOf(name, style, aIds, dIds, fam);
+    const phN = aIds.reduce((s,i)=>{ const a=Warm.album(i); return s+(a?Warm.photos(a).length:0); },0);
+    const b = { _id:++UID, name, title, style, vol:'第'+(Warm.bios(name).length+1)+'卷', srcDiary:dIds.length, srcPhoto:phN,
+      chapters:[], progress:0, status:'生成中', by:(S.user&&S.user.name)||'系统', time:now(), family:fam, printCnt:0,
+      matAlbums:aIds, matDiary:dIds, note:'AI 初稿：基于 '+dIds.length+' 篇日记与 '+aIds.length+' 本相册生成，待长者在自由编写后定稿。' };
+    MODULES.legacy.rows.unshift(b);
+    dIds.forEach(i=>{ const d=Warm.diary(i); if(d) d.bio='已引用'; });
+    aIds.forEach(i=>{ const a=Warm.album(i); if(a){ a.bioRef=b.title; } });
+    persist(); Warm.dismiss(); Warm.refresh(); logAct('AI 生成传记', name+'《'+title+'》','中');
+    Warm.animate(b._id, chs);
+  },
+  animate(id, chs){
+    let i=0;
+    const tm = setInterval(()=>{
+      const b = Warm.bio(id); if(!b || b.status!=='生成中'){ clearInterval(tm); return; }
+      i++; b.chapters = chs.slice(0,i); b.progress = Math.round(i/chs.length*95); b.time=now();
+      persist(); Warm.refresh();
+      if(i>=chs.length){ clearInterval(tm); b.progress=100; b.status='草稿'; persist(); Warm.refresh();
+        logAct('传记草稿完成', b.name+'《'+b.title+'》'+chs.length+' 章','中');
+        toast('AI 草稿已生成 '+chs.length+' 章，可自由改写','ok'); Warm.viewBio(b._id); }
+    }, 520);
+  },
+  openBio(id){
+    const b = Warm.bio(id); if(!b) return;
+    if(!Warm.isWeb()) return Mob.wBio(id);
+    const chs = b.chapters||[];
+    const body = `<div class="lgc-h"><div class="lgc-vol">${esc(b.style)}</div>
+      <div><h3>${esc(b.title)}</h3><p>传主 ${esc(b.name)} · ${esc(b.vol||'')} · 整理人 ${esc(b.by||'—')} · 更新 ${esc(b.time||'')}</p>
+        <div class="ab-tags">${tagHTML({tag:{'草稿':'ink','生成中':'blue','已成稿':'green','已交付':'purple'}}, b.status)}<span class="tag blue">${chs.length} 章</span>
+        <span class="tag">素材：日记 ${b.srcDiary||0} 篇 · 照片 ${b.srcPhoto||0} 张</span><span class="tag purple">完成度 ${b.progress||0}%</span></div></div></div>
+      <div class="prog"><i style="width:${b.progress||0}%"></i></div><div class="tiny" style="margin:6px 0 12px">${b.status==='生成中'?'AI 正在逐章生成，完成后将自动进入可编辑状态':'草稿已完成，逐章点「保存」写入'}</div>
+      ${chs.length? chs.map((c,i)=>`<div class="lgc-ch"><div class="lgc-ch-h"><b>${esc(c.t)}</b><span class="tiny">${(c.c||'').length} 字 · ${c.edited?'已由本人改写':'AI 初稿'}</span></div>
+        <textarea class="inp" id="ch${i}" rows="${Math.min(6,Math.max(2,Math.ceil((String(c.c||'').length+14)/28)))}">${esc(c.c||'')}</textarea>
+        <div class="lgc-ch-ops"><button class="btn sm" onclick="Warm.saveOne(${b._id},${i})">💾 保存本章</button>
+          <button class="btn sm" onclick="Warm.polish(${b._id},${i})">🤖 换个说法</button>
+          <button class="btn sm" onclick="Warm.fromMate(${b._id},${i})">📔 引用原文</button>
+          <button class="btn sm d" onclick="Warm.delChapter(${b._id},${i})">🗑 删章</button></div></div>`).join('')
+        : '<div class="empty"><div class="e">🕯</div>草稿生成中…</div>'}
+      ${b.note?`<div class="field" style="margin-top:12px"><label>后记 / 备注</label><textarea class="inp" id="lgNote" rows="2">${esc(b.note)}</textarea></div>`:''}`;
+    Modal.open('🕯 自由编写传记 · '+esc(b.title), body,
+      b.status==='生成中'? `<button class="btn" onclick="Modal.close()">后台生成，先关闭</button>`
+      : `<button class="btn" onclick="Modal.close()">关闭</button>
+         <button class="btn" onclick="Warm.saveChapters(${b._id})">💾 全部保存</button>
+         <button class="btn" onclick="Warm.addChapter(${b._id})">＋ 加一章</button>
+         <button class="btn g" onclick="Warm.finalize(${b._id})">✅ 定稿</button>
+         <button class="btn" onclick="Warm.printBio(${b._id})">🖨 打印成书</button>
+         <button class="btn p" onclick="Warm.deliver(${b._id})">📮 交付子女</button>`, true);
+  },
+  saveOne(id, i){ const b=Warm.bio(id); const t=$('ch'+i); if(!b||!t||!b.chapters[i]) return;
+    b.chapters[i].c=t.value.trim(); b.chapters[i].edited=1; b.time=now(); persist(); logAct('改写传记章节', b.name+'《'+b.title+'》'+b.chapters[i].t,'低'); toast('本章已保存','ok'); },
+  saveChapters(id){ const b=Warm.bio(id); if(!b) return;
+    b.chapters.forEach((c,i)=>{ const t=$('ch'+i); if(t){ c.c=t.value.trim(); c.edited=1; } });
+    const n=$('lgNote'); if(n) b.note=n.value.trim();
+    b.time=now(); persist(); logAct('保存传记全文', b.name+'《'+b.title+'》','低'); Warm.refresh(); toast('传记已保存（'+b.chapters.length+' 章）','ok'); Warm.viewBio(b._id); },
+  polish(id, i){ const b=Warm.bio(id); const t=$('ch'+i); if(!b||!t) return;
+    const v=t.value.trim(); if(!v){ toast('本章还没有内容','warn'); return; }
+    t.value = v.replace(/。/g,'。 ').replace(/^（以下为本人原话，只作了顺句处理）/, b.style==='家书体'?'亲爱的家人，':'') + (b.style==='编年史'?'\n（编年体提示：该段可按年份拆分到上一年与下一年。）':'');
+    toast('已重新组织语句，可继续手动修改','ok'); },
+  fromMate(id, i){ const b=Warm.bio(id); const t=$('ch'+i); if(!b||!t) return;
+    const ds = Warm.diaries(b.name,'').slice(0,4).map(d=>'· '+d.date+' '+d.title+'：'+String(d.content||'').slice(0,40)).join('\n');
+    t.value = (t.value?t.value+'\n':'')+'【可粘贴的原文素材】\n'+ds; toast('已插入原文素材，自行挑选','ok'); },
+  addChapter(id){ const b=Warm.bio(id); if(!b) return; b.chapters=b.chapters||[]; b.chapters.push({t:'第'+(b.chapters.length+1)+'章 · （自己写的一章）', c:'这里写自己想说的话。', edited:1});
+    persist(); Warm.refresh(); Warm.viewBio(b._id); toast('已新增一章','ok'); },
+  delChapter(id, i){ const b=Warm.bio(id); if(!b||!b.chapters[i]) return; if(!confirm('确认删除《'+b.chapters[i].t+'》？')) return;
+    b.chapters.splice(i,1); b.progress=Math.min(100, Math.round(b.chapters.length*12)); persist(); Warm.refresh(); Warm.viewBio(b._id); },
+  finalize(id){ const b=Warm.bio(id); if(!b) return;
+    if(!b.chapters.length){ toast('草稿还是空的，不能定稿','err'); return; }
+    if(!confirm('定稿后传记将锁定为「已成稿」，长者仍可随时解锁修改。确认定稿？')) return;
+    b.status='已成稿'; b.progress=100; b.time=now(); Warm.dismiss(); persist(); Warm.refresh();
+    logAct('传记定稿', b.name+'《'+b.title+'》','中'); toast('已定稿：《'+b.title+'》','ok'); Warm.viewBio(b._id); },
+  deliver(id){ const b=Warm.bio(id); if(!b) return;
+    if(!Warm.isWeb()) return Mob.wDeliver(id);
+    Modal.open('📮 交付子女 / 家人', `<div class="mform">
+      <div class="field"><label>交付对象</label><input class="inp" id="dlTo" value="${esc(b.family||'')}"></div>
+      <div class="field"><label>送达方式</label><div class="seg" id="dlWay">${['APP 推送','短信链接','纸质快递','园区服务台领取'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>附一句话</label><textarea class="inp" id="dlMsg" rows="2" placeholder="想对家人说的话"></textarea></div>
+      <div class="tiny">交付后长者端与子女端会同步出现《${b.title}》，仅授权家属可见；可随时撤销。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.doDeliver(${b._id})">确认交付</button>`);
+    Warm.seg('dlWay');
+  },
+  doDeliver(id){ const b=Warm.bio(id); if(!b) return;
+    b.status='已交付'; b.family=($('dlTo').value||'').trim()||b.family||'家人'; b.deliverWay=Warm.segVal('dlWay','APP 推送');
+    b.deliverMsg=($('dlMsg').value||'').trim(); b.deliverTime=now(); b.time=now();
+    Warm.dismiss(); persist(); Warm.refresh(); logAct('传记交付家属', b.name+'《'+b.title+'》→ '+b.family+'（'+b.deliverWay+'）','中');
+    toast('已交付：'+b.family+' 可在子女端「传承」中看到','ok'); Warm.viewBio(b._id); },
+  bioSheets(b){ const chs=b.chapters||[];
+    return `<div class="pt-cover bio"><h1>${esc(b.title)}</h1><p>${esc(b.name)} · ${esc(b.style)} · ${esc(b.vol||'')}</p>
+      <div class="big">🕯</div><p class="note">${esc(b.note||'')}</p>
+      <p class="meta">共 ${chs.length} 章 · 素材：日记 ${b.srcDiary||0} 篇 / 照片 ${b.srcPhoto||0} 张 · 打印时间 ${now()}</p></div>`
+      + chs.map((c,i)=>`<div class="pt-chap"><h2>${esc(c.t)}</h2><p>${esc(c.c||'')}</p><span>${esc(b.name)} · ${esc(b.title)}</span></div>`).join(''); },
+  printBio(id){ const b = Warm.bio(id); if(!b) return;
+    const chs=b.chapters||[];
+    printSheets(Warm.bioSheets(b));
+    b.printCnt=(b.printCnt||0)+1; persist(); Warm.refresh(); logAct('打印传记成书', b.name+'《'+b.title+'》','低');
+    if(!Warm.isWeb()){ toast('已生成书本版式，累计打印 '+b.printCnt+' 次','ok'); return; }
+    Modal.open('🖨 传记已排好书本版式', `<div class="ok-box"><div class="e">📖</div><b>《${esc(b.title)}》打印任务已生成</b>
+      <p>共 ${chs.length} 章 · 累计打印 ${b.printCnt} 次<br>可选「精装锁线」或「骑马钉」；园区打印室 1 个工作日送出。</p>
+      <div class="mbtns"><button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="Warm.openBio(${b._id})">返回编辑</button></div></div>`);
+  },
+  delBio(id){ const b=Warm.bio(id); if(!b) return; if(!confirm('确认删除传记《'+b.title+'》？（已交付的需家属确认后撤回）')) return;
+    MODULES.legacy.rows = MODULES.legacy.rows.filter(x=>x._id!==+id); persist(); Warm.dismiss(); Warm.refresh(); logAct('删除传记', b.name+' / '+b.title,'高'); toast('传记已删除','warn'); }
+};
+
+/* ---------- 自定义页：温暖相册 ---------- */
+Object.assign(CUSTOM, {
+  album(key){
+    const m = MODULES[key]; const st = S.ab = S.ab || {};
+    st.owner = st.owner || (Warm.who() || '全部'); st.cate = st.cate || '全部';
+    const all = MODULES.album.rows||[];
+    const live = all.filter(a=>a.status!=='已销毁');
+    const gone = all.filter(a=>a.status==='已销毁');
+    const phTotal = live.reduce((s,a)=>s+Warm.photos(a).length,0);
+    const list = Warm.albums(st.owner==='全部'?'':st.owner, st.cate);
+    const kpi = [['📸','我的相册', live.length+' 本','共 '+ALBUM_CATES.length+' 个分类',''],
+      ['🖼','照片总量', phTotal+' 张','含手写扫描与老照片翻拍',''],
+      ['🔗','已分享', live.filter(a=>a.share==='已生成链接').length+' 本','可随时撤销链接',''],
+      ['🖨','纸质打印', live.reduce((s,a)=>s+(+a.printCnt||0),0)+' 次','已下单至园区打印室',''],
+      ['🔒','私密保护', live.filter(a=>a.priv==='私密').length+' 本','仅本人可见',''],
+      ['🗑','已销毁', gone.length+' 本','回收站保留 30 天','']];
+    $('crumb').innerHTML = `首页 / 温暖传承 / <b>${esc(m.title)}</b>`;
+    $('page').innerHTML = `<div class="page-h"><div><h2>📸 温暖相册</h2><p>${esc(m.desc)}　·　当前：${esc(st.owner)} / ${esc(st.cate)}</p></div>
+      <div class="acts"><select class="sel" style="width:130px" onchange="S.ab.owner=this.value;renderPage()">
+        <option${st.owner==='全部'?' selected':''}>全部</option>${ELDER_NAMES.map(n=>`<option${n===st.owner?' selected':''}>${esc(n)}</option>`).join('')}</select>
+        <input class="inp" style="width:160px" placeholder="搜相册名 / 照片图注" value="${esc(st.kw||'')}" oninput="S.ab.kw=this.value;renderPage()">
+        <button class="btn p" onclick="Warm.newAlbum('${esc(st.owner==='全部'?'':st.owner)}')">＋ 新建相册</button></div></div>
+    <div class="kpis" style="grid-template-columns:repeat(6,1fr)">${kpi.map(k=>`<div class="kpi"><i><span class="e">${k[0]}</span>${k[1]}</i><b>${k[2]}</b><span>${k[3]}${k[4]?' · '+k[4]:''}</span></div>`).join('')}</div>
+    <div class="mchips" style="margin-top:16px">${['全部'].concat(ALBUM_CATES).map(c=>`<button class="${c===st.cate?'on':''}" onclick="S.ab.cate='${c}';renderPage()">${c} · ${live.filter(a=>a.cate===c).length}</button>`).join('')}</div>
+    ${list.length? `<div class="ab-cards">${list.map(a=>{ const ps=Warm.photos(a); const kw=(st.kw||'').trim();
+        const hit = !kw || a.name.includes(kw) || (a.note||'').includes(kw) || ps.some(p=>(p.t+p.cap||'').includes(kw));
+        if(!hit) return ''; return `<div class="ab-card" onclick="Warm.openAlbum(${a._id})">
+          <div class="ab-im">${esc(a.cover||'📷')}<i>${ps.length} 张</i></div>
+          <b>${esc(a.name)}</b><p>${esc(a.owner)} · ${esc(a.cate)}</p>
+          <div class="ab-row">${tagHTML({tag:{'私密':'ink','家人可见':'blue','园区公开':'green'}}, a.priv)}${tagHTML({tag:{'未分享':'ink','已生成链接':'green','已撤销':'warn'}}, a.share)}${a.printCnt?'<span class="tag purple">已打印 '+a.printCnt+'</span>':''}</div>
+          <div class="ab-strip">${ps.slice(0,5).map(p=>`<span>${esc(p.ico||'📷')}</span>`).join('')}${ps.length>5?`<i class="more">+${ps.length-5}</i>`:''}</div>
+          <p class="tiny">${esc((a.note||'').slice(0,26)||'暂无简介')}</p></div>`; }).join('')}</div>` : '<div class="empty"><div class="e">📷</div>当前筛选条件下还没有相册，点右上角「＋ 新建相册」开始创建</div>'}
+    ${gone.length? `<div class="card" style="margin-top:16px"><div class="card-h"><h3>🗑 已销毁的相册（回收站）</h3><span class="tiny">保留 30 天，超级管理员可恢复</span></div>
+      <div class="card-b"><ul class="lst">${gone.map(a=>`<li><span class="ic r">🗑</span><div><b>${esc(a.name)}</b><p>${esc(a.owner)} · ${esc(a.cate)} · 销毁于 ${esc(a.destroyAt||'—')}</p></div>
+        <span class="tm"><span class="tag red">${Warm.photos(a).length} 张已隐藏</span> <button class="btn sm" onclick="Warm.restore(${a._id})">♻️ 恢复</button></span></li>`).join('')}</ul></div></div>`:''}
+    <div class="card" style="margin-top:16px"><div class="card-h"><h3>📚 分类与能力说明</h3><span class="tiny">创建 / 添加 / 销毁 / 分享 / 打印</span></div>
+      <div class="card-b"><div class="sw-box">${ALBUM_CATES.map(c=>{ const n=live.filter(a=>a.cate===c).length; const p=live.filter(a=>a.cate===c).reduce((s,a)=>s+Warm.photos(a).length,0);
+          return `<div class="ck"><b>${c}</b><p>${n} 本相册 · ${p} 张照片</p></div>`; }).join('')}</div>
+        <div class="tiny" style="margin-top:10px">纸质输出：支持 A4 / 12 寸相簿 / 拍立得，可选精装硬壳、蝴蝶对裱、环装可拆，并随册附印图注与手写页；分享：生成带有效期的链接与分享码，随时可撤销。</div></div></div>`;
+  },
+
+  /* ---------- 自定义页：时光日记 ---------- */
+  diary(key){
+    const m = MODULES[key]; const st = S.dy = S.dy || {};
+    st.owner = st.owner || (Warm.who() || '全部'); st.kind = st.kind || '全部'; S.dyKind = S.dyKind || '笔记';
+    const all = MODULES.diary.rows||[];
+    const mine = Warm.diaries(st.owner==='全部'?'':st.owner, st.kind==='全部'?'':st.kind);
+    const cnt = k => all.filter(d=>d.kind===k && (st.owner==='全部'||d.name===st.owner)).length;
+    const kpi = [['📔','记录总数', all.length+' 条','笔记 / 录音 / 画画 / 拍照',''],
+      ['🖊','笔记', cnt('笔记')+' 条','含手写识别转入',''],
+      ['🎙','录音', cnt('录音')+' 条','自动转写文字',''],
+      ['🎨','画画', cnt('画画')+' 条','画板作品已存档',''],
+      ['📷','拍照', cnt('拍照')+' 条','支持 OCR 认字',''],
+      ['🕯','已入传记', all.filter(d=>d.bio==='已引用').length+' 条','可随时取消引用','']];
+    $('crumb').innerHTML = `首页 / 温暖传承 / <b>${esc(m.title)}</b>`;
+    $('page').innerHTML = `<div class="page-h"><div><h2>📔 时光日记</h2><p>${esc(m.desc)}　·　当前：${esc(st.owner)} / ${esc(st.kind)}</p></div>
+      <div class="acts"><select class="sel" style="width:130px" onchange="S.dy.owner=this.value;renderPage()">
+        <option${st.owner==='全部'?' selected':''}>全部</option>${ELDER_NAMES.map(n=>`<option${n===st.owner?' selected':''}>${esc(n)}</option>`).join('')}</select>
+        <button class="btn" onclick="Warm.genForm('${esc(st.owner==='全部'?'':st.owner)}')">🤖 用素材生成传记</button>
+        <button class="btn p" onclick="S.dyKind='笔记';renderPage()">＋ 写一条</button></div></div>
+    <div class="kpis" style="grid-template-columns:repeat(6,1fr)">${kpi.map(k=>`<div class="kpi"><i><span class="e">${k[0]}</span>${k[1]}</i><b>${k[2]}</b><span>${k[3]}${k[4]?' · '+k[4]:''}</span></div>`).join('')}</div>
+    <div class="bar2"><div class="card"><div class="card-h"><h3>✍️ 创作面板</h3><span class="tiny">四种方式都能记录</span></div>
+      <div class="card-b">${Warm.diaryPanel(S.dyKind)}</div></div>
+      <div class="card"><div class="card-h"><h3>🗂 我的日记本（${mine.length}）</h3>
+        <div class="seg" id="dyFilt">${['全部'].concat(DIARY_KINDS).map(x=>`<button class="${x===st.kind?'on':''}" onclick="S.dy.kind='${x}';renderPage()">${x}</button>`).join('')}</div></div>
+        <div class="card-b"><ul class="lst dy-lst" style="max-height:560px">${mine.length? mine.map(d=>`<li onclick="Warm.openDiary(${d._id})" style="cursor:pointer">
+          <span class="ic ${d.kind==='录音'?'':d.kind==='画画'?'g':d.kind==='拍照'?'w':''}">${d.kind==='录音'?'🎙':d.kind==='画画'?'🎨':d.kind==='拍照'?'📷':'🖊'}</span>
+          <div><b>${esc(d.title)}</b><p>${esc(d.date)} ${esc(d.time||'')} · ${esc(d.name)} · ${esc(d.from||'')}${d.dur?' · '+esc(d.dur):''}</p>
+            <span class="tiny">${esc(String(d.content||'').slice(0,42))||'（无正文）'}</span></div>
+          <span class="tm">${tagHTML({tag:{'笔记':'blue','录音':'purple','画画':'green','拍照':'warn'}}, d.kind)}${tagHTML({tag:{'已引用':'green','未引用':'ink'}}, d.bio)}</span></li>`).join('')
+          : '<div class="empty"><div class="e">📔</div>还没有记录，在左边选一种方式写下第一笔</div>'}</ul></div></div></div>`;
+    Warm.afterDiary();
+  },
+
+  /* ---------- 自定义页：传承 · AI 传记 ---------- */
+  legacy(key){
+    const m = MODULES[key]; const st = S.lg = S.lg || {};
+    st.owner = st.owner || (Warm.who() || '全部');
+    const bios = Warm.bios(st.owner==='全部'?'':st.owner);
+    const all = MODULES.legacy.rows||[];
+    const phAll = Warm.albums('', '').reduce((s,a)=>s+Warm.photos(a).length,0);
+    const kpi = [['🕯','传记总数', all.length+' 部','已覆盖 '+new Set(all.map(b=>b.name)).size+' 位长者',''],
+      ['📝','草稿', all.filter(b=>['草稿','生成中'].includes(b.status)).length+' 部','可自由改写',''],
+      ['✅','已成稿', all.filter(b=>b.status==='已成稿').length+' 部','已锁定待交付',''],
+      ['📮','已交付', all.filter(b=>b.status==='已交付').length+' 部','子女端已同步',''],
+      ['🖨','打印成书', all.reduce((s,b)=>s+(+b.printCnt||0),0)+' 册','含精装与纪念册',''],
+      ['🧾','素材池', MODULES.diary.rows.length+' 篇 / '+phAll+' 张','相册与日记联动','']];
+    $('crumb').innerHTML = `首页 / 温暖传承 / <b>${esc(m.title)}</b>`;
+    $('page').innerHTML = `<div class="page-h"><div><h2>🕯 传承 · AI 个人传记</h2><p>${esc(m.desc)}　·　当前：${esc(st.owner)}</p></div>
+      <div class="acts"><select class="sel" style="width:130px" onchange="S.lg.owner=this.value;renderPage()">
+        <option${st.owner==='全部'?' selected':''}>全部</option>${ELDER_NAMES.map(n=>`<option${n===st.owner?' selected':''}>${esc(n)}</option>`).join('')}</select>
+        <button class="btn" onclick="App.go('admin','diary')">📔 时光日记</button>
+        <button class="btn p" onclick="Warm.genForm('${esc(st.owner==='全部'?'':st.owner)}')">🤖 联动素材生成传记</button></div></div>
+    <div class="kpis" style="grid-template-columns:repeat(6,1fr)">${kpi.map(k=>`<div class="kpi"><i><span class="e">${k[0]}</span>${k[1]}</i><b>${k[2]}</b><span>${k[3]}${k[4]?' · '+k[4]:''}</span></div>`).join('')}</div>
+    ${bios.length? `<div class="lgc-cards">${bios.map(b=>{ const chs=b.chapters||[]; return `<div class="lgc-card">
+      <div class="lgc-top"><div class="lgc-vol2">${esc(b.style)}</div>
+        <div><b>${esc(b.title)}</b><p>${esc(b.name)} · ${esc(b.vol||'')} · 整理人 ${esc(b.by||'—')} · ${esc(b.time||'')}</p></div>
+        <div class="lgc-st">${tagHTML({tag:{'草稿':'ink','生成中':'blue','已成稿':'green','已交付':'purple'}}, b.status)}</div></div>
+      <div class="prog"><i style="width:${b.progress||0}%"></i></div><div class="tiny" style="margin-bottom:8px">完成度 ${b.progress||0}% · ${chs.length} 章</div>
+      <div class="lgc-chs">${chs.length? chs.slice(0,3).map(c=>`<span class="tag">${esc(c.t)}</span>`).join('')+(chs.length>3?`<span class="tiny"> 等 ${chs.length} 章</span>`:'') : '<span class="tiny">草稿生成中…</span>'}</div>
+      <div class="lgc-sum">${chs[0]? esc(String(chs[0].c||'').slice(0,70))+'…':'<span class="tiny">暂无摘要</span>'}</div>
+      <div class="mbtns"><button class="btn sm p" onclick="Warm.openBio(${b._id})">✍️ 自由编写</button>
+        <button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 打印成书</button>
+        ${b.status==='草稿'?`<button class="btn sm g" onclick="Warm.finalize(${b._id})">✅ 定稿</button>`:''}
+        ${b.status==='已成稿'?`<button class="btn sm g" onclick="Warm.deliver(${b._id})">📮 交付子女</button>`:''}
+        ${b.status==='已交付'?`<button class="btn sm" onclick="Warm.deliver(${b._id})">🔁 重新交付</button>`:''}
+        <button class="btn sm d" onclick="Warm.delBio(${b._id})">🗑</button></div></div>`; }).join('')}</div>`
+      : '<div class="empty"><div class="e">🕯</div>还没有传记，点右上角「联动素材生成传记」</div>'}
+    <div class="card" style="margin-top:16px"><div class="card-h"><h3>🧩 谁已经有素材可以写成传记</h3><span class="tiny">素材越厚，传记越像本人</span></div>
+      <div class="card-b"><ul class="lst" style="max-height:420px">${ELDER_NAMES.map(n=>{ const ds=Warm.diaries(n,''), ab=Warm.albums(n,''), ph=ab.reduce((s,a)=>s+Warm.photos(a).length,0), bs=Warm.bios(n);
+        if(!ds.length && !ab.length) return ''; return `<li><span class="ic">${esc((ab[0]&&ab[0].cover)||'📔')}</span><div><b>${esc(n)}</b><p>日记 ${ds.length} 篇 · 相册 ${ab.length} 本 / ${ph} 张 · 传记 ${bs.length} 部${bs.length?'（'+bs.map(x=>x.status).join('、')+'）':''}</p></div>
+          <span class="tm"><span class="tiny">${ab.slice(0,4).map(a=>esc(a.cover||'📷')).join(' ')}</span> <button class="btn sm p" onclick="Warm.genForm('${n}')">🤖 生成草稿</button></span></li>`; }).join('')}</ul>
+        <div class="tiny" style="margin-top:10px">生成流程：选择素材 → AI 按体裁串成逐章草稿 → 长者与家属自由改写 → 定稿 → 打印成书 / 交付子女。全程不锁定、不代笔下发，定稿前不对外展示。</div></div></div>`;
+  }
+});
+
 
 /* ============================================================
  *  Layer 5 : APP 端 / 小程序端 高保真原型（可交互，与后台共享同一份数据）
  * ============================================================ */
 const MB_TABS = {
   app: {
-    elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['👤','我的','mine']],
+    elder: [['🏠','首页','home'],['❤️','健康','health'],['🆘','SOS','sos'],['🌈','康养圈','circle'],['📖','温暖','warm'],['👤','我的','mine']],
+    child: [['🏠','首页','home'],['💚','亲情','family'],['📅','预约','book'],['💳','消费','pay'],['🕯','传承','legacy'],['👤','我的','mine']],
     special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
     guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
   },
   mp: {
-    elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['👤','我的','mine']],
-    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['👤','我的','mine']],
+    elder: [['🏠','首页','home'],['🛎️','服务','svc'],['🌈','康养圈','circle'],['📖','温暖','warm'],['👤','我的','mine']],
+    child: [['🏠','首页','home'],['💚','照护','family'],['💳','代付','pay'],['🕯','传承','legacy'],['👤','我的','mine']],
     special: [['⌚','手环','band'],['📍','打卡','checkin'],['🆘','SOS','sos'],['🔊','播报','broadcast'],['👤','我的','mine']],
     guard: [['🛰','监管','home'],['🚨','告警','alert'],['🛡','备勤','standby'],['👤','我的','mine']]
   }
@@ -3465,6 +4690,7 @@ const MB = {
     MB.after(key);
   },
   after(key){
+    if(key==='warm'){ if(typeof Warm!=='undefined') Warm.afterDiary(); return; }
     if(key!=='health') return;
     const hs = MB.HIST().slice(0,7).reverse();
     ec('mHr', { grid:{left:6,right:6,top:18,bottom:20,containLabel:true},
@@ -3479,8 +4705,8 @@ const MB = {
   screen(kind, role, key){
     if(role==='guard') return ({ home:MB.gHome, alert:MB.gAlert, standby:MB.gStandby, mine:MB.gMine })[key](kind);
     if(role==='special') return ({ home:MB.sBand, band:MB.sBand, checkin:MB.sCheckin, mine:MB.sMine })[key](kind);
-    if(role==='child') return ({ home:MB.cHome, family:MB.cFamily, book:MB.cBook, pay:MB.cPay, mine:MB.cMine })[key](kind);
-    return ({ home:MB.eHome, health:MB.eHealth, circle:MB.eCircle, svc:MB.eSvc, mine:MB.eMine })[key](kind);
+    if(role==='child') return ({ home:MB.cHome, family:MB.cFamily, book:MB.cBook, pay:MB.cPay, legacy:MB.cLegacy, mine:MB.cMine })[key](kind);
+    return ({ home:MB.eHome, health:MB.eHealth, circle:MB.eCircle, svc:MB.eSvc, warm:MB.eWarm, mine:MB.eMine })[key](kind);
   },
 
   /* ===== 长者端 ===== */
@@ -3636,6 +4862,71 @@ const MB = {
       <div class="mc"><div class="mc-h"><b>家庭成员协作</b><span>3 位亲属</span></div>
         <ul class="mlist">${MODULES.family.rows.slice(0,3).map(x=>`<li><div class="ic">${x.status==='已绑定'?'👪':'⏳'}</div><div class="tx"><b>${esc(x.cname)} · ${esc(x.rel)}</b><p>${esc(x.ename)} · ${esc(x.auth)} · 最近探望 ${esc(x.visit)}</p></div><div class="rt"><span class="tag ${x.status==='已绑定'?'green':'warn'}">${esc(x.status)}</span></div></li>`).join('')}</ul></div>
       <div class="mbtns"><button class="btn" onclick="App.go('home')">← 返回门户</button><button class="btn dg" onclick="App.logout()">退出登录</button></div>`;
+  },
+
+  /* ===== 长者端 · 温暖与传承（相册 / 日记 / 传记） ===== */
+  eWarm(kind){
+    const who = MB.elder;
+    const albs = Warm.albums(who,'',false), dis = Warm.diaries(who,''), bios = Warm.bios(who);
+    const phN = albs.reduce((s,a)=>s+Warm.photos(a).length,0);
+    const done = bios.filter(b=>b.status==='已成稿'||b.status==='已交付').length;
+    const acts = [['📔','新建相册',"Warm.newAlbum('"+who+"')"],['🖊','写篇日记',"Mob.wKind('笔记')"],['🎙','说段录音',"Mob.wKind('录音')"],['🎨','画两笔',"Mob.wKind('画画')"],
+      ['📷','拍张照',"Mob.wKind('拍照')"],['🖨','打印相册','Mob.wPrintList()'],['🤖','生成传记',"Warm.genForm('"+who+"')"],['🗑','回收站','Mob.wTrash()']];
+    const albHTML = albs.length? `<div class="wb-grid">${albs.map(a=>`<div class="wb-al" onclick="Mob.wAlbum(${a._id})">
+        <div class="im">${esc(a.cover||'📷')}<i>${Warm.photos(a).length} 张</i></div><b>${esc(a.name)}</b>
+        <p>${esc(a.cate)} · ${esc(a.priv)}${a.share==='已生成链接'?' · 🔗 已分享':''}${a.printCnt?' · 🖨 '+a.printCnt:''}</p></div>`).join('')}</div>`
+      : '<div class="tiny" style="padding:6px 0">还没有相册，点上方「新建相册」开始留存第一批老照片。</div>';
+    const disHTML = dis.length? `<ul class="mlist">${dis.slice(0,8).map(d=>`<li onclick="Mob.wDiary(${d._id})"><div class="ic ${d.kind==='录音'?'':d.kind==='画画'?'g':d.kind==='拍照'?'w':''}">${({'笔记':'🖊','录音':'🎙','画画':'🎨','拍照':'📷'})[d.kind]||'📔'}</div>
+        <div class="tx"><b>${esc(d.title)}</b><p>${esc(d.date)} ${esc(d.time||'')} · ${esc(d.mood||'平静')} · ${esc(d.auth||'家人可见')}</p></div>
+        <div class="rt">${d.bio==='已引用'?'<span class="tag green">素材</span>':'<span class="tag ink">未引用</span>'}</div></li>`).join('')}</ul>`
+      : '<div class="tiny" style="padding:6px 0">还没有日记，用下面的笔记 / 录音 / 画画 / 拍照记下今天。</div>';
+    const bioHTML = bios.length? bios.map(b=>`<div class="wb-bio"><b>${esc(b.title)}</b>
+        <div class="ab-tags">${tagHTML({tag:{'草稿':'ink','生成中':'blue','已成稿':'green','已交付':'purple'}}, b.status)}<span class="tag blue">${(b.chapters||[]).length} 章</span><span class="tag purple">${esc(b.style)}</span></div>
+        <div class="prog"><i style="width:${b.progress||0}%"></i></div>
+        <p>${esc((b.chapters&&b.chapters[1]&&b.chapters[1].c||b.note||'').slice(0,52))}…</p>
+        <div class="mbtns" style="margin-top:8px"><button class="btn sm p" onclick="Mob.wBio(${b._id})">✍️ 自由编写</button>
+          <button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 打印成书</button>
+          ${b.status!=='生成中'?`<button class="btn sm g" onclick="Warm.deliver(${b._id})">📮 交付</button>`:''}</div></div>`).join('')
+      : '<div class="tiny" style="padding:6px 0">积累相册与日记后，可让 AI 辅助串一本属于自己的传记，全部内容由本人自由改写。</div>';
+    return `<div class="wb-hero"><b>📖 温暖与传承</b><p>把照片、声音、字迹都留下来 —— 这些也会成为 AI 传记的素材，随时可以取消引用。</p>
+        <div class="row"><div><b>${albs.length}</b><span>本相册</span></div><div><b>${phN}</b><span>张照片</span></div><div><b>${dis.length}</b><span>篇日记</span></div><div><b>${done}</b><span>部成稿</span></div></div></div>
+      <div class="wb-acts">${acts.map(x=>`<div onclick="${x[2]}"><span class="e">${x[0]}</span><span>${x[1]}</span></div>`).join('')}</div>
+      <div class="mc"><div class="mc-h"><b>我的相册</b><span class="link" onclick="Warm.newAlbum('${who}')">＋ 新建 ›</span></div>${albHTML}
+        <div class="mbtns" style="margin-top:10px"><button class="btn sm" onclick="Mob.wPrintList()">🖨 打印成纸质</button><button class="btn sm" onclick="Mob.wPrintList()">🔗 分享一本</button></div></div>
+      <div class="mc"><div class="mc-h"><b>记一条 · 笔记 / 录音 / 画画 / 拍照</b><span>四种都能留</span></div>${Warm.diaryPanel(S.dyKind||'笔记', who, true)}</div>
+      <div class="mc"><div class="mc-h"><b>我留下的记录</b><span>${dis.length} 条 · 点开可回看与引用</span></div>${disHTML}</div>
+      <div class="mc"><div class="mc-h"><b>我的传记（传承）</b><span class="link" onclick="Warm.genForm('${who}')">🤖 AI 辅生成 ›</span></div>${bioHTML}</div>`;
+  },
+
+  /* ===== 子女端 · 传承（接收与守护） ===== */
+  cLegacy(kind){
+    const who = MB.elder;
+    const albs = Warm.albums(who,'',false).filter(a=>a.priv!=='私密');
+    const dis = Warm.diaries(who,'').filter(d=>d.auth!=='私密');
+    const bios = Warm.bios(who).filter(b=>b.status==='已成稿'||b.status==='已交付');
+    const phN = albs.reduce((s,a)=>s+Warm.photos(a).length,0);
+    const quote = (bios[0] && bios[0].deliverMsg) || '';
+    return `<div class="wb-hero" style="background:linear-gradient(135deg,#0d4bb3,#7c5cff)"><b>🕯 传承 · ${esc(who)} 家人可见的内容</b>
+        <p>仅在长者授权的范围内查看；查看行为写入操作日志，长者可随时收回授权或撤销分享。</p>
+        <div class="row"><div><b>${albs.length}</b><span>本共享相册</span></div><div><b>${phN}</b><span>张照片</span></div><div><b>${dis.length}</b><span>篇日记</span></div><div><b>${bios.length}</b><span>部传记</span></div></div></div>
+      ${quote? `<div class="mcard2"><b>💌 父亲交付时的一句话</b><p>${esc(quote)}</p><div style="margin-top:9px"><button class="btn sm g" onclick="Mob.legacyBack(${bios[0]._id})">回一句感谢</button></div></div>`:''}
+      <div class="mc"><div class="mc-h"><b>AI 个人传记</b><span>${bios.length} 部已成稿 / 已交付</span></div>
+        ${bios.length? bios.map(b=>`<div class="wb-bio"><b>${esc(b.title)}</b>
+          <div class="ab-tags">${tagHTML({tag:{'已成稿':'green','已交付':'purple'}}, b.status)}<span class="tag blue">${(b.chapters||[]).length} 章</span><span class="tag">${esc(b.style)}</span></div>
+          <p>${esc(String((b.chapters&&b.chapters[b.chapters.length-1]&&b.chapters[b.chapters.length-1].c)||'').slice(0,60))}</p>
+          <div class="mbtns" style="margin-top:8px"><button class="btn sm p" onclick="Mob.wBio(${b._id})">📖 阅读全文</button>
+            <button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 打印装订</button>
+            <button class="btn sm g" onclick="Mob.legacyBack(${b._id})">💬 回应一句</button></div></div>`).join('')
+        : '<div class="tiny" style="padding:6px 0">长者还没有定稿的传记。他写好后，会第一时间出现在这里。</div>'}</div>
+      <div class="mc"><div class="mc-h"><b>共享相册</b><span>长者设为「私密」的不展示</span></div>
+        ${albs.length? `<div class="wb-grid">${albs.map(a=>`<div class="wb-al" onclick="Mob.wAlbum(${a._id})"><div class="im">${esc(a.cover||'📷')}<i>${Warm.photos(a).length} 张</i></div>
+          <b>${esc(a.name)}</b><p>${esc(a.cate)} · ${esc(a.share==='已生成链接'?'有效期至 '+(a.shareExp||'—'):'未分享')}</p></div>`).join('')}</div>`:'<div class="tiny">暂无共享相册</div>'}</div>
+      <div class="mc"><div class="mc-h"><b>最近的日记</b><span>${dis.length} 条</span></div>
+        <ul class="mlist">${dis.slice(0,6).map(d=>`<li onclick="Mob.wDiary(${d._id})"><div class="ic ${d.kind==='录音'?'':d.kind==='画画'?'g':d.kind==='拍照'?'w':''}">${({'笔记':'🖊','录音':'🎙','画画':'🎨','拍照':'📷'})[d.kind]||'📔'}</div>
+          <div class="tx"><b>${esc(d.title)}</b><p>${esc(d.date)} · ${esc(d.mood||'平静')} · ${esc(String(d.content||'').replace('【转写】','').slice(0,22))}</p></div>
+          <div class="rt"><span class="link">查看</span></div></li>`).join('')}</ul></div>
+      <div class="mc"><div class="mc-h"><b>帮父亲续写</b><span>可远程发起，长者确认后写入</span></div>
+        <div class="mbtns"><button class="btn p" onclick="Mob.remindWrite()">🔔 提醒父亲记一条</button><button class="btn" onclick="Mob.printElderAlbum()">🖨 为父亲订一本纸质相册</button></div></div>`;
   },
 
   /* ===== 特殊长者 · 智能手环端 ===== */
@@ -3942,6 +5233,195 @@ const Mob = {
   arriveAll(){ S.bandLog=S.bandLog||[]; MB.BLOCS().forEach(L=>{ if(!S.bandLog.some(x=>x.id===L.id)) Mob._blog(L); }); persist(); renderMobile(S.view); logAct('手环自动打卡（批量演示）', MB.special, '低'); toast('📳 已模拟长者依次到达全部特殊位置并自动打卡','ok'); },
   bandVibrate(){ toast('📳 手环已震动并语音播报（演示）','ok'); logAct('手环震动测试', MB.special, '低'); },
   bandCall(){ toast('📞 已语音呼叫家人（'+(MB.SA().gphone||'135****1180')+'）','warn'); pushAlert('特殊长者手环呼叫', `${MB.special} 通过智能手环发起亲情呼叫，已通知家属与值班管家`); logAct('手环亲情呼叫', MB.special, '中'); },
+  /* ===== 温暖与传承：手机屏内弹层（与 Web 端共用 Warm 能力层） ===== */
+  wKind(k){ S.dyKind=k; renderMobile(S.view); toast('已切换到「'+k+'」记录方式，填好点下方保存即可','ok'); },
+
+  /* ---- 相册 ---- */
+  wNewAlbum(owner){
+    const def = owner || MB.elder;
+    MB.sheet(`<h4>📔 新建相册 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform">
+        <div class="field"><label><i>*</i>相册名称</label><input class="inp" id="wName" placeholder="如：1970s 厂门口的那些年"></div>
+        <div class="field"><label>归属长者</label><select class="sel" id="wOwner">${ELDER_NAMES.map(n=>`<option${n===def?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+        <div class="field"><label>相册分类</label><select class="sel" id="wCate">${ALBUM_CATES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+        <div class="field"><label>可见范围</label><div class="seg" id="wPriv">${['私密','家人可见','园区公开'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>拍摄地 / 来源</label><input class="inp" id="wPlace" value="家里翻拍"></div>
+        <div class="field"><label>相册简介</label><textarea class="inp" id="wNote" rows="2" placeholder="这本相册想留给谁、想说些什么"></textarea></div></div>
+      <div class="mbtns"><button class="btn" onclick="MB.close()">取消</button><button class="btn p" onclick="Warm.createAlbum()">创建并添加第一张</button></div>`);
+    Warm.seg('wPriv');
+  },
+  wAlbum(id){
+    const a = Warm.album(id); if(!a) return; const ps = Warm.photos(a);
+    const ro = S.mobileRole && S.mobileRole[S.view]==='child';
+    MB.sheet(`<h4>📸 ${esc(a.name)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="ab-h"><div class="ab-cover">${esc(a.cover||'📷')}</div><div><b style="font-size:14px">${esc(a.name)}</b>
+        <div class="tiny">${esc(a.owner)} · ${esc(a.cate)} · ${esc(a.place||'—')} · 创建 ${esc(a.date)}</div>
+        <div class="ab-tags">${tagHTML({tag:{'私密':'ink','家人可见':'blue','园区公开':'green'}}, a.priv)}${tagHTML({tag:{'未分享':'ink','已生成链接':'green','已撤销':'warn'}}, a.share)}${tagHTML({tag:{'正常':'green','已销毁':'red'}}, a.status)}<span class="tag purple">${ps.length} 张</span></div></div></div>
+      ${a.note?`<div class="ab-note">${esc(a.note)}</div>`:''}
+      <div class="ab-grid">${ps.length? ps.map((p,i)=>`<div class="ab-ph"><div class="im">${p.img?`<img src="${p.img}">`:p.sketch?`<img src="${p.sketch}">`:esc(p.ico||'📷')}${p.fixed?'<i class="fx">AI 修复</i>':''}</div>
+        <b>${esc(p.t)}</b><p>${esc(p.cap||'（未填写图注）')}</p><span>${esc(p.date||'')}${p.voice?' · 🎙 '+esc(p.voice):''}</span>
+        ${ro?'':`<div class="ab-ops"><button class="btn sm" onclick="Warm.fixPhoto(${a._id},${i})">✨</button><button class="btn sm" onclick="Mob.wPhotoNote(${a._id},${i})">💬</button><button class="btn sm d" onclick="Warm.delPhoto(${a._id},${i})">🗑</button></div>`}</div>`).join('')
+        : '<div class="tiny">还没有照片，点下方「＋ 添加照片」。</div>'}</div>
+      <div class="mbtns" style="margin-top:12px">${ro
+        ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm p blk" onclick="Warm.printSheet(${a._id})">🖨 订一本纸质相册</button><button class="btn sm" onclick="Mob.wAlbum(${a._id})">↻ 刷新</button><button class="btn sm" onclick="MB.close()">关闭</button></div>`
+        : `<button class="btn p blk" onclick="Warm.addPhoto(${a._id})">＋ 添加照片</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm g" onclick="Warm.share(${a._id})">🔗 分享</button><button class="btn sm" onclick="Warm.printSheet(${a._id})">🖨 打印纸质</button><button class="btn sm d" onclick="Warm.destroy(${a._id})">🗑 销毁</button><button class="btn sm" onclick="Mob.wAlbum(${a._id})">↻ 刷新</button></div>`}</div>`);
+  },
+  wAddPhoto(id){
+    const a = Warm.album(id); if(!a) return;
+    MB.sheet(`<h4>🖼 添加到《${esc(a.name)}》 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="seg" id="pSrc">${['拍照上传','扫描翻拍','手迹作品','园区活动'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div>
+      <div class="mform" style="margin-top:10px">
+        <div class="field"><label><i>*</i>照片标题</label><input class="inp" id="pTitle" placeholder="如：1985 年 · 技术能手奖状"></div>
+        <div class="field"><label>拍摄 / 年份日期</label><input class="inp" id="pDate" value="${today()}"></div>
+        <div class="field"><label>画面内容（原型用图标代图）</label><div class="seg" id="pIco">${['📷','🏭','🌳','💑','🖊','🎤','🧣','🥟','🌅','🖼','🏆','👵'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>想说的话（图注）</label><textarea class="inp" id="pCap" rows="2" placeholder="这张照片背后的故事"></textarea></div>
+        <div class="field"><label>语音配图（可选）</label><div class="rec-row"><button class="btn sm" onclick="Warm.recPhoto(this)">● 按住说话</button><span class="mono" id="pRecT">00'00\u0022</span><span class="tiny" id="pRecS">未录制</span></div></div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wAlbum(${a._id})">返回相册</button><button class="btn p" onclick="Warm.savePhoto(${a._id})">💾 保存这张</button></div>`);
+    Warm.seg('pSrc'); Warm.seg('pIco');
+  },
+  wPhotoNote(id, i){
+    const a = Warm.album(id); const p = a && a.photos[i]; if(!p) return;
+    MB.sheet(`<h4>💬 补充图注 · ${esc(p.t)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="field"><label>这张照片的故事</label><textarea class="inp" id="pnCap" rows="4">${esc(p.cap||'')}</textarea></div>
+      <div class="field"><label>画面内容</label><div class="seg" id="pnIco">${['📷','🏭','🌳','💑','🖊','🎤','🧣','🥟','🌅','🖼','🏆','👵'].map(x=>`<button class="${x===(p.ico||'📷')?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="tiny">图注会以第一人称进入 AI 传记草稿。</div>
+      <div class="mbtns" style="margin-top:12px"><button class="btn" onclick="Mob.wAlbum(${a._id})">返回</button><button class="btn p" onclick="Warm.saveNote(${a._id},${i})">保存</button></div>`);
+    Warm.seg('pnIco');
+  },
+  wShare(id){
+    const a = Warm.album(id); if(!a) return;
+    const code = 'ALB'+String(a._id).padStart(4,'0')+String(Date.now()).slice(-4);
+    const link = 'https://ky-park.cn/a/'+code;
+    MB.sheet(`<h4>🔗 分享《${esc(a.name)}》 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>分享范围</label><div class="seg" id="shScope">${['仅家人','园区公开','凭链接任何人'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>有效期</label><div class="seg" id="shExp">${['7 天','30 天','长期有效'].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>接收对象</label><input class="inp" id="shTo" value="${esc(a.owner==='徐世昌'?'徐乐（女儿）/ 家庭群':'家人')}"></div>
+        <div class="field"><label>分享链接</label><div class="share-box"><span class="mono">${link}</span><button class="btn sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('${link}');toast('链接已复制，可转发到家庭群','ok')">复制</button></div>
+          <div class="tiny">分享码：<b class="mono">${code}</b>　·　可随时撤销，撤销后链接立即失效。</div></div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wAlbum(${a._id})">取消</button><button class="btn p" onclick="Warm.doShare(${a._id})">生成分享</button></div>`);
+    Warm.seg('shScope'); Warm.seg('shExp');
+  },
+  wPrint(id){
+    const a = Warm.album(id); if(!a) return;
+    MB.sheet(`<h4>🖨 打印成纸质相册 · ${esc(a.name)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>纸张规格</label><div class="seg" id="prPaper">${['A4 哑光','12 寸相簿','拍立得 3寸'].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>装订方式</label><div class="seg" id="prBind">${['精装硬壳','蝴蝶对裱','环装可拆'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>打印份数</label><input class="inp" id="prCopies" type="number" min="1" max="9" value="1"></div>
+        <div class="field"><label>随册附印</label><div class="ck-row">${['图注全文','长者可手写页','AI 传记摘录','二维码回到电子相册'].map((x,i)=>`<label class="ck2"><input type="checkbox" ${i<2?'checked':''}> ${x}</label>`).join('')}</div></div>
+        <div class="tiny">已打印 ${a.printCnt||0} 次；接单后 1 个工作日送出，可到园区服务台领取。</div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wAlbum(${a._id})">取消</button><button class="btn p" onclick="Warm.doPrint(${a._id})">生成版式并打印</button></div>`);
+    Warm.seg('prPaper'); Warm.seg('prBind');
+  },
+  wPrintList(){
+    const list = Warm.albums(MB.elder,'',false);
+    if(!list.length){ toast('还没有相册，先去「温暖」新建一本','warn'); return; }
+    MB.sheet(`<h4>🖨 选一本相册（打印 / 分享） <span class="link" onclick="MB.close()">关闭</span></h4>
+      <ul class="mlist">${list.map(a=>`<li onclick="Mob.wPrint(${a._id})"><div class="ic">${esc(a.cover||'📷')}</div>
+        <div class="tx"><b>${esc(a.name)}</b><p>${Warm.photos(a).length} 张 · ${esc(a.cate)} · 已打印 ${a.printCnt||0} 次 · ${esc(a.priv)}</p></div>
+        <div class="rt"><span class="link" onclick="event.stopPropagation();Warm.share(${a._id})">分享</span></div></li>`).join('')}</ul>
+      <div class="mbtns" style="margin-top:12px"><button class="btn blk" onclick="MB.close()">关闭</button></div>`);
+  },
+  wTrash(){
+    const dead = Warm.albums(MB.elder,'',true).filter(a=>a.status==='已销毁');
+    MB.sheet(`<h4>🗑 相册回收站 <span class="link" onclick="MB.close()">关闭</span></h4>
+      ${dead.length? `<ul class="mlist">${dead.map(a=>`<li><div class="ic w">🗑</div><div class="tx"><b>${esc(a.name)}</b><p>销毁于 ${esc(a.destroyAt||a.date)} · 30 天内可恢复</p></div>
+        <div class="rt"><span class="link" onclick="Warm.restore(${a._id})">恢复</span></div></li>`).join('')}</ul>`
+        : '<div class="tiny">回收站是空的。相册可随时销毁，销毁后分享链接立即失效，30 天内可恢复。</div>'}
+      <div class="mbtns" style="margin-top:12px"><button class="btn blk" onclick="renderMobile(S.view)">关闭并刷新</button></div>`);
+  },
+
+  /* ---- 日记 ---- */
+  wDiary(id){
+    const d = Warm.diary(id); if(!d) return;
+    MB.sheet(`<h4>📔 ${esc(d.title)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="dy-view"><div class="dy-meta">${esc(d.name)} · ${esc(d.kind)} · ${esc(d.date)} ${esc(d.time||'')} · ${esc(d.from||'')}${d.dur?' · 时长 '+esc(d.dur):''}</div>
+        <div class="dy-tags">${tagHTML({tag:{'笔记':'blue','录音':'purple','画画':'green','拍照':'warn'}}, d.kind)}${tagHTML({tag:{'家人可见':'green','私密':'ink','园区公开':'blue'}}, d.auth)}${tagHTML({tag:{'已引用':'green','未引用':'ink'}}, d.bio)}<span class="tag purple">心情 ${esc(d.mood)}</span></div>
+        ${d.kind==='录音'? `<div class="play"><button class="btn sm p" onclick="Warm.play(this)">▶ 播放</button><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="mono">${esc(d.dur||'')}</span></div>`:''}
+        ${d.sketch? `<div class="dy-img"><img src="${d.sketch}"></div>` : (d.img? `<div class="dy-img big">${esc(d.img)}</div>`:'')}
+        <div class="dy-text">${esc(d.content||'（未填写内容）')}</div></div>
+      <div class="mbtns" style="margin-top:12px">
+        <button class="btn sm ${d.bio==='已引用'?'':'g'}" onclick="Warm.toggleBio(${d._id})">${d.bio==='已引用'?'➖ 取消引用':'＋ 用作传记素材'}</button>
+        <button class="btn sm" onclick="Warm.toAlbum(${d._id})">📸 归入相册</button>
+        <button class="btn sm d" onclick="Warm.delDiary(${d._id})">🗑 删除</button>
+        <button class="btn sm" onclick="Mob.wDiary(${d._id})">↻ 刷新</button></div>`);
+  },
+  wToAlbum(id){
+    const d = Warm.diary(id); if(!d) return;
+    const list = Warm.albums(d.name,'',false);
+    MB.sheet(`<h4>📸 归入相册 · ${esc(d.title)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>选择相册（归属：${esc(d.name)}）</label>
+        <select class="sel" id="taAlb">${list.length? list.map(a=>`<option value="${a._id}">${esc(a.name)}（${Warm.photos(a).length} 张）</option>`).join('') : '<option value="">暂无相册，将新建一本「日记手记」</option>'}</select></div>
+        <div class="tiny">笔记与录音会生成一张带正文摘录的卡片图；画画与拍照直接使用原图。</div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wDiary(${d._id})">返回</button><button class="btn p" onclick="Warm.doToAlbum(${d._id})">确定归入</button></div>`);
+  },
+
+  /* ---- 传记（传承） ---- */
+  wGen(owner){
+    const who = owner || MB.elder;
+    const albs = Warm.albums(who,'',false), dis = Warm.diaries(who,'');
+    if(!albs.length && !dis.length){ toast(who+' 还没有相册或日记，请先创建温暖素材','warn'); return; }
+    const ar = archiveOf(who);
+    const fam = ar && ar.family ? String(ar.family).split(/[、,，]/)[0] : '';
+    MB.sheet(`<h4>🤖 联动日记与相册 · 辅生成传记 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>传主</label><select class="sel" id="gName" onchange="Warm.genRefresh()">${ELDER_NAMES.map(n=>`<option${n===who?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+        <div class="field"><label>传记名</label><input class="inp" id="gTitle" value="${esc(who+'的人生小记')}"></div>
+        <div class="field"><label>体裁</label><div class="seg" id="gStyle">${BIO_STYLES.map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>交付对象</label><input class="inp" id="gFam" value="${esc(fam||'子女')}"></div></div>
+      <div id="gMats"><div class="tiny">正在加载素材…</div></div>
+      <div class="lgc-tip">⚠ AI 只负责把您写的与拍的串成草稿，<b>全部内容由您自由改写</b>；定稿前不对外展示。</div>
+      <div class="mbtns" style="margin-top:12px"><button class="btn" onclick="MB.close()">取消</button><button class="btn p" onclick="Warm.startGen()">🤖 生成草稿</button></div>`);
+    Warm.seg('gStyle'); Warm.genRefresh();
+  },
+  wBio(id){
+    const b = Warm.bio(id); if(!b) return; const chs = b.chapters||[];
+    const ro = S.mobileRole && S.mobileRole[S.view]==='child';
+    MB.sheet(`<h4>🕯 ${esc(b.title)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="ab-tags">${tagHTML({tag:{'草稿':'ink','生成中':'blue','已成稿':'green','已交付':'purple'}}, b.status)}<span class="tag blue">${chs.length} 章</span><span class="tag purple">${esc(b.style)}</span><span class="tag">${esc(b.vol||'')}</span></div>
+      <div class="prog" style="margin:10px 0"><i style="width:${b.progress||0}%"></i></div>
+      <div class="tiny">${ro?'父亲授权您阅读的部分，仅家属可见；如需补充可提醒父亲。':(b.status==='生成中'?'AI 正在逐章生成，完成后可直接编写':'每一章都可以自己重写，也可以加一章想说的话。')}</div>
+      ${chs.length? chs.map((c,i)=>`<div class="lgc-ch"><div class="lgc-ch-h"><b>${esc(c.t)}</b><span class="tiny">${(c.c||'').length} 字 · ${c.edited?'本人已改':'AI 初稿'}</span></div>
+        <textarea class="inp" id="ch${i}" rows="3" ${ro?'readonly':''}>${esc(c.c||'')}</textarea>
+        ${ro?'':`<div class="lgc-ch-ops"><button class="btn sm" onclick="Warm.saveOne(${b._id},${i})">💾 本章</button><button class="btn sm" onclick="Warm.polish(${b._id},${i})">🤖 换说法</button><button class="btn sm" onclick="Warm.fromMate(${b._id},${i})">📔 引原文</button></div>`}</div>`).join('')
+        : '<div class="tiny">草稿生成中…</div>'}
+      <div class="mbtns" style="margin-top:12px">${ro
+        ? `<button class="btn p blk" onclick="Mob.legacyBack(${b._id})">💬 回应一句</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 打印装订</button><button class="btn sm" onclick="Mob.wBio(${b._id})">↻ 刷新</button><button class="btn sm" onclick="MB.close()">关闭</button></div>`
+        : (b.status==='生成中'
+          ? `<button class="btn blk" onclick="Mob.wBio(${b._id})">后台生成，重新打开</button>`
+          : `<button class="btn p blk" onclick="Warm.saveChapters(${b._id})">💾 全部保存</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" onclick="Warm.addChapter(${b._id})">＋ 加一章</button><button class="btn sm g" onclick="Warm.finalize(${b._id})">✅ 定稿</button><button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 成书</button><button class="btn sm p" onclick="Warm.deliver(${b._id})">📮 交付</button></div>`)} </div>`);
+  },
+  wDeliver(id){
+    const b = Warm.bio(id); if(!b) return;
+    MB.sheet(`<h4>📮 交付家人 <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="mform"><div class="field"><label>交付对象</label><input class="inp" id="dlTo" value="${esc(b.family||'徐乐')}"></div>
+        <div class="field"><label>送达方式</label><div class="seg" id="dlWay">${['APP 推送','短信链接','纸质快递','园区服务台领取'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>附一句话</label><textarea class="inp" id="dlMsg" rows="2" placeholder="想对家人说的话">这本册子交给你们，翻到它就像我还在说话。</textarea></div>
+        <div class="tiny">交付后子女端「传承」会同步出现《${esc(b.title)}》，仅授权家属可见，可随时撤销。</div></div>
+      <div class="mbtns"><button class="btn" onclick="Mob.wBio(${b._id})">返回</button><button class="btn p" onclick="Warm.doDeliver(${b._id})">确认交付</button></div>`);
+    Warm.seg('dlWay');
+  },
+  legacyBack(id){
+    const b = Warm.bio(id);
+    MB.sheet(`<h4>💬 回一句给${esc(MB.elder)} <span class="link" onclick="MB.close()">关闭</span></h4>
+      <div class="field"><label>回应${b?'《'+esc(b.title)+'》':''}</label><textarea class="inp" id="lbTxt" rows="3">爸，这本册子我读了三遍，明年我们把老屋那几张也补上去。</textarea></div>
+      <button class="btn p blk" onclick="Mob.legacySend(${id||0})">发送回应（同步长者端与房间大屏）</button>`);
+  },
+  legacySend(id){
+    const t = ($('lbTxt')&&$('lbTxt').value)||'回应'; const b = Warm.bio(id);
+    MODULES.circle.rows.unshift({ _id:++UID, author:MB.child, kind:'子女留言', text:t+(b?'　—— 读《'+b.title+'》':''), imgs:'', likes:0, cmts:0, share:'已同步', date:now(), status:'已发布' });
+    if(b){ b.replyMsg=t; b.replyTime=now(); }
+    MB.close(); persist(); renderMobile(S.view); logAct('子女回应传记', (b?b.title:'')+'：'+String(t).slice(0,18), '低');
+    toast('已回应，长者端「温暖」与房间大屏会收到','ok');
+  },
+  remindWrite(){
+    MB.close();
+    pushAlert('子女关怀提醒', `子女 ${MB.child} 提醒 ${MB.elder} 记一条时光日记 / 整理一张老照片，已推送到长者端与房间大屏`);
+    logAct('提醒长者记录', MB.elder+' / '+S.view.toUpperCase(), '低'); toast('已提醒父亲记录','ok');
+  },
+  printElderAlbum(){ Mob.wPrintList(); },
+
 broadcast(){ const a=MB.SA(), d=new Date(), p=n=>String(n).padStart(2,'0');
     const wk=['日','一','二','三','四','五','六'][d.getDay()]; const h=d.getHours();
     const seg=h<6?'凌晨':h<11?'上午':h<13?'中午':h<18?'下午':'晚上';

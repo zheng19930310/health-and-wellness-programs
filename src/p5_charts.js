@@ -655,3 +655,720 @@ function drawScreenCharts(soft){
       {name:'环控',value:22,children:[{name:'温湿度',value:14},{name:'照明',value:4},{name:'空调',value:4}]},
       {name:'设备',value:18,children:[{name:'离线',value:11},{name:'低电量',value:7}]}]}]},true);
 }
+
+/* ============================================================
+ *  空间资产 · 分区→楼栋→房间→IoT 设备四级联动视图
+ * ============================================================ */
+function roomDevicesOf(code){
+  const c = String(code||'').trim().toUpperCase(), raw = c.replace(/-/g,'');
+  return (MODULES.device.rows||[]).filter(d=>{
+    const txt = (String(d.no||'')+String(d.name||'')+String(d.pos||'')).toUpperCase();
+    return (raw && txt.includes(raw)) || (c && txt.includes(c));
+  });
+}
+function roomStayOf(code){ const c=String(code||'').trim().toUpperCase(); return (MODULES.stay.rows||[]).filter(s=>String(s.room).trim().toUpperCase()===c); }
+const Sp = {
+  st(){ if(!S.sp) S.sp = {}; const b = MODULES.building.rows; if(!S.sp.bld) S.sp.bld = (b[0]&&b[0].name)||''; if(!S.sp.room){ const r = S.sp.bld ? Sp.rooms(S.sp.bld)[0] : null; S.sp.room = r?r.code:''; } return S.sp; },
+  rooms(bld){ const n = bld||this.st().bld; return (MODULES.room.rows||[]).filter(r=>r.bld===n); },
+  floors(bld){ const rs=this.rooms(bld); const map={}; rs.forEach(r=>{ (map[r.floor]=map[r.floor]||[]).push(r); }); return Object.keys(map).sort((a,b)=>a-b).map(f=>({floor:f, list:map[f]})); },
+  pickArea(a){ this.st(); S.sp.area=a; const first=MODULES.building.rows.find(b=>b.area===a); S.sp.bld = first?first.name:''; S.sp.room = (Sp.rooms()[0]||{}).code||''; renderPage(); },
+  pickBld(n){ this.st(); S.sp.bld=n; S.sp.room=(Sp.rooms()[0]||{}).code||''; renderPage(); },
+  pickRoom(c){ this.st(); S.sp.room=c; renderPage(); }
+};
+
+/* ---------- 手写板（画画记录，Web 与移动端共用） ---------- */
+const Pad = {
+  cur:null,
+  mount(id){ const c=$(id); if(!c||c.__pad) return; c.__pad=1;
+    const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); ctx.lineCap='round'; ctx.lineJoin='round';
+    const P = { ctx, drawing:false, color:'#1b2b3d', size:4 };
+    const pos = e => { const r=c.getBoundingClientRect(); const px=(e.touches?e.touches[0].clientX:e.clientX)-r.left, py=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+      return [px*(c.width/r.width), py*(c.height/r.height)]; };
+    const down = e => { const p=pos(e); P.drawing=true; ctx.beginPath(); ctx.moveTo(p[0],p[1]); e.preventDefault(); };
+    const move = e => { if(!P.drawing) return; const p=pos(e); ctx.strokeStyle=P.color; ctx.lineWidth=P.size; ctx.lineTo(p[0],p[1]); ctx.stroke(); e.preventDefault(); };
+    const up = () => { P.drawing=false; };
+    c.addEventListener('mousedown',down); c.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+    c.addEventListener('touchstart',down,{passive:false}); c.addEventListener('touchmove',move,{passive:false}); c.addEventListener('touchend',up);
+    Pad.cur = P; },
+  color(v){ if(Pad.cur) Pad.cur.color=v; },
+  size(v){ if(Pad.cur) Pad.cur.size=+v; },
+  clear(id){ const c=$(id); if(!c) return; const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); },
+  dataURL(id){ const c=$(id); return c? c.toDataURL('image/jpeg',0.62) : ''; }
+};
+
+/* ---------- 录音计时（模拟，Web 与移动端共用） ---------- */
+const Rec = {
+  tm:null, sec:0, label:null, endCb:null,
+  fmt(s){ const p=n=>String(n).padStart(2,'0'); return Math.floor(s/60)+'\u0027'+p(s%60)+'\u0022'; },
+  start(label,endCb){ this.stop(); this.sec=0; this.label=label; this.endCb=endCb; const el=$(label);
+    this.tm=setInterval(()=>{ this.sec++; const t=$(this.label); if(t) t.textContent=this.fmt(this.sec); else this.stop(); },1000); },
+  stop(){ if(this.tm){ clearInterval(this.tm); this.tm=null; } }
+};
+
+/* ---------- 打印层：先给纸质版式预览，再交给浏览器打印 ---------- */
+function printHostClose(){ const h=$('printHost'); if(h) h.classList.remove('on'); }
+function printSheets(html){
+  let h = $('printHost');
+  if(!h){ h=document.createElement('div'); h.id='printHost';
+    h.innerHTML = '<div class="ph-bar"><b>🖨 纸质版式预览</b><span class="tiny">按纸张尺寸分页排版 · 点「打印」后可选另存为 PDF</span>'
+      + '<div><button class="btn sm" onclick="printHostClose()">✕ 关闭</button> <button class="btn sm p" onclick="try{window.print()}catch(e){toast(\'当前环境不支持直接打印，已保留版式预览\',\'warn\')}">🖨 打印 / 另存 PDF</button></div></div><div class="ph-body" id="phBody"></div>';
+    document.body.appendChild(h); }
+  $('phBody').innerHTML = html; h.classList.add('on');
+  setTimeout(()=>{ try{ window.print(); }catch(e){ toast('当前环境不支持直接打印，已生成纸质版式预览','warn'); } }, 260);
+}
+
+/* ---------- 房间设备接入（按房型给出标准配置并写入设备台账） ---------- */
+const ROOM_DEV_PLAN = {
+  '护理间':['床垫监测','紧急呼叫按钮','温湿度传感器','加湿器'],
+  '单人间':['紧急呼叫按钮','温湿度传感器','照明'],
+  '双人间':['紧急呼叫按钮','温湿度传感器','照明','智能插座'],
+  '套间':['温湿度传感器','紧急呼叫按钮','空调/新风','智能插座'],
+  '旅居客房':['运动手环','智能插座','温湿度传感器'],
+  '公共空间':['照明','烟感报警','摄像头']
+};
+const DEV_PREFIX = { '床垫监测':'MAT','紧急呼叫按钮':'SOS','温湿度传感器':'TH','加湿器':'HU','照明':'LT','空调/新风':'AC','智能插座':'SOCK','智能手环':'BW','运动手环':'SPORT','烟感报警':'SMOKE','摄像头':'CAM' };
+function addRoomDevices(code){
+  const r = roomOf(code); if(!r){ toast('未找到该房间','err'); return; }
+  const plan = ROOM_DEV_PLAN[r.type] || ['温湿度传感器','紧急呼叫按钮'];
+  const raw = String(code).replace(/-/g,''); let n=0;
+  plan.forEach(cate=>{
+    const no = (DEV_PREFIX[cate]||'DEV')+'-'+raw+'-01';
+    if((MODULES.device.rows||[]).some(d=>String(d.no).toUpperCase()===no)) return;
+    MODULES.device.rows.unshift({ _id:++UID, no, name:code+' '+cate, cate, zone:r.zone||bldZone(r.bld)||r.area, pos:code+' 卧室', model:'MQTT-3.1.1', fw:'v1.0.0',
+      online:'在线', batt:100, last:now(), bind:(r.guest&&r.status==='已入住')?r.guest:'—', install:today() }); n++;
+  });
+  persist(); renderPage();
+  if(n) { toast(`已为 ${code}（${r.type}）接入 ${n} 台标准设备，可在设备台账查看`,'ok'); logAct('房间设备接入', code+' × '+n, '中'); }
+  else toast('该房间标准配置已全部接入','warn');
+}
+
+/* ---------- 自定义页：空间资产总览 ---------- */
+Object.assign(CUSTOM, {
+  space(key){
+    const m = MODULES[key]; const st = Sp.st();
+    $('crumb').innerHTML = `首页 / 空间资产 / <b>${esc(m.title)}</b>`;
+    const devs = MODULES.device.rows||[], rooms = MODULES.room.rows||[], blds = MODULES.building.rows||[];
+    const areas = Array.from(new Set(blds.map(b=>b.area)));
+    const on = devs.filter(d=>d.online==='在线').length;
+    const live = rooms.filter(r=>r.status==='已入住').length, free = rooms.filter(r=>r.status==='空置').length;
+    const kpi = [['🗺','分区', areas.length+' 个', '康养 / 文化 / 旅游 / 生活配套', ''],
+      ['🏢','楼栋', blds.length+' 栋', '在用 '+blds.filter(b=>b.status==='在用').length+' · 维护 '+blds.filter(b=>b.status!=='在用').length, ''],
+      ['🚪','房间总数', rooms.length+' 间', '床位 '+rooms.reduce((s,r)=>s+(+r.beds||0),0)+' 张', ''],
+      ['🛏','已入住', live+' 间', '空置 '+free+' 间', '入住率 '+Math.round(live/rooms.length*100)+'%'],
+      ['🔧','维修/清洁', rooms.filter(r=>['维修中','清洁中'].includes(r.status)).length+' 间', '预留 '+rooms.filter(r=>r.status==='预留').length+' 间', ''],
+      ['📡','IoT 设备', devs.length+' 台', '在线 '+on+' 台', '在线率 '+Math.round(on/devs.length*100)+'%']];
+    const curBld = blds.find(b=>b.name===st.bld) || blds[0] || {};
+    const rs = Sp.rooms(curBld.name);
+    const cur = rs.find(r=>r.code===st.room) || rs[0] || null;
+    $('page').innerHTML = `<div class="page-h"><div><h2>🏗 空间资产总览</h2><p>${esc(m.desc)}　·　当前：${esc(st.area||curBld.area||'全部分区')} / ${esc(curBld.name||'—')}　·　房间与设备实时联动</p></div>
+      <div class="acts"><button class="btn" onclick="App.go('admin','building')">🏢 楼栋台账</button><button class="btn" onclick="App.go('admin','room')">🚪 房间台账</button>
+      <button class="btn" onclick="Crud.open('room')">＋ 新增房间</button><button class="btn p" onclick="App.go('admin','stay')">🔑 入住与退租办理</button></div></div>
+    <div class="kpis" style="grid-template-columns:repeat(6,1fr)">${kpi.map(k=>`<div class="kpi"><i><span class="e">${k[0]}</span>${k[1]}</i><b>${k[2]}</b><span>${k[3]}${k[4]?' · '+k[4]:''}</span></div>`).join('')}</div>
+    <div class="sp-wrap">
+      <div class="card"><div class="card-h"><h3>分区与楼栋</h3><span class="tiny">点击下钻</span></div><div class="card-b" style="padding:10px 12px">
+        ${areas.map(a=>{ const bs=blds.filter(b=>b.area===a); return `<div class="sp-are${st.area===a?' on':''}" onclick="Sp.pickArea('${a}')">${a}<span>${bs.length} 栋 / ${(rooms.filter(r=>r.area===a).length)}</span></div>`
+          + (st.area===a? bs.map(b=>{ const n=rooms.filter(r=>r.bld===b.name).length; return `<div class="sp-bld${b.name===st.bld?' on':''}" onclick="Sp.pickBld('${esc(b.name)}')"><i class="st ${b.status==='在用'?'g':b.status==='维护中'?'w':'r'}"></i>${esc(b.name)}<span>${n} 间</span></div>`; }).join(''):''); }).join('')}
+        <div class="tiny" style="margin-top:10px">楼栋状态：${blds.filter(b=>b.status!=='在用').map(b=>esc(b.name)+'（'+esc(b.status)+'）').join('、')||'全部在用'}</div></div></div>
+      <div class="card"><div class="card-h"><h3>${esc(curBld.name||'房间列表')} · 按楼层</h3><span class="tiny">${rs.length} 间 · 管家 ${esc(curBld.steward||'—')} · ${esc(curBld.elev||'')}</span></div>
+      <div class="card-b">
+        <div class="sp-lg"><span><i class="v"></i>空置</span><span><i class="o"></i>已入住</span><span><i class="m"></i>维修中</span><span><i class="r"></i>预留</span><span><i class="c"></i>清洁中</span></div>
+        ${Sp.floors(curBld.name).map(f=>`<div class="sp-fl"><div class="sp-fl-t">${f.floor}F<span class="tiny">　${f.list.length} 间 · 在住 ${f.list.filter(r=>r.status==='已入住').length}</span></div>
+          <div class="sp-tiles">${f.list.map(r=>{ const dcount=roomDevicesOf(r.code).length; return `<div class="sp-rm ${r.status}" onclick="Sp.pickRoom('${r.code}')"><b>${esc(r.code)}</b><span>${esc(r.type)}${r.guest?' · '+esc(r.guest):''}</span><i class="dv${dcount?' h':''}">${dcount?'📡 '+dcount:'📡 0'}</i></div>`; }).join('')}</div></div>`).join('')
+          || '<div class="empty"><div class="e">🚪</div>该楼栋暂无房间记录，可点击「＋ 新增房间」录入</div>'}
+      </div></div>
+      <div class="card"><div class="card-h"><h3>房间详情</h3><span class="tiny">${cur?esc(cur.code):'未选择'}</span></div><div class="card-b" id="spDetail">${cur?spRoomHTML(cur):'<div class="tiny">请先在中间选择房间</div>'}</div></div>
+    </div>`;
+    if(!st.area && curBld.area) st.area = curBld.area;
+    if(!st.room && cur) st.room = cur.code;
+  }
+});
+function spRoomHTML(r){
+  const devs = roomDevicesOf(r.code), stays = roomStayOf(r.code);
+  const env = devs.filter(d=>['温湿度传感器','加湿器','空调/新风'].includes(d.cate));
+  const ar = archiveOf(r.guest);
+  return `<div class="dinfo" style="grid-template-columns:1fr 1fr">${[['code','房号'],['type','房型'],['beds','床位'],['size','面积(㎡)'],['orient','朝向'],['adapt','适老化'],['price','月租(元)'],['status','使用状态']].map(p=>`<div><label>${p[1]}</label>${esc(r[p[0]]===''||r[p[0]]==null?'—':r[p[0]])}</div>`).join('')}</div>
+    <div class="card-h" style="padding:14px 0 8px"><h3>📡 IoT 设备（${devs.length}）</h3><span class="tiny">实时读数</span></div>
+    ${devs.length? `<div class="sp-dvs">${devs.map(d=>`<div class="sp-dv"><b><span class="dot ${d.online==='在线'?'on':'al'}"></span>${esc(d.name)}</b><p>${liveReadings(d).map(x=>esc(x[0]+' '+x[1])).join('　')||esc(d.online)}</p><span class="mono">${esc(d.no)}</span></div>`).join('')}</div>`
+      : '<div class="tiny">该房间尚未接入设备，可一键按房型标准配置接入。</div>'}
+    <div class="mbtns" style="margin:10px 0 4px;flex-wrap:wrap"><button class="btn sm p" onclick="addRoomDevices('${r.code}')">＋ 接入标准设备</button>
+      <button class="btn sm" onclick="Crud.open('device')">＋ 手动新增设备</button>
+      <button class="btn sm" onclick="App.go('admin','iot')">📡 设备台账</button></div>
+    <div class="card-h" style="padding:14px 0 8px"><h3>🔑 入住与合同（${stays.length}）</h3></div>
+    ${stays.length? stays.map(s=>`<div class="sp-stay"><b>${esc(s.name)} · ${esc(s.pkg)}</b><p>合同 ${esc(s.no)} · ${esc(s.start)} → ${esc(s.end)} · 月费 ${Number(s.rent||0).toLocaleString()} 元</p>
+      <p>状态：${tagHTML({tag:{'待签约':'blue','已绑定':'green','换房中':'warn','退租申请':'warn','已退租':'ink'}},s.status)}　绑定：${esc(s.band||'—')}</p></div>`).join('')
+      : `<div class="tiny">${r.status==='空置'?'当前空置，可直接发起入住绑定。':'暂无有效合同记录。'}</div>`}
+    <div class="mbtns" style="margin-top:10px;flex-wrap:wrap">
+      ${r.status==='空置'?`<button class="btn sm g" onclick="S.kw.stay='';App.go('admin','stay');toast('请在入住绑定与退租中新增合同并绑定 ${r.code}','ok')">🔑 去办理入住绑定</button>`:''}
+      ${r.status==='已入住'&&ar?`<button class="btn sm" onclick="Modal.close();detailArchive(MODULES.archive.rows.find(x=>x.name==='${esc(r.guest)}'))">📇 住客档案</button>`:''}
+      ${r.status==='空置'?`<button class="btn sm" onclick="Crud.flow('room',${r._id},0)">🔧 安排维修</button>`:''}
+      ${r.status==='维修中'?`<button class="btn sm g" onclick="Crud.flow('room',${r._id},1)">✅ 维修完成</button>`:''}
+      <button class="btn sm" onclick="Crud.open('room',${r._id})">✏️ 编辑房间</button></div>
+    <div class="tiny" style="margin-top:10px">${env.length?'环控摘要：'+env.map(d=>liveReadings(d)[0][0]+' '+liveReadings(d)[0][1]).join(' · '):'无环控设备'}${r.note?'<br>备注：'+esc(r.note):''}</div>`;
+}
+
+/* ============================================================
+ *  温暖与传承 · 能力层（相册 / 日记 / AI 传记）
+ *  Web 自定义页与 APP / 小程序端共用同一套数据与操作
+ * ============================================================ */
+const Warm = {
+  album(id){ return (MODULES.album.rows||[]).find(r=>r._id===+id) || null; },
+  diary(id){ return (MODULES.diary.rows||[]).find(r=>r._id===+id) || null; },
+  bio(id){ return (MODULES.legacy.rows||[]).find(r=>r._id===+id) || null; },
+  albums(owner, cate, all){ return (MODULES.album.rows||[]).filter(a=>(all||a.status!=='已销毁') && (!owner||a.owner===owner) && (!cate||cate==='全部'||a.cate===cate)); },
+  diaries(owner, kind){ return (MODULES.diary.rows||[]).filter(d=>(!owner||d.name===owner) && (!kind||kind==='全部'||d.kind===kind)); },
+  bios(owner){ return (MODULES.legacy.rows||[]).filter(b=>!owner||b.name===owner); },
+  photos(a){ return (a && a.photos) || []; },
+  sync(a){ a.cnt = Warm.photos(a).length; },
+  save(){ persist(); Warm.refresh(); },
+  who(){ const d = S.mobileRole && S.view!=='admin' ? S.mobileRole[S.view] : null;
+    return (S.user && S.user.roleKey==='elder') ? S.user.name : (d==='elder'&&S.user?S.user.name:''); },
+  /* Web 后台用共享弹层；APP / 小程序端一律用手机屏内弹层（MB.sheet） */
+  isWeb(){ return !(S.view==='app' || S.view==='mp'); },
+  dismiss(){ Modal.close(); if(typeof MB!=='undefined' && MB.close) MB.close(); },
+  viewAlbum(id){ if(Warm.isWeb()) Warm.openAlbum(id); else Mob.wAlbum(id); },
+  viewDiary(id){ if(Warm.isWeb()) Warm.openDiary(id); else Mob.wDiary(id); },
+  viewBio(id){ if(Warm.isWeb()) Warm.openBio(id); else Mob.wBio(id); },
+
+  /* ---------- 相册：新建 ---------- */
+  newAlbum(owner){
+    if(!Warm.isWeb()) return Mob.wNewAlbum(owner);
+    const def = owner || Warm.who() || ELDER_NAMES[0];
+    Modal.open('📸 新建相册（归属长者拥有完全的增删与销毁权）', `<div class="mform">
+      <div class="field"><label>相册名称 *</label><input class="inp" id="wName" placeholder="如：1970s 厂门口的那些年"></div>
+      <div class="field"><label>归属长者</label><select class="sel" id="wOwner">${ELDER_NAMES.map(n=>`<option${n===def?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+      <div class="field"><label>相册分类</label><select class="sel" id="wCate">${ALBUM_CATES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="field"><label>可见范围</label><div class="seg" id="wPriv">${['私密','家人可见','园区公开'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>拍摄地 / 来源</label><input class="inp" id="wPlace" placeholder="家里翻拍 / 园区实拍 / 老照片扫描"></div>
+      <div class="field"><label>相册简介</label><textarea class="inp" id="wNote" rows="2" placeholder="这本相册想留给谁、想说些什么"></textarea></div>
+      <div class="tiny">创建后即可添加照片；支持拍照上传、老照片扫描翻拍、手迹作品拍摄，以及引用园区活动集体相册。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.createAlbum()">创建并添加第一张</button>`);
+    Warm.seg('wPriv');
+  },
+  seg(id){ const b=$(id); if(!b) return; b.onclick = e=>{ const x=e.target.closest('button'); if(!x) return; [...b.children].forEach(n=>n.classList.remove('on')); x.classList.add('on'); }; },
+  segVal(id, dft){ const b=$(id); if(!b) return dft; const x=b.querySelector('button.on'); return x?x.dataset.v:dft; },
+  createAlbum(){
+    const name = ($('wName').value||'').trim();
+    if(!name){ toast('请填写相册名称','err'); return; }
+    const a = { _id:++UID, name, owner:$('wOwner').value, cate:$('wCate').value, cover:'📷', cnt:0, date:today(),
+      priv:Warm.segVal('wPriv','家人可见'), share:'未分享', shareExp:'', printCnt:0, place:($('wPlace').value||'').trim(),
+      status:'正常', photos:[], note:($('wNote').value||'').trim() };
+    MODULES.album.rows.unshift(a); persist(); logAct('新建相册', name+'（'+a.owner+'）','低'); toast('相册「'+name+'」已创建','ok');
+    Warm.addPhoto(a._id);
+  },
+
+  /* ---------- 相册：添加 / 删除照片 ---------- */
+  addPhoto(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!Warm.isWeb()) return Mob.wAddPhoto(id);
+    Modal.open('🖼 向「'+esc(a.name)+'」添加照片（现有 '+Warm.photos(a).length+' 张）', `<div class="seg" id="pSrc">${['拍照上传','扫描翻拍','手迹作品','园区活动'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div>
+      <div class="mform" style="margin-top:12px">
+        <div class="field"><label>照片标题 *</label><input class="inp" id="pTitle" placeholder="如：1985 年 · 技术能手奖状"></div>
+        <div class="field"><label>拍摄 / 年份日期</label><input class="inp" id="pDate" value="${today()}"></div>
+        <div class="field"><label>画面内容（原型用图标代图）</label><div class="seg" id="pIco">${['📷','🏭','🌳','💑','🖊','🎤','🧣','🥟','🌅','🖼','🏆','👵'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div>
+          <div class="tiny">接入相机后此处为真实缩略图，可选 <b>AI 清晰修复</b>、<b>黑白上色</b>、<b>OCR 认字</b>（演示按钮在照片详情内）。</div></div>
+        <div class="field"><label>想说的话（图注，会成为传记素材）</label><textarea class="inp" id="pCap" rows="2" placeholder="这张照片背后的故事"></textarea></div>
+        <div class="field"><label>语音配图（可选）</label><div class="rec-row"><button class="btn sm" onclick="Warm.recPhoto(this)">● 按住说话</button><span class="mono" id="pRecT">00'00\u0022</span><span class="tiny" id="pRecS">未录制</span></div></div>
+      </div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn" onclick="Warm.openAlbum(${a._id})">返回相册</button><button class="btn p" onclick="Warm.savePhoto(${a._id})">保存这张照片</button>`);
+    Warm.seg('pSrc'); Warm.seg('pIco');
+  },
+  recPhoto(btn){
+    if(Rec.tm){ Rec.stop(); btn.textContent='● 按住说话'; $('pRecS').textContent='已录制 '+Rec.fmt(Rec.sec); $('pRecS').className='tag green'; return; }
+    btn.textContent='■ 停止'; $('pRecS').textContent='录制中…'; $('pRecS').className='tag red'; Rec.start('pRecT');
+  },
+  savePhoto(id){
+    const a = Warm.album(id); if(!a) return;
+    const t = ($('pTitle').value||'').trim();
+    if(!t){ toast('请填写照片标题','err'); return; }
+    const recOn = !!Rec.tm; Rec.stop();
+    a.photos = a.photos || [];
+    a.photos.push({ t, ico:Warm.segVal('pIco','📷'), date:($('pDate').value||today()).trim(),
+      cap:($('pCap').value||'').trim(), src:Warm.segVal('pSrc','拍照上传'),
+      voice: recOn? Rec.fmt(Rec.sec) : '' });
+    Warm.sync(a); a.status='正常'; persist(); logAct('相册添加照片', a.name+' → '+t, '低');
+    toast('已添加《'+t+'》，相册共 '+a.cnt+' 张','ok');
+    Warm.viewAlbum(a._id);
+  },
+  delPhoto(id, i){
+    const a = Warm.album(id); if(!a) return; const p = a.photos[i]; if(!p) return;
+    if(!confirm('确认删除照片《'+p.t+'》？删除后不可恢复（可从回收站找回 7 天）。')) return;
+    a.photos.splice(i,1); Warm.sync(a); persist(); logAct('删除照片', a.name+' / '+p.t, '中'); Warm.refresh(); Warm.viewAlbum(a._id);
+  },
+  fixPhoto(id, i){ const a=Warm.album(id); const p=a&&a.photos[i]; if(!p) return;
+    if(p.fixed){ toast('该照片已完成 AI 修复','warn'); return; }
+    p.fixed=1; persist(); logAct('AI 照片修复', a.name+' / '+p.t, '低'); Warm.viewAlbum(a._id); toast('AI 已去除划痕并提升清晰度（演示）','ok'); },
+
+  /* ---------- 相册：详情弹层 ---------- */
+  openAlbum(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!Warm.isWeb()) return Mob.wAlbum(id);
+    const ps = Warm.photos(a);
+    const body = `<div class="ab-h"><div class="ab-cover">${esc(a.cover||'📷')}</div>
+      <div><h3>${esc(a.name)}</h3><p>${esc(a.owner)} · ${esc(a.cate)} · ${esc(a.place||'—')} · 创建 ${esc(a.date)}</p>
+      <div class="ab-tags">${tagHTML({tag:{'私密':'ink','家人可见':'blue','园区公开':'green'}}, a.priv)}${tagHTML({tag:{'未分享':'ink','已生成链接':'green','已撤销':'warn'}}, a.share)}${tagHTML({tag:{'正常':'green','已销毁':'red'}}, a.status)}
+        <span class="tag purple">${ps.length} 张</span><span class="tag">已打印 ${a.printCnt||0} 次</span></div></div></div>
+      ${a.note?`<div class="ab-note">${esc(a.note)}</div>`:''}
+      <div class="ab-grid">${ps.length? ps.map((p,i)=>`<div class="ab-ph"><div class="im">${p.img?`<img src="${p.img}">`:esc(p.ico||'📷')}${p.fixed?'<i class="fx">AI 修复</i>':''}</div>
+        <b>${esc(p.t)}</b><p>${esc(p.cap||'（未填写图注）')}</p><span>${esc(p.date||'')}${p.src?' · '+esc(p.src):''}${p.voice?' · 🎙 '+esc(p.voice):''}</span>
+        <div class="ab-ops"><button class="btn sm" onclick="Warm.fixPhoto(${a._id},${i})">✨ AI 修复</button><button class="btn sm" onclick="Warm.photoNote(${a._id},${i})">💬 补充</button><button class="btn sm d" onclick="Warm.delPhoto(${a._id},${i})">🗑 删除</button></div></div>`).join('')
+        : '<div class="empty"><div class="e">🖼</div>还没有照片，点击下方「添加照片」</div>'}</div>`;
+    Modal.open('📸 相册详情 · '+esc(a.name), body,
+      `<button class="btn" onclick="Modal.close()">关闭</button>
+       <button class="btn p" onclick="Warm.addPhoto(${a._id})">＋ 添加照片</button>
+       <button class="btn g" onclick="Warm.share(${a._id})">🔗 分享</button>
+       <button class="btn" onclick="Warm.printSheet(${a._id})">🖨 打印成纸质相册</button>
+       <button class="btn d" onclick="Warm.destroy(${a._id})">🗑 销毁相册</button>`, true);
+  },
+  photoNote(id, i){
+    const a = Warm.album(id); const p = a && a.photos[i]; if(!p) return;
+    if(!Warm.isWeb()) return Mob.wPhotoNote(id, i);
+    Modal.open('💬 补充图注 · '+esc(p.t), `<div class="mform"><div class="field"><label>这张照片的故事</label>
+      <textarea class="inp" id="pnCap" rows="4">${esc(p.cap||'')}</textarea></div>
+      <div class="field"><label>画面内容</label><div class="seg" id="pnIco">${['📷','🏭','🌳','💑','🖊','🎤','🧣','🥟','🌅','🖼','🏆','👵'].map(x=>`<button class="${x===(p.ico||'📷')?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="tiny">图注会以「第一人称」进入 AI 传记草稿，写得越具体，传记越像本人。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.saveNote(${a._id},${i})">保存</button>`);
+    Warm.seg('pnIco');
+  },
+  saveNote(id, i){ const a=Warm.album(id), p=a&&a.photos[i]; if(!p) return; p.cap=($('pnCap').value||'').trim(); p.ico=Warm.segVal('pnIco',p.ico); persist(); Warm.refresh(); toast('图注已更新','ok'); Warm.viewAlbum(a._id); },
+
+  /* ---------- 相册：分享 / 撤销 ---------- */
+  share(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!Warm.isWeb()) return Mob.wShare(id);
+    const code = 'ALB'+String(a._id).padStart(4,'0')+String(Date.now()).slice(-4);
+    const link = 'https://ky-park.cn/a/'+code;
+    Modal.open('🔗 分享相册 · '+esc(a.name), `<div class="mform">
+      <div class="field"><label>分享范围</label><div class="seg" id="shScope">${['仅家人','园区公开','凭链接任何人'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>有效期</label><div class="seg" id="shExp">${['7 天','30 天','长期有效'].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>接收对象</label><input class="inp" id="shTo" placeholder="如：徐乐（女儿）/ 家庭群"></div>
+      <div class="field"><label>分享链接</label><div class="share-box"><span class="mono" id="shLink">${link}</span><button class="btn sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('${link}');toast('链接已复制，长者端可一键转发','ok')">复制</button></div>
+        <div class="tiny">分享码：<b class="mono">${code}</b>　·　长者可在相册页随时「撤销分享」，撤销后链接立即失效；打印与浏览行为会回写到运营日志。</div></div>
+      </div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.doShare(${a._id})">生成分享</button>`);
+    Warm.seg('shScope'); Warm.seg('shExp');
+  },
+  doShare(id){
+    const a = Warm.album(id); if(!a) return;
+    a.share='已生成链接'; a.shareTo=($('shTo').value||'').trim()||'家人';
+    a.shareScope=Warm.segVal('shScope','仅家人');
+    const exp=Warm.segVal('shExp','30 天');
+    const d=new Date(); if(exp==='7 天') d.setDate(d.getDate()+7); else if(exp==='30 天') d.setDate(d.getDate()+30);
+    a.shareExp = exp==='长期有效'? '长期有效' : d.toISOString().slice(0,10);
+    if(a.priv==='私密') a.priv='家人可见';
+    persist(); logAct('分享相册', a.name+' → '+a.shareScope+'（'+a.shareExp+'）','中'); Warm.refresh();
+    toast('分享已生成：'+a.shareScope+' · 有效期至 '+a.shareExp,'ok'); Warm.viewAlbum(a._id);
+  },
+
+  /* ---------- 相册：打印成纸质 ---------- */
+  printSheet(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!Warm.isWeb()) return Mob.wPrint(id);
+    Modal.open('🖨 打印成纸质相册 · '+esc(a.name), `<div class="mform">
+      <div class="field"><label>纸张规格</label><div class="seg" id="prPaper">${['A4 哑光','12 寸相簿','拍立得 3寸'].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>装订方式</label><div class="seg" id="prBind">${['精装硬壳','蝴蝶对裱','环装可拆'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>打印份数</label><input class="inp" id="prCopies" type="number" min="1" max="9" value="1"></div>
+      <div class="field"><label>随册附印</label><div class="ck-row">${['图注全文','长者可手写页','AI 传记摘录','二维码回到电子相册'].map((x,i)=>`<label class="ck2"><input type="checkbox" ${i<2?'checked':''}> ${x}</label>`).join('')}</div></div>
+      <div class="tiny">原型会真实调用浏览器打印：可选择的「另存为 PDF」即得到排版好的纸质版式；园区打印室接单后 1 个工作日送出。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.doPrint(${a._id})">生成版式并打印</button>`);
+    Warm.seg('prPaper'); Warm.seg('prBind');
+  },
+  doPrint(id){
+    const a = Warm.album(id); if(!a) return;
+    const web = Warm.isWeb();
+    const paper=Warm.segVal('prPaper','12 寸相簿'), bind=Warm.segVal('prBind','精装硬壳'), copies=Math.max(1, +($('prCopies').value||1));
+    const ps=Warm.photos(a);
+    const sheets = `<div class="pt-cover"><h1>${esc(a.name)}</h1><p>${esc(a.owner)} · ${esc(a.cate)}</p><div class="big">${esc(a.cover||'📷')}</div>
+      ${a.note?`<p class="note">${esc(a.note)}</p>`:''}<p class="meta">${paper} · ${bind} · 共 ${Math.max(1,ps.length)} 页 · ${copies} 册 · 打印时间 ${now()}</p></div>`
+      + (ps.length? ps.map((p,i)=>`<div class="pt-page"><div class="pt-im">${p.img?`<img src="${p.img}">`:esc(p.ico||'📷')}</div>
+        <h2>${i+1}. ${esc(p.t)}</h2><p class="cap">${esc(p.cap||'')}</p><p class="dt">${esc(p.date||'')}${p.src?' · 来源：'+esc(p.src):''}</p></div>`).join('')
+        : `<div class="pt-page"><div class="pt-im">🖼</div><h2>第 1 页 · 等待放入照片</h2><p class="cap">这本相册还是空的，可以先打印封面，再逐步补充。</p></div>`);
+    printSheets(sheets);
+    a.printCnt = (a.printCnt||0) + copies;
+    persist(); logAct('打印纸质相册', a.name+' × '+copies+' 册（'+paper+'/'+bind+'）','低'); Warm.refresh();
+    if(!web){ toast('《'+a.name+'》已按 '+paper+'/'+bind+' × '+copies+' 册下单，累计打印 '+a.printCnt+' 次','ok'); return; }
+    Modal.open('🖨 已生成纸质版式', `<div class="ok-box"><div class="e">🖨</div><b>《${esc(a.name)}》打印任务已生成</b>
+      <p>规格：${paper} · ${bind} · ${copies} 册 · 共 ${Math.max(1,ps.length)} 页<br>累计打印 ${a.printCnt} 次　·　打印室接单后 1 个工作日送出，可由家属到园区服务台领取。</p>
+      <div class="mbtns"><button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="Warm.printSheet(${a._id})">重新打印</button><button class="btn g" onclick="Warm.openAlbum(${a._id})">返回相册</button></div></div>`);
+  },
+
+  /* ---------- 相册：销毁 ---------- */
+  destroy(id){
+    const a = Warm.album(id); if(!a) return;
+    if(!confirm('确认销毁相册《'+a.name+'》？\n销毁后：照片不再展示、分享链接立即失效、AI 传记中引用将标记为「素材已撤销」。\n（数据保留在回收站 30 天，可由超级管理员恢复）')) return;
+    a.status='已销毁'; a.share = a.share==='已生成链接' ? '已撤销' : a.share; a.destroyAt=now();
+    Warm.dismiss(); persist(); logAct('销毁相册', a.name+'（'+a.owner+'）','高'); Warm.refresh();
+    toast('相册已销毁，分享链接同时失效（回收站保留 30 天）','warn');
+  },
+  restore(id){ const a=Warm.album(id); if(!a) return; a.status='正常'; delete a.destroyAt; Warm.dismiss(); persist(); logAct('恢复相册', a.name,'中'); Warm.refresh(); toast('相册已恢复','ok'); },
+
+  /* ---------- 日记：四类记录（笔记 / 录音 / 画画 / 拍照） ---------- */
+  diaryPanel(kind, owner, inSheet){
+    const who = owner || Warm.who() || ELDER_NAMES[0];
+    const k = kind || '笔记';
+    const head = `<div class="seg dy-seg" id="dyKind">${DIARY_KINDS.map(x=>`<button class="${x===k?'on':''}" data-v="${x}" onclick="Warm.setKind('${x}')">${({'笔记':'🖊 写笔记','录音':'🎙 说录音','画画':'🎨 画两笔','拍照':'📷 拍张照'})[x]}</button>`).join('')}</div>`;
+    let body = '';
+    if(k==='笔记') body = `<div class="field"><label>标题</label><input class="inp" id="dTitle" placeholder="今天想记下什么"></div>
+      <div class="field"><label>正文（支持手写识别文字直接粘进来）</label><textarea class="inp" id="dText" rows="${inSheet?4:5}" placeholder="今天做了什么事、想对谁说什么"></textarea></div>`;
+    else if(k==='录音') body = `<div class="field"><label>标题</label><input class="inp" id="dTitle" placeholder="这段录音叫什么"></div>
+      <div class="rec-row"><button class="btn p" id="dRecBtn" onclick="Warm.recDiary(this)">● 开始说话</button><span class="mono" id="dRecT">00'00\u0022</span><span class="tiny" id="dRecS">未录制</span></div>
+      <div class="field" style="margin-top:10px"><label>自动转写文字（可手工修正）</label><textarea class="inp" id="dText" rows="3" placeholder="录音结束后自动生成转写初稿，可自行修正"></textarea></div>`;
+    else if(k==='画画') body = `<div class="field"><label>作品名称</label><input class="inp" id="dTitle" placeholder="这幅画叫什么"></div>
+      <div class="pad-tools"><div class="seg" id="padColor">${['#1b2b3d','#e5484d','#1668dc','#00b578','#f5a623','#7c5cff'].map((c,i)=>`<button class="${i?'':'on'}" data-v="${c}" style="background:${c};color:#fff" onclick="Pad.color('${c}')">●</button>`).join('')}</div>
+        <div class="seg" id="padSize">${[['细','2'],['中','4'],['粗','8']].map((x,i)=>`<button class="${i===1?'on':''}" data-v="${x[1]}" onclick="Pad.size(${x[1]})">${x[0]}</button>`).join('')}</div>
+        <button class="btn sm" onclick="Pad.clear('dPad')">🧽 擦干净</button></div>
+      <canvas id="dPad" class="pad" width="640" height="300"></canvas>
+      <div class="field" style="margin-top:8px"><label>配一句话（会写进传记）</label><input class="inp" id="dText" placeholder="如：凭记忆画了小时候的老屋和井台"></div>`;
+    else body = `<div class="field"><label>照片标题</label><input class="inp" id="dTitle" placeholder="如：银杏叶夹在书里了"></div>
+      <div class="field"><label>拍摄场景</label><div class="seg" id="dScene">${['园区实景','家人合影','手迹作品','旅居途中','活动瞬间'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="shot" onclick="toast('原型以占位图代表相机预览；接入后可真实拍照','warn')"><div><div class="cam">📷</div><span>点击模拟拍照（支持 OCR 认字与自动增强）</span></div></div>
+      <input type="hidden" id="dIcoShot" value="📷">
+      <div class="field" style="margin-top:10px"><label>这张照片说明</label><textarea class="inp" id="dText" rows="3"></textarea></div>`;
+    return `<div class="dy-panel">${head}
+      <div class="dy-form">
+        <div class="field"><label>记录人</label><select class="sel" id="dName">${ELDER_NAMES.map(n=>`<option${n===who?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+        ${body}
+        <div class="two"><div class="field"><label>心情</label><div class="seg" id="dMood">${['平静','开心','感恩','想家','有点累'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+        <div class="field"><label>可见范围</label><div class="seg" id="dAuth">${['家人可见','私密','园区公开'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div></div>
+      <div class="mbtns"><button class="btn" onclick="Warm.resetDiary()">清空</button><button class="btn p blk" onclick="Warm.saveDiary()">💾 保存这条日记</button></div>
+      <div class="tiny">保存后可在下方列表回看；日记与相册图注都能作为 <b>AI 传记素材</b>，长者随时可取消引用。</div></div></div>`;
+  },
+  afterDiary(){ ['dMood','dAuth','dScene'].forEach(id=>Warm.seg(id)); const k=S.dyKind||'笔记';
+    if(k==='画画') Pad.mount('dPad'); if(k==='拍照'){ const s=$('dScene'); if(s) s.onclick = e=>{ const b=e.target.closest('button'); if(!b) return; [...s.children].forEach(x=>x.classList.remove('on')); b.classList.add('on'); const map={'园区实景':'🌳','家人合影':'💑','手迹作品':'🖊','旅居途中':'🌅','活动瞬间':'🎤'}; const h=$('dIcoShot'); if(h) h.value=map[b.dataset.v]||'📷'; }; } },
+  setKind(k){ S.dyKind = k; if(S.view==='admin') Warm.refresh(); else renderMobile(S.view); },
+  resetDiary(){ S.dyKind='笔记'; Warm.setKind('笔记'); },
+  recDiary(btn){
+    if(Rec.tm){ const sec=Rec.sec; Rec.stop(); btn.textContent='● 开始说话'; const s=$('dRecS'); if(s){ s.textContent='已录制 '+Rec.fmt(sec); s.className='tag green'; }
+      const t=$('dText'); if(t && !t.value.trim()) t.value='【转写】'+ (sec<15? '今天声音有点哑，说的不多，就是想录下这个声音。' : '刚那会儿精神好，我把以前的事说了一段，请帮我看看转得对不对。');
+      return; }
+    btn.textContent='■ 停止'; const s=$('dRecS'); if(s){ s.textContent='录制中…'; s.className='tag red'; } Rec.start('dRecT');
+  },
+  saveDiary(){
+    const k = S.dyKind || '笔记';
+    const title = ($('dTitle').value||'').trim();
+    if(!title){ toast('请填写标题','err'); return; }
+    let content = ($('dText').value||'').trim(), img='', dur='';
+    if(k==='录音'){ const sec=Rec.sec; Rec.stop(); dur=sec? Rec.fmt(sec):'0\u002715"'; content = content.startsWith('【转写】')? content : (content? '【转写】'+content : '【转写】（本次未补充转写文字）'); }
+    else if(k==='画画'){ img = Pad.dataURL('dPad')? '🎨' : '🎨'; content = content || '自己在画板上涂了一幅。'; }
+    else if(k==='拍照'){ img = ($('dIcoShot')&&$('dIcoShot').value)||'📷'; content = content || '拍了这张，当时想说点什么。'; }
+    const d=new Date(); const p=n=>String(n).padStart(2,'0');
+    const row = { _id:++UID, name:$('dName').value, title, kind:k, date:today(), time:p(d.getHours())+':'+p(d.getMinutes()),
+      content, img, dur, mood:Warm.segVal('dMood','平静'), auth:Warm.segVal('dAuth','家人可见'),
+      from: S.view==='admin'?'Web 后台':(S.view==='mp'?'小程序端':'APP 端'), bio:'未引用' };
+    if(k==='画画' && $('dPad')) row.sketch = Pad.dataURL('dPad');
+    MODULES.diary.rows.unshift(row); persist(); logAct('写时光日记', row.name+'《'+title+'》（'+k+'）','低');
+    S.diarySel = S.diarySel||{}; S.diarySel[row._id]=true;
+    toast('已保存：'+k+'《'+title+'》','ok');
+    if(S.view==='admin'){ Warm.refresh(); } else { renderMobile(S.view); }
+  },
+  openDiary(id){
+    const d = Warm.diary(id); if(!d) return;
+    if(!Warm.isWeb()) return Mob.wDiary(id);
+    Modal.open('📔 '+esc(d.title), `<div class="dy-view">
+      <div class="dy-meta">${esc(d.name)} · ${esc(d.kind)} · ${esc(d.date)} ${esc(d.time||'')} · ${esc(d.from||'')} ${d.dur?'· 时长 '+esc(d.dur):''}</div>
+      <div class="dy-tags">${tagHTML({tag:{'笔记':'blue','录音':'purple','画画':'green','拍照':'warn'}}, d.kind)}${tagHTML({tag:{'家人可见':'green','私密':'ink','园区公开':'blue'}}, d.auth)}${tagHTML({tag:{'已引用':'green','未引用':'ink'}}, d.bio)}<span class="tag purple">心情 ${esc(d.mood)}</span></div>
+      ${d.kind==='录音'? `<div class="play"><button class="btn sm p" onclick="Warm.play(this)">▶ 播放</button><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="mono">${esc(d.dur||'')}</span></div>`:''}
+      ${d.sketch? `<div class="dy-img"><img src="${d.sketch}"></div>` : (d.img? `<div class="dy-img big">${esc(d.img)}</div>`:'')}
+      <div class="dy-text">${esc(d.content||'（未填写内容）')}</div></div>`,
+      `<button class="btn" onclick="Modal.close()">关闭</button>
+       <button class="btn ${d.bio==='已引用'?'':'g'}" onclick="Warm.toggleBio(${d._id})">${d.bio==='已引用'?'➖ 取消传记引用':'＋ 用作传记素材'}</button>
+       <button class="btn" onclick="Warm.toAlbum(${d._id})">📸 归入相册</button>
+       <button class="btn d" onclick="Warm.delDiary(${d._id})">🗑 删除</button>`);
+  },
+  play(btn){ if(btn.dataset.on){ btn.dataset.on=''; btn.textContent='▶ 播放'; const w0=btn.parentNode.querySelector('.wave'); if(w0) w0.classList.remove('run'); return; }
+    btn.dataset.on='1'; btn.textContent='⏸ 播放中'; const w=btn.parentNode.querySelector('.wave'); if(w) w.classList.add('run');
+    setTimeout(()=>{ if(btn.isConnected){ btn.dataset.on=''; btn.textContent='▶ 播放'; if(w) w.classList.remove('run'); toast('录音播放完毕（原型为模拟）','ok'); } }, 1600); },
+  toggleBio(id){ const d=Warm.diary(id); if(!d) return;
+    const keep = ($('mask') && $('mask').classList.contains('on')) || !!$('mbSheet');
+    d.bio = d.bio==='已引用'?'未引用':'已引用'; persist(); logAct('日记传记引用', d.name+'《'+d.title+'》→ '+d.bio,'低'); Warm.refresh();
+    if(keep) Warm.viewDiary(id);
+    toast(d.bio==='已引用'?'已加入 AI 传记素材':'已从传记素材中移出','ok'); },
+  toAlbum(id){ const d=Warm.diary(id); if(!d) return;
+    if(!Warm.isWeb()) return Mob.wToAlbum(id);
+    const list = Warm.albums(d.name,'',false);
+    Modal.open('📸 将日记归入相册 · '+esc(d.title), `<div class="mform"><div class="field"><label>选择相册（归属：${esc(d.name)}）</label>
+      <select class="sel" id="taAlb">${list.length? list.map(a=>`<option value="${a._id}">${esc(a.name)}（${Warm.photos(a).length} 张）</option>`).join('') : '<option value="">暂无相册，将新建一本「日记手记」</option>'}</select></div>
+      <div class="tiny">笔记与录音将生成一张带正文摘录的卡片图；画画与拍照则直接使用原图。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.doToAlbum(${d._id})">确定归入</button>`); },
+  doToAlbum(id){ const d=Warm.diary(id); if(!d) return; let a=Warm.album(($('taAlb')&&$('taAlb').value)||0);
+    if(!a){ a={ _id:++UID, name:d.name+'的日记手记', owner:d.name, cate:'手迹作品', cover:'📔', cnt:0, date:today(), priv:d.auth==='私密'?'私密':'家人可见',
+      share:'未分享', shareExp:'', printCnt:0, place:'时光日记', status:'正常', photos:[], note:'由日记内容归集而成' }; MODULES.album.rows.unshift(a); }
+    a.photos = a.photos||[];
+    a.photos.push({ t:d.title, ico: d.sketch?'🎨':(d.img||({'笔记':'🖊','录音':'🎙','画画':'🎨','拍照':'📷'})[d.kind]), date:d.date, cap:(d.content||'').replace('【转写】',''), src:'来自时光日记', sketch:d.sketch||'' });
+    Warm.sync(a); d.bio='已引用'; persist(); Warm.dismiss(); logAct('日记归入相册', d.title+' → '+a.name,'低'); Warm.refresh(); toast('已归入相册《'+a.name+'》','ok'); Warm.viewAlbum(a._id); },
+  delDiary(id){ const d=Warm.diary(id); if(!d) return; if(!confirm('确认删除日记《'+d.title+'》？')) return;
+    MODULES.diary.rows = MODULES.diary.rows.filter(x=>x._id!==+id); persist(); Warm.dismiss(); logAct('删除日记', d.name+' / '+d.title,'中'); Warm.refresh(); toast('已删除','warn'); },
+  diaryChips(owner){ const ds=Warm.diaries(owner,''); return ds.length? ds.map(d=>`<span class="tag ${d.kind==='录音'?'purple':d.kind==='画画'?'green':d.kind==='拍照'?'warn':'blue'}">${esc(d.kind)} ${esc(d.title)}</span>`).join(' ') : '<span class="tiny">暂无日记</span>'; },
+
+  /* ---------- 传承 · AI 传记 ---------- */
+  refresh(){ if(S.view==='admin') renderPage(); else if(S.view==='app'||S.view==='mp') renderMobile(S.view); },
+  chaptersOf(name, style, aIds, dIds, fam){
+    const CN=['一','二','三','四','五','六','七','八','九','十','十一','十二'];
+    const albs = aIds.map(i=>Warm.album(i)).filter(Boolean);
+    const dis  = dIds.map(i=>Warm.diary(i)).filter(Boolean);
+    const phN  = albs.reduce((s,a)=>s+Warm.photos(a).length, 0);
+    const tone = style==='家书体'? '亲爱的家人：' : style==='口述实录'? '（以下为本人原话，只作了顺句处理）' : '';
+    const out = [];
+    out.push({ t:'序 · 这本册子是怎么来的', c: tone+'这些内容来自我在园区留下的 '+dis.length+' 篇日记与 '+albs.length+' 本相册（共 '+phN+' 张照片）。文字是系统从我自己写的、自己说的话里拼起来的，后来我又自己改过。' });
+    albs.forEach((a,i)=>{
+      const ps = Warm.photos(a);
+      const lines = ps.length? ps.map(p=>{
+        const y = p.date && /^\d{4}/.test(p.date)? p.date.slice(0,4)+' 年 ' : '';
+        return (style==='编年史'? y+'：' : y? y+'，' : '')+p.t+'——'+(p.cap||'这张照片我记不太清细节了，只记得当时很高兴。');
+      }).join('；')+'。' : '这本相册里的照片还没补充图注，先从封面开始吧。';
+      out.push({ t:'第'+CN[i]+'章 · '+a.name, c:(a.cate==='人生历程'?'回头一看，那些年真的过得飞快。':a.cate==='旅居风景'?'在园区住久了，四季都是景。':a.cate==='手迹作品'?'字写得不好，但是我自己写的。':'')+(tone||'')+lines+'（素材来自相册《'+a.name+'》，'+ps.length+' 张，'+a.date+' 建立。）' });
+    });
+    const wr = dis.filter(d=>d.kind!=='录音'), vc = dis.filter(d=>d.kind==='录音');
+    if(wr.length) out.push({ t:'日常 · 我写下来的日子', c: wr.map(d=>d.date+'　'+d.title+'：'+String(d.content||'').replace('【转写】','')).join('\n') });
+    if(vc.length) out.push({ t:'声音 · 我录下来的话', c: vc.map(d=>d.date+'　'+d.title+'：'+String(d.content||'').replace('【转写】','')).join('\n') });
+    out.push({ t:'后记 · 想留给谁', c:'这本册子想交给'+(fam||'家人')+'。字是我自己的字，事情是我自己的事情。要是哪天我不在了，翻开它就像我还在说话。' });
+    return out;
+  },
+  genForm(owner){
+    if(!Warm.isWeb()) return Mob.wGen(owner);
+    const who = owner || Warm.who() || ELDER_NAMES[0];
+    const albs = Warm.albums(who,'',false), dis = Warm.diaries(who,'');
+    const ar = archiveOf(who);
+    const fam = ar && ar.family ? String(ar.family).split(/[、,，]/)[0] : '';
+    if(!albs.length && !dis.length){ toast(who+' 还没有相册或日记，请先创建温暖素材','warn'); return; }
+    Modal.open('🕯 联动日记与相册 · 辅生成 AI 个人传记', `<div class="lgc-wiz">
+      <div class="two"><div class="field"><label>传主</label><select class="sel" id="gName" onchange="Warm.genRefresh()">${ELDER_NAMES.map(n=>`<option${n===who?' selected':''}>${esc(n)}</option>`).join('')}</select></div>
+        <div class="field"><label>传记名</label><input class="inp" id="gTitle" value=""></div></div>
+      <div class="field"><label>体裁</label><div class="seg" id="gStyle">${BIO_STYLES.map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div>
+        <div class="tiny">温情回忆录：第一人称回忆；家书体：写给家人的口吻；编年史：按年份记事；口述实录：保留原话。</div></div>
+      <div class="field"><label>交付对象</label><input class="inp" id="gFam" value="${esc(fam||'子女')}"></div>
+      <div id="gMats"><div class="tiny">正在加载素材…</div></div>
+      <div class="lgc-tip">⚠ AI 只负责把长者的文字与照片串成草稿，<b>全部内容由长者与家属自由改写</b>；定稿前不对外展示，也不会自动推送。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.startGen()">🤖 生成传记草稿</button>`, true);
+    Warm.seg('gStyle'); $('gTitle').value = who+'的人生小记'; Warm.genRefresh();
+  },
+  genRefresh(){
+    const who = $('gName').value; $('gTitle').value = who+'的人生小记';
+    const albs = Warm.albums(who,'',false), dis = Warm.diaries(who,'');
+    const box = $('gMats'); if(!box) return;
+    box.innerHTML = `<div class="lgc-mat"><h4>📸 相册素材（${albs.length}）</h4><div class="lgc-cks">${albs.length? albs.map(a=>`<label class="ck3"><input type="checkbox" value="${a._id}" data-t="a" ${Warm.photos(a).length?'checked':''}> <b>${esc(a.name)}</b><span>${Warm.photos(a).length} 张 · ${esc(a.cate)}</span></label>`).join('') : '<span class="tiny">该长者暂无相册</span>'}</div></div>
+      <div class="lgc-mat"><h4>📔 日记素材（${dis.length}）</h4><div class="lgc-cks">${dis.length? dis.map(d=>`<label class="ck3"><input type="checkbox" value="${d._id}" data-t="d" ${d.bio==='已引用'?'checked':''}> <b>${esc(d.title)}</b><span>${esc(d.kind)} · ${esc(d.date)}</span></label>`).join('') : '<span class="tiny">该长者暂无日记</span>'}</div></div>`;
+  },
+  startGen(){
+    const name=$('gName').value, style=Warm.segVal('gStyle','温情回忆录'), title=($('gTitle').value||'').trim()||name+'的人生小记';
+    const fam=($('gFam').value||'').trim()||'家人';
+    const cks = [...document.querySelectorAll('#gMats input[type=checkbox]')].filter(c=>c.checked);
+    const aIds = cks.filter(c=>c.dataset.t==='a').map(c=>+c.value), dIds = cks.filter(c=>c.dataset.t==='d').map(c=>+c.value);
+    if(!aIds.length && !dIds.length){ toast('至少勾选一本相册或一篇日记作为素材','err'); return; }
+    const chs = Warm.chaptersOf(name, style, aIds, dIds, fam);
+    const phN = aIds.reduce((s,i)=>{ const a=Warm.album(i); return s+(a?Warm.photos(a).length:0); },0);
+    const b = { _id:++UID, name, title, style, vol:'第'+(Warm.bios(name).length+1)+'卷', srcDiary:dIds.length, srcPhoto:phN,
+      chapters:[], progress:0, status:'生成中', by:(S.user&&S.user.name)||'系统', time:now(), family:fam, printCnt:0,
+      matAlbums:aIds, matDiary:dIds, note:'AI 初稿：基于 '+dIds.length+' 篇日记与 '+aIds.length+' 本相册生成，待长者在自由编写后定稿。' };
+    MODULES.legacy.rows.unshift(b);
+    dIds.forEach(i=>{ const d=Warm.diary(i); if(d) d.bio='已引用'; });
+    aIds.forEach(i=>{ const a=Warm.album(i); if(a){ a.bioRef=b.title; } });
+    persist(); Warm.dismiss(); Warm.refresh(); logAct('AI 生成传记', name+'《'+title+'》','中');
+    Warm.animate(b._id, chs);
+  },
+  animate(id, chs){
+    let i=0;
+    const tm = setInterval(()=>{
+      const b = Warm.bio(id); if(!b || b.status!=='生成中'){ clearInterval(tm); return; }
+      i++; b.chapters = chs.slice(0,i); b.progress = Math.round(i/chs.length*95); b.time=now();
+      persist(); Warm.refresh();
+      if(i>=chs.length){ clearInterval(tm); b.progress=100; b.status='草稿'; persist(); Warm.refresh();
+        logAct('传记草稿完成', b.name+'《'+b.title+'》'+chs.length+' 章','中');
+        toast('AI 草稿已生成 '+chs.length+' 章，可自由改写','ok'); Warm.viewBio(b._id); }
+    }, 520);
+  },
+  openBio(id){
+    const b = Warm.bio(id); if(!b) return;
+    if(!Warm.isWeb()) return Mob.wBio(id);
+    const chs = b.chapters||[];
+    const body = `<div class="lgc-h"><div class="lgc-vol">${esc(b.style)}</div>
+      <div><h3>${esc(b.title)}</h3><p>传主 ${esc(b.name)} · ${esc(b.vol||'')} · 整理人 ${esc(b.by||'—')} · 更新 ${esc(b.time||'')}</p>
+        <div class="ab-tags">${tagHTML({tag:{'草稿':'ink','生成中':'blue','已成稿':'green','已交付':'purple'}}, b.status)}<span class="tag blue">${chs.length} 章</span>
+        <span class="tag">素材：日记 ${b.srcDiary||0} 篇 · 照片 ${b.srcPhoto||0} 张</span><span class="tag purple">完成度 ${b.progress||0}%</span></div></div></div>
+      <div class="prog"><i style="width:${b.progress||0}%"></i></div><div class="tiny" style="margin:6px 0 12px">${b.status==='生成中'?'AI 正在逐章生成，完成后将自动进入可编辑状态':'草稿已完成，逐章点「保存」写入'}</div>
+      ${chs.length? chs.map((c,i)=>`<div class="lgc-ch"><div class="lgc-ch-h"><b>${esc(c.t)}</b><span class="tiny">${(c.c||'').length} 字 · ${c.edited?'已由本人改写':'AI 初稿'}</span></div>
+        <textarea class="inp" id="ch${i}" rows="${Math.min(6,Math.max(2,Math.ceil((String(c.c||'').length+14)/28)))}">${esc(c.c||'')}</textarea>
+        <div class="lgc-ch-ops"><button class="btn sm" onclick="Warm.saveOne(${b._id},${i})">💾 保存本章</button>
+          <button class="btn sm" onclick="Warm.polish(${b._id},${i})">🤖 换个说法</button>
+          <button class="btn sm" onclick="Warm.fromMate(${b._id},${i})">📔 引用原文</button>
+          <button class="btn sm d" onclick="Warm.delChapter(${b._id},${i})">🗑 删章</button></div></div>`).join('')
+        : '<div class="empty"><div class="e">🕯</div>草稿生成中…</div>'}
+      ${b.note?`<div class="field" style="margin-top:12px"><label>后记 / 备注</label><textarea class="inp" id="lgNote" rows="2">${esc(b.note)}</textarea></div>`:''}`;
+    Modal.open('🕯 自由编写传记 · '+esc(b.title), body,
+      b.status==='生成中'? `<button class="btn" onclick="Modal.close()">后台生成，先关闭</button>`
+      : `<button class="btn" onclick="Modal.close()">关闭</button>
+         <button class="btn" onclick="Warm.saveChapters(${b._id})">💾 全部保存</button>
+         <button class="btn" onclick="Warm.addChapter(${b._id})">＋ 加一章</button>
+         <button class="btn g" onclick="Warm.finalize(${b._id})">✅ 定稿</button>
+         <button class="btn" onclick="Warm.printBio(${b._id})">🖨 打印成书</button>
+         <button class="btn p" onclick="Warm.deliver(${b._id})">📮 交付子女</button>`, true);
+  },
+  saveOne(id, i){ const b=Warm.bio(id); const t=$('ch'+i); if(!b||!t||!b.chapters[i]) return;
+    b.chapters[i].c=t.value.trim(); b.chapters[i].edited=1; b.time=now(); persist(); logAct('改写传记章节', b.name+'《'+b.title+'》'+b.chapters[i].t,'低'); toast('本章已保存','ok'); },
+  saveChapters(id){ const b=Warm.bio(id); if(!b) return;
+    b.chapters.forEach((c,i)=>{ const t=$('ch'+i); if(t){ c.c=t.value.trim(); c.edited=1; } });
+    const n=$('lgNote'); if(n) b.note=n.value.trim();
+    b.time=now(); persist(); logAct('保存传记全文', b.name+'《'+b.title+'》','低'); Warm.refresh(); toast('传记已保存（'+b.chapters.length+' 章）','ok'); Warm.viewBio(b._id); },
+  polish(id, i){ const b=Warm.bio(id); const t=$('ch'+i); if(!b||!t) return;
+    const v=t.value.trim(); if(!v){ toast('本章还没有内容','warn'); return; }
+    t.value = v.replace(/。/g,'。 ').replace(/^（以下为本人原话，只作了顺句处理）/, b.style==='家书体'?'亲爱的家人，':'') + (b.style==='编年史'?'\n（编年体提示：该段可按年份拆分到上一年与下一年。）':'');
+    toast('已重新组织语句，可继续手动修改','ok'); },
+  fromMate(id, i){ const b=Warm.bio(id); const t=$('ch'+i); if(!b||!t) return;
+    const ds = Warm.diaries(b.name,'').slice(0,4).map(d=>'· '+d.date+' '+d.title+'：'+String(d.content||'').slice(0,40)).join('\n');
+    t.value = (t.value?t.value+'\n':'')+'【可粘贴的原文素材】\n'+ds; toast('已插入原文素材，自行挑选','ok'); },
+  addChapter(id){ const b=Warm.bio(id); if(!b) return; b.chapters=b.chapters||[]; b.chapters.push({t:'第'+(b.chapters.length+1)+'章 · （自己写的一章）', c:'这里写自己想说的话。', edited:1});
+    persist(); Warm.refresh(); Warm.viewBio(b._id); toast('已新增一章','ok'); },
+  delChapter(id, i){ const b=Warm.bio(id); if(!b||!b.chapters[i]) return; if(!confirm('确认删除《'+b.chapters[i].t+'》？')) return;
+    b.chapters.splice(i,1); b.progress=Math.min(100, Math.round(b.chapters.length*12)); persist(); Warm.refresh(); Warm.viewBio(b._id); },
+  finalize(id){ const b=Warm.bio(id); if(!b) return;
+    if(!b.chapters.length){ toast('草稿还是空的，不能定稿','err'); return; }
+    if(!confirm('定稿后传记将锁定为「已成稿」，长者仍可随时解锁修改。确认定稿？')) return;
+    b.status='已成稿'; b.progress=100; b.time=now(); Warm.dismiss(); persist(); Warm.refresh();
+    logAct('传记定稿', b.name+'《'+b.title+'》','中'); toast('已定稿：《'+b.title+'》','ok'); Warm.viewBio(b._id); },
+  deliver(id){ const b=Warm.bio(id); if(!b) return;
+    if(!Warm.isWeb()) return Mob.wDeliver(id);
+    Modal.open('📮 交付子女 / 家人', `<div class="mform">
+      <div class="field"><label>交付对象</label><input class="inp" id="dlTo" value="${esc(b.family||'')}"></div>
+      <div class="field"><label>送达方式</label><div class="seg" id="dlWay">${['APP 推送','短信链接','纸质快递','园区服务台领取'].map((x,i)=>`<button class="${i?'':'on'}" data-v="${x}">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>附一句话</label><textarea class="inp" id="dlMsg" rows="2" placeholder="想对家人说的话"></textarea></div>
+      <div class="tiny">交付后长者端与子女端会同步出现《${b.title}》，仅授权家属可见；可随时撤销。</div></div>`,
+      `<button class="btn" onclick="Modal.close()">取消</button><button class="btn p" onclick="Warm.doDeliver(${b._id})">确认交付</button>`);
+    Warm.seg('dlWay');
+  },
+  doDeliver(id){ const b=Warm.bio(id); if(!b) return;
+    b.status='已交付'; b.family=($('dlTo').value||'').trim()||b.family||'家人'; b.deliverWay=Warm.segVal('dlWay','APP 推送');
+    b.deliverMsg=($('dlMsg').value||'').trim(); b.deliverTime=now(); b.time=now();
+    Warm.dismiss(); persist(); Warm.refresh(); logAct('传记交付家属', b.name+'《'+b.title+'》→ '+b.family+'（'+b.deliverWay+'）','中');
+    toast('已交付：'+b.family+' 可在子女端「传承」中看到','ok'); Warm.viewBio(b._id); },
+  bioSheets(b){ const chs=b.chapters||[];
+    return `<div class="pt-cover bio"><h1>${esc(b.title)}</h1><p>${esc(b.name)} · ${esc(b.style)} · ${esc(b.vol||'')}</p>
+      <div class="big">🕯</div><p class="note">${esc(b.note||'')}</p>
+      <p class="meta">共 ${chs.length} 章 · 素材：日记 ${b.srcDiary||0} 篇 / 照片 ${b.srcPhoto||0} 张 · 打印时间 ${now()}</p></div>`
+      + chs.map((c,i)=>`<div class="pt-chap"><h2>${esc(c.t)}</h2><p>${esc(c.c||'')}</p><span>${esc(b.name)} · ${esc(b.title)}</span></div>`).join(''); },
+  printBio(id){ const b = Warm.bio(id); if(!b) return;
+    const chs=b.chapters||[];
+    printSheets(Warm.bioSheets(b));
+    b.printCnt=(b.printCnt||0)+1; persist(); Warm.refresh(); logAct('打印传记成书', b.name+'《'+b.title+'》','低');
+    if(!Warm.isWeb()){ toast('已生成书本版式，累计打印 '+b.printCnt+' 次','ok'); return; }
+    Modal.open('🖨 传记已排好书本版式', `<div class="ok-box"><div class="e">📖</div><b>《${esc(b.title)}》打印任务已生成</b>
+      <p>共 ${chs.length} 章 · 累计打印 ${b.printCnt} 次<br>可选「精装锁线」或「骑马钉」；园区打印室 1 个工作日送出。</p>
+      <div class="mbtns"><button class="btn" onclick="Modal.close()">关闭</button><button class="btn p" onclick="Warm.openBio(${b._id})">返回编辑</button></div></div>`);
+  },
+  delBio(id){ const b=Warm.bio(id); if(!b) return; if(!confirm('确认删除传记《'+b.title+'》？（已交付的需家属确认后撤回）')) return;
+    MODULES.legacy.rows = MODULES.legacy.rows.filter(x=>x._id!==+id); persist(); Warm.dismiss(); Warm.refresh(); logAct('删除传记', b.name+' / '+b.title,'高'); toast('传记已删除','warn'); }
+};
+
+/* ---------- 自定义页：温暖相册 ---------- */
+Object.assign(CUSTOM, {
+  album(key){
+    const m = MODULES[key]; const st = S.ab = S.ab || {};
+    st.owner = st.owner || (Warm.who() || '全部'); st.cate = st.cate || '全部';
+    const all = MODULES.album.rows||[];
+    const live = all.filter(a=>a.status!=='已销毁');
+    const gone = all.filter(a=>a.status==='已销毁');
+    const phTotal = live.reduce((s,a)=>s+Warm.photos(a).length,0);
+    const list = Warm.albums(st.owner==='全部'?'':st.owner, st.cate);
+    const kpi = [['📸','我的相册', live.length+' 本','共 '+ALBUM_CATES.length+' 个分类',''],
+      ['🖼','照片总量', phTotal+' 张','含手写扫描与老照片翻拍',''],
+      ['🔗','已分享', live.filter(a=>a.share==='已生成链接').length+' 本','可随时撤销链接',''],
+      ['🖨','纸质打印', live.reduce((s,a)=>s+(+a.printCnt||0),0)+' 次','已下单至园区打印室',''],
+      ['🔒','私密保护', live.filter(a=>a.priv==='私密').length+' 本','仅本人可见',''],
+      ['🗑','已销毁', gone.length+' 本','回收站保留 30 天','']];
+    $('crumb').innerHTML = `首页 / 温暖传承 / <b>${esc(m.title)}</b>`;
+    $('page').innerHTML = `<div class="page-h"><div><h2>📸 温暖相册</h2><p>${esc(m.desc)}　·　当前：${esc(st.owner)} / ${esc(st.cate)}</p></div>
+      <div class="acts"><select class="sel" style="width:130px" onchange="S.ab.owner=this.value;renderPage()">
+        <option${st.owner==='全部'?' selected':''}>全部</option>${ELDER_NAMES.map(n=>`<option${n===st.owner?' selected':''}>${esc(n)}</option>`).join('')}</select>
+        <input class="inp" style="width:160px" placeholder="搜相册名 / 照片图注" value="${esc(st.kw||'')}" oninput="S.ab.kw=this.value;renderPage()">
+        <button class="btn p" onclick="Warm.newAlbum('${esc(st.owner==='全部'?'':st.owner)}')">＋ 新建相册</button></div></div>
+    <div class="kpis" style="grid-template-columns:repeat(6,1fr)">${kpi.map(k=>`<div class="kpi"><i><span class="e">${k[0]}</span>${k[1]}</i><b>${k[2]}</b><span>${k[3]}${k[4]?' · '+k[4]:''}</span></div>`).join('')}</div>
+    <div class="mchips" style="margin-top:16px">${['全部'].concat(ALBUM_CATES).map(c=>`<button class="${c===st.cate?'on':''}" onclick="S.ab.cate='${c}';renderPage()">${c} · ${live.filter(a=>a.cate===c).length}</button>`).join('')}</div>
+    ${list.length? `<div class="ab-cards">${list.map(a=>{ const ps=Warm.photos(a); const kw=(st.kw||'').trim();
+        const hit = !kw || a.name.includes(kw) || (a.note||'').includes(kw) || ps.some(p=>(p.t+p.cap||'').includes(kw));
+        if(!hit) return ''; return `<div class="ab-card" onclick="Warm.openAlbum(${a._id})">
+          <div class="ab-im">${esc(a.cover||'📷')}<i>${ps.length} 张</i></div>
+          <b>${esc(a.name)}</b><p>${esc(a.owner)} · ${esc(a.cate)}</p>
+          <div class="ab-row">${tagHTML({tag:{'私密':'ink','家人可见':'blue','园区公开':'green'}}, a.priv)}${tagHTML({tag:{'未分享':'ink','已生成链接':'green','已撤销':'warn'}}, a.share)}${a.printCnt?'<span class="tag purple">已打印 '+a.printCnt+'</span>':''}</div>
+          <div class="ab-strip">${ps.slice(0,5).map(p=>`<span>${esc(p.ico||'📷')}</span>`).join('')}${ps.length>5?`<i class="more">+${ps.length-5}</i>`:''}</div>
+          <p class="tiny">${esc((a.note||'').slice(0,26)||'暂无简介')}</p></div>`; }).join('')}</div>` : '<div class="empty"><div class="e">📷</div>当前筛选条件下还没有相册，点右上角「＋ 新建相册」开始创建</div>'}
+    ${gone.length? `<div class="card" style="margin-top:16px"><div class="card-h"><h3>🗑 已销毁的相册（回收站）</h3><span class="tiny">保留 30 天，超级管理员可恢复</span></div>
+      <div class="card-b"><ul class="lst">${gone.map(a=>`<li><span class="ic r">🗑</span><div><b>${esc(a.name)}</b><p>${esc(a.owner)} · ${esc(a.cate)} · 销毁于 ${esc(a.destroyAt||'—')}</p></div>
+        <span class="tm"><span class="tag red">${Warm.photos(a).length} 张已隐藏</span> <button class="btn sm" onclick="Warm.restore(${a._id})">♻️ 恢复</button></span></li>`).join('')}</ul></div></div>`:''}
+    <div class="card" style="margin-top:16px"><div class="card-h"><h3>📚 分类与能力说明</h3><span class="tiny">创建 / 添加 / 销毁 / 分享 / 打印</span></div>
+      <div class="card-b"><div class="sw-box">${ALBUM_CATES.map(c=>{ const n=live.filter(a=>a.cate===c).length; const p=live.filter(a=>a.cate===c).reduce((s,a)=>s+Warm.photos(a).length,0);
+          return `<div class="ck"><b>${c}</b><p>${n} 本相册 · ${p} 张照片</p></div>`; }).join('')}</div>
+        <div class="tiny" style="margin-top:10px">纸质输出：支持 A4 / 12 寸相簿 / 拍立得，可选精装硬壳、蝴蝶对裱、环装可拆，并随册附印图注与手写页；分享：生成带有效期的链接与分享码，随时可撤销。</div></div></div>`;
+  },
+
+  /* ---------- 自定义页：时光日记 ---------- */
+  diary(key){
+    const m = MODULES[key]; const st = S.dy = S.dy || {};
+    st.owner = st.owner || (Warm.who() || '全部'); st.kind = st.kind || '全部'; S.dyKind = S.dyKind || '笔记';
+    const all = MODULES.diary.rows||[];
+    const mine = Warm.diaries(st.owner==='全部'?'':st.owner, st.kind==='全部'?'':st.kind);
+    const cnt = k => all.filter(d=>d.kind===k && (st.owner==='全部'||d.name===st.owner)).length;
+    const kpi = [['📔','记录总数', all.length+' 条','笔记 / 录音 / 画画 / 拍照',''],
+      ['🖊','笔记', cnt('笔记')+' 条','含手写识别转入',''],
+      ['🎙','录音', cnt('录音')+' 条','自动转写文字',''],
+      ['🎨','画画', cnt('画画')+' 条','画板作品已存档',''],
+      ['📷','拍照', cnt('拍照')+' 条','支持 OCR 认字',''],
+      ['🕯','已入传记', all.filter(d=>d.bio==='已引用').length+' 条','可随时取消引用','']];
+    $('crumb').innerHTML = `首页 / 温暖传承 / <b>${esc(m.title)}</b>`;
+    $('page').innerHTML = `<div class="page-h"><div><h2>📔 时光日记</h2><p>${esc(m.desc)}　·　当前：${esc(st.owner)} / ${esc(st.kind)}</p></div>
+      <div class="acts"><select class="sel" style="width:130px" onchange="S.dy.owner=this.value;renderPage()">
+        <option${st.owner==='全部'?' selected':''}>全部</option>${ELDER_NAMES.map(n=>`<option${n===st.owner?' selected':''}>${esc(n)}</option>`).join('')}</select>
+        <button class="btn" onclick="Warm.genForm('${esc(st.owner==='全部'?'':st.owner)}')">🤖 用素材生成传记</button>
+        <button class="btn p" onclick="S.dyKind='笔记';renderPage()">＋ 写一条</button></div></div>
+    <div class="kpis" style="grid-template-columns:repeat(6,1fr)">${kpi.map(k=>`<div class="kpi"><i><span class="e">${k[0]}</span>${k[1]}</i><b>${k[2]}</b><span>${k[3]}${k[4]?' · '+k[4]:''}</span></div>`).join('')}</div>
+    <div class="bar2"><div class="card"><div class="card-h"><h3>✍️ 创作面板</h3><span class="tiny">四种方式都能记录</span></div>
+      <div class="card-b">${Warm.diaryPanel(S.dyKind)}</div></div>
+      <div class="card"><div class="card-h"><h3>🗂 我的日记本（${mine.length}）</h3>
+        <div class="seg" id="dyFilt">${['全部'].concat(DIARY_KINDS).map(x=>`<button class="${x===st.kind?'on':''}" onclick="S.dy.kind='${x}';renderPage()">${x}</button>`).join('')}</div></div>
+        <div class="card-b"><ul class="lst dy-lst" style="max-height:560px">${mine.length? mine.map(d=>`<li onclick="Warm.openDiary(${d._id})" style="cursor:pointer">
+          <span class="ic ${d.kind==='录音'?'':d.kind==='画画'?'g':d.kind==='拍照'?'w':''}">${d.kind==='录音'?'🎙':d.kind==='画画'?'🎨':d.kind==='拍照'?'📷':'🖊'}</span>
+          <div><b>${esc(d.title)}</b><p>${esc(d.date)} ${esc(d.time||'')} · ${esc(d.name)} · ${esc(d.from||'')}${d.dur?' · '+esc(d.dur):''}</p>
+            <span class="tiny">${esc(String(d.content||'').slice(0,42))||'（无正文）'}</span></div>
+          <span class="tm">${tagHTML({tag:{'笔记':'blue','录音':'purple','画画':'green','拍照':'warn'}}, d.kind)}${tagHTML({tag:{'已引用':'green','未引用':'ink'}}, d.bio)}</span></li>`).join('')
+          : '<div class="empty"><div class="e">📔</div>还没有记录，在左边选一种方式写下第一笔</div>'}</ul></div></div></div>`;
+    Warm.afterDiary();
+  },
+
+  /* ---------- 自定义页：传承 · AI 传记 ---------- */
+  legacy(key){
+    const m = MODULES[key]; const st = S.lg = S.lg || {};
+    st.owner = st.owner || (Warm.who() || '全部');
+    const bios = Warm.bios(st.owner==='全部'?'':st.owner);
+    const all = MODULES.legacy.rows||[];
+    const phAll = Warm.albums('', '').reduce((s,a)=>s+Warm.photos(a).length,0);
+    const kpi = [['🕯','传记总数', all.length+' 部','已覆盖 '+new Set(all.map(b=>b.name)).size+' 位长者',''],
+      ['📝','草稿', all.filter(b=>['草稿','生成中'].includes(b.status)).length+' 部','可自由改写',''],
+      ['✅','已成稿', all.filter(b=>b.status==='已成稿').length+' 部','已锁定待交付',''],
+      ['📮','已交付', all.filter(b=>b.status==='已交付').length+' 部','子女端已同步',''],
+      ['🖨','打印成书', all.reduce((s,b)=>s+(+b.printCnt||0),0)+' 册','含精装与纪念册',''],
+      ['🧾','素材池', MODULES.diary.rows.length+' 篇 / '+phAll+' 张','相册与日记联动','']];
+    $('crumb').innerHTML = `首页 / 温暖传承 / <b>${esc(m.title)}</b>`;
+    $('page').innerHTML = `<div class="page-h"><div><h2>🕯 传承 · AI 个人传记</h2><p>${esc(m.desc)}　·　当前：${esc(st.owner)}</p></div>
+      <div class="acts"><select class="sel" style="width:130px" onchange="S.lg.owner=this.value;renderPage()">
+        <option${st.owner==='全部'?' selected':''}>全部</option>${ELDER_NAMES.map(n=>`<option${n===st.owner?' selected':''}>${esc(n)}</option>`).join('')}</select>
+        <button class="btn" onclick="App.go('admin','diary')">📔 时光日记</button>
+        <button class="btn p" onclick="Warm.genForm('${esc(st.owner==='全部'?'':st.owner)}')">🤖 联动素材生成传记</button></div></div>
+    <div class="kpis" style="grid-template-columns:repeat(6,1fr)">${kpi.map(k=>`<div class="kpi"><i><span class="e">${k[0]}</span>${k[1]}</i><b>${k[2]}</b><span>${k[3]}${k[4]?' · '+k[4]:''}</span></div>`).join('')}</div>
+    ${bios.length? `<div class="lgc-cards">${bios.map(b=>{ const chs=b.chapters||[]; return `<div class="lgc-card">
+      <div class="lgc-top"><div class="lgc-vol2">${esc(b.style)}</div>
+        <div><b>${esc(b.title)}</b><p>${esc(b.name)} · ${esc(b.vol||'')} · 整理人 ${esc(b.by||'—')} · ${esc(b.time||'')}</p></div>
+        <div class="lgc-st">${tagHTML({tag:{'草稿':'ink','生成中':'blue','已成稿':'green','已交付':'purple'}}, b.status)}</div></div>
+      <div class="prog"><i style="width:${b.progress||0}%"></i></div><div class="tiny" style="margin-bottom:8px">完成度 ${b.progress||0}% · ${chs.length} 章</div>
+      <div class="lgc-chs">${chs.length? chs.slice(0,3).map(c=>`<span class="tag">${esc(c.t)}</span>`).join('')+(chs.length>3?`<span class="tiny"> 等 ${chs.length} 章</span>`:'') : '<span class="tiny">草稿生成中…</span>'}</div>
+      <div class="lgc-sum">${chs[0]? esc(String(chs[0].c||'').slice(0,70))+'…':'<span class="tiny">暂无摘要</span>'}</div>
+      <div class="mbtns"><button class="btn sm p" onclick="Warm.openBio(${b._id})">✍️ 自由编写</button>
+        <button class="btn sm" onclick="Warm.printBio(${b._id})">🖨 打印成书</button>
+        ${b.status==='草稿'?`<button class="btn sm g" onclick="Warm.finalize(${b._id})">✅ 定稿</button>`:''}
+        ${b.status==='已成稿'?`<button class="btn sm g" onclick="Warm.deliver(${b._id})">📮 交付子女</button>`:''}
+        ${b.status==='已交付'?`<button class="btn sm" onclick="Warm.deliver(${b._id})">🔁 重新交付</button>`:''}
+        <button class="btn sm d" onclick="Warm.delBio(${b._id})">🗑</button></div></div>`; }).join('')}</div>`
+      : '<div class="empty"><div class="e">🕯</div>还没有传记，点右上角「联动素材生成传记」</div>'}
+    <div class="card" style="margin-top:16px"><div class="card-h"><h3>🧩 谁已经有素材可以写成传记</h3><span class="tiny">素材越厚，传记越像本人</span></div>
+      <div class="card-b"><ul class="lst" style="max-height:420px">${ELDER_NAMES.map(n=>{ const ds=Warm.diaries(n,''), ab=Warm.albums(n,''), ph=ab.reduce((s,a)=>s+Warm.photos(a).length,0), bs=Warm.bios(n);
+        if(!ds.length && !ab.length) return ''; return `<li><span class="ic">${esc((ab[0]&&ab[0].cover)||'📔')}</span><div><b>${esc(n)}</b><p>日记 ${ds.length} 篇 · 相册 ${ab.length} 本 / ${ph} 张 · 传记 ${bs.length} 部${bs.length?'（'+bs.map(x=>x.status).join('、')+'）':''}</p></div>
+          <span class="tm"><span class="tiny">${ab.slice(0,4).map(a=>esc(a.cover||'📷')).join(' ')}</span> <button class="btn sm p" onclick="Warm.genForm('${n}')">🤖 生成草稿</button></span></li>`; }).join('')}</ul>
+        <div class="tiny" style="margin-top:10px">生成流程：选择素材 → AI 按体裁串成逐章草稿 → 长者与家属自由改写 → 定稿 → 打印成书 / 交付子女。全程不锁定、不代笔下发，定稿前不对外展示。</div></div></div>`;
+  }
+});
